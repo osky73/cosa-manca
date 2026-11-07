@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
   const { data: inv } = await supabase
     .from('invitations')
-    .select('id')
+    .select('id, role')
     .eq('group_id', groupId)
     .eq('email', email)
     .maybeSingle()
@@ -54,11 +54,12 @@ Deno.serve(async (req) => {
     supabase.from('profiles').select('display_name, email').eq('id', userData.user.id).maybeSingle(),
   ])
   const groupName = group?.name ?? 'casa'
+  const roleLabel = inv.role === 'admin' ? 'amministratore' : 'utente'
   const inviter = me?.display_name?.trim() || me?.email || 'Qualcuno'
 
   const html = `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;color:#1c1c1c">
 <h2>${esc(inviter)} ti ha invitato su Cosa manca</h2>
-<p>Cosa manca è la lista di ciò che manca in casa, condivisa in famiglia. Sei stato aggiunto al gruppo <b>${esc(groupName)}</b>.</p>
+<p>Cosa manca è la lista di ciò che manca in casa, condivisa in famiglia. Sei stato aggiunto al gruppo <b>${esc(groupName)}</b> come <b>${roleLabel}</b>.</p>
 <p><a href="${SITE_URL}" style="display:inline-block;background:#2f7d4f;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600">Apri Cosa manca</a></p>
 <p>Come entrare:</p>
 <ol>
@@ -69,7 +70,7 @@ Deno.serve(async (req) => {
 </ol>
 </div>`
 
-  const text = `${inviter} ti ha invitato su Cosa manca, nel gruppo "${groupName}".\n\nApri ${SITE_URL}, accedi con ${email} (ti arriva un codice via email) e, se vuoi, installa l'app sulla Home.`
+  const text = `${inviter} ti ha invitato su Cosa manca, nel gruppo "${groupName}", come ${roleLabel}.\n\nApri ${SITE_URL}, accedi con ${email} (ti arriva un codice via email) e, se vuoi, installa l'app sulla Home.`
 
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',

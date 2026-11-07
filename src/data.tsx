@@ -67,7 +67,7 @@ interface DataCtx {
   deleteStore: (id: string) => Promise<void>
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
   archiveItem: (id: string) => Promise<void>
-  invite: (email: string) => Promise<boolean>
+  invite: (email: string, role: Role) => Promise<boolean>
   sendInviteEmail: (email: string) => Promise<boolean>
   removeInvitation: (id: string) => Promise<void>
   removeMember: (userId: string) => Promise<void>
@@ -451,11 +451,11 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     archiveItem: async (id) => {
       await act(supabase.from('group_items').update({ archived: true }).eq('id', id))
     },
-    invite: async (email) =>
+    invite: async (email, inviteRole) =>
       act(
         supabase
           .from('invitations')
-          .insert({ group_id: groupId, email: email.trim().toLowerCase(), role: 'member', invited_by: userId }),
+          .insert({ group_id: groupId, email: email.trim().toLowerCase(), role: inviteRole, invited_by: userId }),
       ),
     sendInviteEmail: async (email) => {
       const { data, error } = await supabase.functions.invoke('send-invite', {

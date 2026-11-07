@@ -6,7 +6,7 @@ import { supabase } from '../supabase'
 import { IconEye, IconEyeOff, IconMail, IconShare, IconTrash } from '../icons'
 import { STORE_COLORS, byCategoryThenName, norm } from '../lib'
 import { useToast } from '../toast'
-import type { GroupRef, Member } from '../types'
+import type { GroupRef, Member, Role } from '../types'
 
 export default function GroupScreen({
   groups,
@@ -28,6 +28,7 @@ export default function GroupScreen({
   const group = groups.find((g) => g.id === groupId)
   const [selected, setSelected] = useState<Member | null>(null)
   const [email, setEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState<Role>('member')
   const [storeName, setStoreName] = useState('')
   const [storeColor, setStoreColor] = useState(STORE_COLORS[0])
   const [catalogOpen, setCatalogOpen] = useState(false)
@@ -57,8 +58,9 @@ export default function GroupScreen({
     e.preventDefault()
     const em = email.trim().toLowerCase()
     if (!em) return
-    if (await d.invite(em)) {
+    if (await d.invite(em, inviteRole)) {
       setEmail('')
+      setInviteRole('member')
       await sendEmail(em)
     }
   }
@@ -143,7 +145,7 @@ export default function GroupScreen({
                   </span>
                   <span className="meta">{m.profile?.email}</span>
                 </span>
-                <span className={'pill' + (m.role === 'admin' ? ' ok' : '')}>{m.role === 'admin' ? 'Admin' : 'Membro'}</span>
+                <span className={'pill' + (m.role === 'admin' ? ' ok' : '')}>{m.role === 'admin' ? 'Admin' : 'Utente'}</span>
               </button>
             </li>
           ))}
@@ -159,7 +161,9 @@ export default function GroupScreen({
                     <li key={inv.id} className="static">
                       <span className="grow">
                         <span className="name">{inv.email}</span>
-                        <span className="meta">Entra da solo al primo accesso con questa email</span>
+                        <span className="meta">
+                          {inv.role === 'admin' ? 'Amministratore' : 'Utente'} · entra da solo al primo accesso con questa email
+                        </span>
                       </span>
                       <button className="icon-btn" onClick={() => void sendEmail(inv.email)} aria-label="Rimanda l'email di invito">
                         <IconMail />
@@ -187,6 +191,13 @@ export default function GroupScreen({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+              </label>
+              <label className="field">
+                <span>Ruolo</span>
+                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as Role)}>
+                  <option value="member">Utente: aggiunge prodotti e segna cosa manca</option>
+                  <option value="admin">Amministratore: gestisce anche gruppo e inviti</option>
+                </select>
               </label>
               <button className="btn primary" disabled={!email.trim()}>
                 Invita
