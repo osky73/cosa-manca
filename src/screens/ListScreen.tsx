@@ -162,7 +162,13 @@ function SlideRow({ item }: { item: Item }) {
   const [pend, setPend] = useState<0 | 1 | null>(null) // destinazione dopo il rilascio, finché i dati non si aggiornano
   const side: 0 | 1 = need ? 1 : 0
 
-  useEffect(() => setPend(null), [side])
+  // Dopo il rilascio i dati passano per uno stato intermedio (operazione locale -> server -> aggiornamento)
+  // che può far rimbalzare "manca" per un attimo: tengo ferma la posizione scelta finché si assesta.
+  useEffect(() => {
+    if (pend === null) return
+    const t = window.setTimeout(() => setPend(null), 2000)
+    return () => window.clearTimeout(t)
+  }, [pend])
 
   const pos = f ?? pend ?? side
   const shown = Math.max(-0.1, Math.min(1.06, pos))
@@ -176,6 +182,7 @@ function SlideRow({ item }: { item: Item }) {
   function onDown(e: React.PointerEvent) {
     if (e.button !== 0 && e.pointerType === 'mouse') return
     const w = rowRef.current?.offsetWidth ?? 300
+    setPend(null)
     drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, side, travel: w * 0.21, on: false, locked: false }
   }
 
