@@ -11,6 +11,7 @@ create table public.profiles (
   id uuid primary key references auth.users on delete cascade,
   email text not null,
   display_name text,
+  marketing_opt_in boolean not null default false,
   created_at timestamptz not null default now()
 );
 

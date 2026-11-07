@@ -76,7 +76,7 @@ function Authed({ userId }: { userId: string }) {
     try {
       await supabase.rpc('accept_my_invitations')
       const [pr, ms] = await Promise.all([
-        supabase.from('profiles').select('id, email, display_name').eq('id', userId).maybeSingle(),
+        supabase.from('profiles').select('id, email, display_name, marketing_opt_in').eq('id', userId).maybeSingle(),
         supabase.from('memberships').select('role, groups(id, name)').eq('user_id', userId),
       ])
       if (pr.error) throw pr.error
@@ -143,6 +143,7 @@ function Authed({ userId }: { userId: string }) {
           setGroupId(id)
         }}
         displayName={boot.profile?.display_name ?? ''}
+        marketingOptIn={boot.profile?.marketing_opt_in ?? false}
         onNameChanged={() => void load()}
       />
     </DataProvider>
@@ -154,12 +155,14 @@ function Shell({
   groupId,
   onSwitch,
   displayName,
+  marketingOptIn,
   onNameChanged,
 }: {
   groups: GroupRef[]
   groupId: string
   onSwitch: (id: string) => void
   displayName: string
+  marketingOptIn: boolean
   onNameChanged: () => void
 }) {
   const d = useData()
@@ -183,6 +186,7 @@ function Shell({
             groupId={groupId}
             onSwitch={onSwitch}
             displayName={displayName}
+            marketingOptIn={marketingOptIn}
             onNameChanged={onNameChanged}
           />
         )}

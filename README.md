@@ -40,6 +40,21 @@ npm run build      # controllo tipi + build
 ```
 Deploy: importa la cartella (o il repository Git) su Vercel come progetto Vite; `vercel.json` gestisce il fallback della single-page app.
 
+## Aggiornamenti via email (Resend, facoltativo)
+
+Chi spunta "Voglio ricevere aggiornamenti sull'app" (all'ingresso o nella scheda Gruppo) viene aggiunto al segmento Resend **Cosa-manca**, così puoi mandargli dei Broadcasts; se toglie la spunta viene tolto solo da quel segmento. Le email col codice di accesso sono un'altra cosa (SMTP) e non dipendono da questo.
+
+1. In Resend crea una chiave API a **pieno accesso** (serve per creare contatti e modificare i segmenti; la chiave "Sending access" non basta) e copia l'ID del segmento Cosa-manca.
+2. In Supabase esegui `supabase/resend-sync.sql` (dopo `schema.sql`).
+3. Nel SQL Editor registra i due segreti nel Vault (una volta sola):
+   ```sql
+   select vault.create_secret('re_LA_TUA_CHIAVE', 'resend_api_key');
+   select vault.create_secret('ID-DEL-SEGMENTO', 'resend_segment_cosa_manca');
+   ```
+4. Prova: spunta la casella con un account di prova e controlla il contatto in Resend; l'esito delle chiamate è in `select * from net._http_response order by id desc limit 20;`.
+
+La chiave a pieno accesso resta solo nel Vault del database: non va mai nel frontend né in Vercel.
+
 ## Note di progetto
 - Il modello dati è già multi-gruppo (un utente può stare in più gruppi): per aprire ad altre famiglie basta svuotare `admin_allowlist`.
 - Il catalogo globale (`catalog_items`) lo gestisce il super-admin da Supabase; i gruppi ricevono una copia indipendente.

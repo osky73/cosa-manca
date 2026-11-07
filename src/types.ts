@@ -6,6 +6,7 @@ export interface Profile {
   id: string
   email: string
   display_name: string | null
+  marketing_opt_in?: boolean
 }
 
 export interface Store {

@@ -17,6 +17,7 @@ export default function Onboarding({
   const needName = !profile?.display_name
   const [name, setName] = useState(profile?.display_name ?? '')
   const [groupName, setGroupName] = useState('Casa')
+  const [optIn, setOptIn] = useState(false)
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
 
@@ -26,7 +27,10 @@ export default function Onboarding({
     setErr('')
     try {
       if (needName) {
-        const { error } = await supabase.from('profiles').update({ display_name: name.trim() }).eq('id', userId)
+        const { error } = await supabase
+          .from('profiles')
+          .update({ display_name: name.trim(), marketing_opt_in: optIn })
+          .eq('id', userId)
         if (error) throw error
       }
       if (!hasGroup) {
@@ -53,6 +57,12 @@ export default function Onboarding({
           <label className="field">
             <span>Il tuo nome (lo vedono gli altri)</span>
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoComplete="given-name" required />
+          </label>
+        )}
+        {needName && (
+          <label className="check">
+            <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} />
+            <span>Voglio ricevere ogni tanto aggiornamenti sull'app via email (facoltativo, puoi disiscriverti quando vuoi)</span>
           </label>
         )}
         {!hasGroup && (

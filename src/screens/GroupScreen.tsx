@@ -13,12 +13,14 @@ export default function GroupScreen({
   groupId,
   onSwitch,
   displayName,
+  marketingOptIn,
   onNameChanged,
 }: {
   groups: GroupRef[]
   groupId: string
   onSwitch: (id: string) => void
   displayName: string
+  marketingOptIn: boolean
   onNameChanged: () => void
 }) {
   const d = useData()
@@ -67,6 +69,15 @@ export default function GroupScreen({
     if (!storeName.trim()) return
     await d.addStore(storeName, storeColor)
     setStoreName('')
+  }
+
+  async function setOptIn(value: boolean) {
+    const { error } = await supabase.from('profiles').update({ marketing_opt_in: value }).eq('id', d.userId)
+    if (error) toast.show('Non sono riuscito a salvare la scelta')
+    else {
+      toast.show(value ? 'Riceverai gli aggiornamenti sull\'app' : 'Non riceverai più aggiornamenti')
+      onNameChanged()
+    }
   }
 
   async function saveName() {
@@ -264,6 +275,10 @@ export default function GroupScreen({
         <label className="field">
           <span>Il tuo nome</span>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} onBlur={() => void saveName()} />
+        </label>
+        <label className="check">
+          <input type="checkbox" checked={marketingOptIn} onChange={(e) => void setOptIn(e.target.checked)} />
+          <span>Ricevi aggiornamenti sull'app via email</span>
         </label>
         <button className="btn ghost" onClick={() => void supabase.auth.signOut()}>
           Esci dall'account
