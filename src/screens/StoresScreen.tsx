@@ -50,7 +50,7 @@ export default function StoresScreen() {
       </header>
 
       <p className="hint pad">
-        Attiva i supermercati dove fai la spesa: potrai scegliere il negozio per ogni prodotto che manca.
+        Attiva i supermercati dove fai la spesa abitualmente: potrai scegliere il negozio per ogni prodotto che manca.
       </p>
 
       <div className="shopgrid">
