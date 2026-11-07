@@ -196,7 +196,7 @@ function Shell({
         )}
       </main>
       <nav className="tabbar" aria-label="Sezioni">
-        <TabBtn active={tab === 'shop'} onClick={() => go('shop')} label="Spesa">
+        <TabBtn active={tab === 'shop'} onClick={() => go('shop')} label="Cosa manca">
           <IconCart />
         </TabBtn>
         <TabBtn active={tab === 'list'} onClick={() => go('list')} label="Elenco" badge={d.needs.length}>
