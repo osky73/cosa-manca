@@ -40,7 +40,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
 
   return (
     <div className="screen">
-      <header className="top sticky">
+      <header className="top">
         <div className="top-row">
           <h1>Cosa manca</h1>
           {(!d.online || d.pendingOps > 0) && (
@@ -51,6 +51,11 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
             </span>
           )}
         </div>
+        <p className="tagline">
+          Sai quando chiami a casa e chiedi «cosa manca?» e nessuno ha voglia di andare a vedere? Ecco fatto.
+        </p>
+      </header>
+      <div className="top sticky bar">
         <div className="searchbar">
           <IconSearch />
           <input
@@ -76,7 +81,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
             </span>
           </div>
         )}
-      </header>
+      </div>
 
       {d.isAdmin && pendingCount > 0 && !q && (
         <button className="banner" onClick={() => goto('sugg')}>

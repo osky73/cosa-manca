@@ -249,3 +249,6 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .switch i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
 .shopcard.on .switch { background: var(--accent); }
 .shopcard.on .switch i { transform: translateX(20px); }
+
+.tagline { color: var(--muted); font-size: 15px; line-height: 1.35; margin-top: 2px; text-wrap: balance; }
+.top.sticky.bar { top: var(--safe-t); padding: 4px 0 8px; }
