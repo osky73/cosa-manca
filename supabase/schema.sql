@@ -449,3 +449,16 @@ insert into public.catalog_items (name, category, sort) values
 
 -- Fase 1: solo tu puoi creare un gruppo. SOSTITUISCI con la tua email, poi esegui:
 -- insert into public.admin_allowlist (email) values ('la-tua-email@esempio.it');
+
+-- ---------- Nomi dei prodotti sempre in minuscolo ----------
+create or replace function public.lowercase_product_name() returns trigger
+language plpgsql as $$
+begin
+  new.name := lower(trim(new.name));
+  return new;
+end $$;
+
+create trigger group_items_lower_name before insert or update of name on public.group_items
+  for each row execute function public.lowercase_product_name();
+create trigger suggestions_lower_name before insert or update of name on public.suggestions
+  for each row execute function public.lowercase_product_name();
