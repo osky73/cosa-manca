@@ -1,17 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { ProposeSheet, StoreChip } from '../components'
-import { InstallCard, useInstall } from '../install'
 import { IconPlus, IconSearch, IconX } from '../icons'
 import { byCategoryThenName, norm, storeInitials } from '../lib'
 import type { Item, Tab } from '../types'
 
 export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
   const d = useData()
-  const install = useInstall()
   const [q, setQ] = useState('')
   const [proposeName, setProposeName] = useState<string | null>(null)
-  const [hideInstall, setHideInstall] = useState(() => localStorage.getItem('cm.install.hide') === '1')
 
   const qn = norm(q)
   const visible = useMemo(() => d.items.filter((i) => !i.hidden), [d.items])
@@ -58,15 +55,6 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
           </div>
         )}
       </header>
-
-      {!install.standalone && !hideInstall && !q && (
-        <InstallCard
-          onDismiss={() => {
-            localStorage.setItem('cm.install.hide', '1')
-            setHideInstall(true)
-          }}
-        />
-      )}
 
       {d.isAdmin && pendingCount > 0 && !q && (
         <button className="banner" onClick={() => goto('sugg')}>

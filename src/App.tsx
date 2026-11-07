@@ -5,6 +5,7 @@ import { ToastProvider } from './toast'
 import { DataProvider, useData } from './data'
 import { readLS, writeLS } from './lib'
 import { IconCart, IconInbox, IconList, IconUsers } from './icons'
+import { InstallPopup } from './install'
 import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
 import ListScreen from './screens/ListScreen'
@@ -176,6 +177,7 @@ function Shell({
 
   return (
     <div className="app">
+      <InstallPopup />
       <main>
         {tab === 'list' && <ListScreen goto={go} />}
         {tab === 'shop' && <ShopScreen />}
