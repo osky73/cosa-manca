@@ -182,7 +182,7 @@ export default function GroupScreen({
                 </ul>
               </>
             )}
-            <form className="card inline-form" onSubmit={(e) => void invite(e)}>
+            <form className="card" onSubmit={(e) => void invite(e)}>
               <label className="field">
                 <span>Invita una persona</span>
                 <input
@@ -195,14 +195,23 @@ export default function GroupScreen({
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </label>
-              <label className="field">
+              <div className="field">
                 <span>Ruolo</span>
-                <select value={inviteRole} onChange={(e) => setInviteRole(e.target.value as Role)}>
-                  <option value="member">Utente: aggiunge prodotti e segna cosa manca</option>
-                  <option value="admin">Amministratore: gestisce anche gruppo e inviti</option>
-                </select>
-              </label>
-              <button className="btn primary" disabled={!email.trim()}>
+                <div className="seg" role="radiogroup" aria-label="Ruolo">
+                  <button type="button" role="radio" aria-checked={inviteRole === 'member'} className={inviteRole === 'member' ? 'on' : ''} onClick={() => setInviteRole('member')}>
+                    Utente
+                  </button>
+                  <button type="button" role="radio" aria-checked={inviteRole === 'admin'} className={inviteRole === 'admin' ? 'on' : ''} onClick={() => setInviteRole('admin')}>
+                    Amministratore
+                  </button>
+                </div>
+                <small className="hint">
+                  {inviteRole === 'admin'
+                    ? 'Gestisce anche persone, supermercati e catalogo.'
+                    : 'Aggiunge prodotti e segna cosa manca.'}
+                </small>
+              </div>
+              <button className="btn primary wide" disabled={!email.trim()}>
                 Invita
               </button>
             </form>
