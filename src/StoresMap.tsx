@@ -43,37 +43,87 @@ function addressOf(tags: Record<string, string>): string {
   return [street, tags['addr:city']].filter(Boolean).join(', ')
 }
 
+// Server pubblici di Overpass: si prova il successivo se uno non risponde o è sovraccarico.
+const OVERPASS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+]
+
+function overpassQuery(lat: number, lon: number): string {
+  const around = `(around:${RADIUS},${lat},${lon})`
+  const kind = '["shop"~"^(supermarket|convenience|discount|department_store|variety_store)$"]'
+  const names = 'Esselunga|Coop|Conad|Carrefour|Lidl|Eurospin|Penny|Aldi|Pam|Panorama'
+  const short = '^(MD|Iper)([ ,]|$)'
+  // Si cercano solo le catene dell'elenco: così in una grande città non si perdono per il limite dei risultati.
+  return `[out:json][timeout:20];(
+nwr${kind}["name"~"${names}",i]${around};
+nwr${kind}["brand"~"${names}",i]${around};
+nwr${kind}["name"~"${short}"]${around};
+nwr${kind}["brand"~"${short}"]${around};
+);out center tags 300;`
+}
+
 async function fetchShops(lat: number, lon: number, signal: AbortSignal): Promise<Shop[]> {
-  const q = `[out:json][timeout:25];(nwr["shop"~"^(supermarket|convenience|discount)$"](around:${RADIUS},${lat},${lon}););out center tags 150;`
-  const res = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    body: 'data=' + encodeURIComponent(q),
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    signal,
-  })
-  if (!res.ok) throw new Error('overpass ' + res.status)
-  const json = (await res.json()) as {
-    elements: {
-      type: string
-      id: number
-      lat?: number
-      lon?: number
-      center?: { lat: number; lon: number }
-      tags?: Record<string, string>
-    }[]
+  const body = 'data=' + encodeURIComponent(overpassQuery(lat, lon))
+  let last = 'nessuna risposta'
+  for (const url of OVERPASS) {
+    const ac = new AbortController()
+    const onAbort = () => ac.abort()
+    signal.addEventListener('abort', onAbort)
+    const timer = window.setTimeout(() => ac.abort(), 22000)
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        signal: ac.signal,
+      })
+      if (!res.ok) {
+        last = `errore ${res.status}`
+        continue
+      }
+      const json = (await res.json()) as { elements?: OverpassElement[]; remark?: string }
+      if (!json.elements) {
+        last = json.remark ?? 'risposta vuota'
+        continue
+      }
+      return toShops(json.elements)
+    } catch (e) {
+      if (signal.aborted) throw e
+      last = (e as Error).name === 'AbortError' ? 'tempo scaduto' : 'connessione assente'
+    } finally {
+      window.clearTimeout(timer)
+      signal.removeEventListener('abort', onAbort)
+    }
   }
+  throw new Error(last)
+}
+
+interface OverpassElement {
+  type: string
+  id: number
+  lat?: number
+  lon?: number
+  center?: { lat: number; lon: number }
+  tags?: Record<string, string>
+}
+
+function toShops(elements: OverpassElement[]): Shop[] {
   const out: Shop[] = []
-  for (const e of json.elements) {
+  for (const e of elements) {
     const tags = e.tags ?? {}
     const la = e.lat ?? e.center?.lat
     const lo = e.lon ?? e.center?.lon
     if (la === undefined || lo === undefined) continue
+    const logo = chainOf(tags)
+    if (!logo) continue
     out.push({
       id: `${e.type}${e.id}`,
       lat: la,
       lon: lo,
       name: tags.name ?? tags.brand ?? 'Negozio',
-      logo: chainOf(tags),
+      logo,
       address: addressOf(tags),
       hours: tags.opening_hours ?? null,
     })
@@ -149,6 +199,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
   const [onlyMine, setOnlyMine] = useState(true)
   const [status, setStatus] = useState<'locating' | 'loading' | 'ready' | 'error'>('locating')
   const [note, setNote] = useState('')
+  const [locNote, setLocNote] = useState('')
 
   const mine = new Set(d.stores.map((s) => s.logo).filter(Boolean) as string[])
 
@@ -165,7 +216,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
     } catch (e) {
       if ((e as Error).name === 'AbortError') return
       setStatus('error')
-      setNote('Il servizio dei negozi non risponde. Riprova tra poco.')
+      setNote(`Non riesco a caricare i negozi (${(e as Error).message}). Tocca «Cerca qui» per riprovare.`)
     }
   }
 
@@ -182,7 +233,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
     map.current = m
 
     const fallback = () => {
-      setNote('Non ho la tua posizione: sto mostrando Milano. Sposta la mappa e tocca «Cerca qui».')
+      setLocNote('Non ho la tua posizione: sto mostrando Milano. Sposta la mappa e tocca «Cerca qui».')
       void load(MILAN[0], MILAN[1])
     }
     if (!navigator.geolocation) fallback()
@@ -260,7 +311,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
             {onlyMine && shops.length > visibleCount ? ` · ${shops.length - visibleCount} altri nascosti` : ''}
           </span>
         )}
-        {note && <span>{note}</span>}
+        {note ? <span>{note}</span> : status === 'ready' && locNote ? <span>{locNote}</span> : null}
         <button
           className="btn primary mapsearch"
           onClick={() => {
