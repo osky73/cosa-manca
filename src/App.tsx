@@ -181,7 +181,7 @@ function Shell({
       <InstallPopup />
       <main>
         {tab === 'list' && <ListScreen goto={go} />}
-        {tab === 'shop' && <ShopScreen />}
+        {tab === 'shop' && <ShopScreen goto={go} />}
         {tab === 'stores' && <StoresScreen />}
         {tab === 'sugg' && <SuggestionsScreen />}
         {tab === 'group' && (

@@ -1,15 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { StoreLogo } from '../components'
+import { SlideRow } from '../SlideRow'
 import { byCategoryThenName } from '../lib'
-import type { Item, Need } from '../types'
+import type { Item, Need, Tab } from '../types'
 
 type Filter = 'all' | 'none' | string
 
-export default function ShopScreen() {
+type Row = { need: Need; item: Item }
+
+export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const d = useData()
   const [filter, setFilter] = useState<Filter>('all')
-  const [leaving, setLeaving] = useState<Set<string>>(new Set())
+  // Prodotti appena presi: restano un attimo a sinistra prima di sparire dalla spesa.
+  const [gone, setGone] = useState<Row[]>([])
+  const prev = useRef<Row[]>([])
 
   // Tiene lo schermo acceso mentre si fa la spesa.
   useEffect(() => {
@@ -46,14 +51,30 @@ export default function ShopScreen() {
     [d.needs, d.itemOf],
   )
 
+  useEffect(() => {
+    const now = new Set(rows.map((r) => r.item.id))
+    const left = prev.current.filter((r) => !now.has(r.item.id))
+    prev.current = rows
+    if (left.length === 0) return
+    setGone((g) => [...g, ...left])
+    const ids = new Set(left.map((r) => r.item.id))
+    const t = window.setTimeout(() => setGone((g) => g.filter((r) => !ids.has(r.item.id))), 1600)
+    return () => window.clearTimeout(t)
+  }, [rows])
+
+  const shown = useMemo(() => {
+    const ids = new Set(rows.map((r) => r.item.id))
+    return [...rows, ...gone.filter((r) => !ids.has(r.item.id))].sort((a, b) => byCategoryThenName(a.item, b.item))
+  }, [rows, gone])
+
   const sections = useMemo(() => {
-    const out: { key: string; title: string; color?: string; rows: typeof rows }[] = []
+    const out: { key: string; title: string; color?: string; rows: Row[] }[] = []
     const pushStore = (id: string) => {
       const s = d.storeOf(id)
-      const r = rows.filter((x) => x.need.store_id === id)
+      const r = shown.filter((x) => x.need.store_id === id)
       if (s && r.length) out.push({ key: id, title: s.name, color: s.color, rows: r })
     }
-    const anywhere = rows.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id))
+    const anywhere = shown.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id))
     if (filter === 'all') {
       d.stores.forEach((s) => pushStore(s.id))
       if (anywhere.length) out.push({ key: 'none', title: d.stores.length ? 'Ovunque' : 'Da comprare', rows: anywhere })
@@ -64,33 +85,28 @@ export default function ShopScreen() {
       if (anywhere.length) out.push({ key: 'none', title: 'Va bene ovunque', rows: anywhere })
     }
     return out
-  }, [rows, filter, d.stores, d.storeOf])
+  }, [shown, filter, d.stores, d.storeOf])
 
   const countFor = (id: string) => rows.filter((x) => x.need.store_id === id).length
   const countNone = rows.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id)).length
-
-  function buy(need: Need) {
-    setLeaving((s) => new Set(s).add(need.id))
-    window.setTimeout(() => {
-      d.markBought(need)
-      setLeaving((s) => {
-        const n = new Set(s)
-        n.delete(need.id)
-        return n
-      })
-    }, 220)
-  }
 
   return (
     <div className="screen">
       <header className="top sticky">
         <div className="top-row">
           <h1>Spesa</h1>
-          {(!d.online || d.pendingOps > 0) && <span className="pill warn">{d.online ? 'Sincronizzo…' : 'Offline'}</span>}
+          {(!d.online || d.pendingOps > 0) && (
+            <span className="pill warn">{d.online ? 'Sincronizzo…' : 'Offline'}</span>
+          )}
         </div>
         {d.stores.length > 0 && (
           <div className="filters" role="tablist" aria-label="Filtra per supermercato">
-            <button role="tab" aria-selected={filter === 'all'} className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>
+            <button
+              role="tab"
+              aria-selected={filter === 'all'}
+              className={filter === 'all' ? 'on' : ''}
+              onClick={() => setFilter('all')}
+            >
               Tutto <span className="count">{rows.length}</span>
             </button>
             {d.stores.map((s) => (
@@ -105,11 +121,19 @@ export default function ShopScreen() {
                 <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
               </button>
             ))}
-            <button role="tab" aria-selected={filter === 'none'} className={filter === 'none' ? 'on' : ''} onClick={() => setFilter('none')}>
+            <button
+              role="tab"
+              aria-selected={filter === 'none'}
+              className={filter === 'none' ? 'on' : ''}
+              onClick={() => setFilter('none')}
+            >
               Ovunque <span className="count">{countNone}</span>
             </button>
           </div>
         )}
+        <div className="cols only-right" aria-hidden="true">
+          <span>Mancano{rows.length > 0 && <span className="count">{rows.length}</span>}</span>
+        </div>
       </header>
 
       {sections.length === 0 ? (
@@ -117,17 +141,9 @@ export default function ShopScreen() {
       ) : (
         sections.map((sec) => (
           <section key={sec.key} className="shopsec">
-            <ul className="rows">
-              {sec.rows.map(({ need, item }) => (
-                <li key={need.id} className={leaving.has(need.id) ? 'leaving' : ''}>
-                  <button className="row-main" onClick={() => buy(need)} aria-label={`Segna come preso: ${item.name}`}>
-                    <span className="box" />
-                    <span className="grow">
-                      <span className="name">{item.name}</span>
-                      <span className="meta">{[item.category, need.note].filter(Boolean).join(' · ')}</span>
-                    </span>
-                  </button>
-                </li>
+            <ul className="slist">
+              {sec.rows.map(({ item }) => (
+                <SlideRow key={item.id} item={item} goto={goto} />
               ))}
             </ul>
           </section>

@@ -284,3 +284,6 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .sect-label::after { content: ''; flex: 1; height: 1px; background: var(--line); }
 .cat .slist { padding-top: 0; padding-bottom: 0; }
 .shopsec { margin-top: 12px; }
+
+.cols.only-right { justify-content: flex-end; }
+.shopsec .slist { padding-top: 0; }
