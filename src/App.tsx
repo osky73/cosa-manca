@@ -199,7 +199,7 @@ function Shell({
         <TabBtn active={tab === 'shop'} onClick={() => go('shop')} label="Cosa manca">
           <IconCart />
         </TabBtn>
-        <TabBtn active={tab === 'list'} onClick={() => go('list')} label="Elenco" badge={d.needs.length}>
+        <TabBtn active={tab === 'list'} onClick={() => go('list')} label="Elencone" badge={d.needs.length}>
           <IconList />
         </TabBtn>
         <TabBtn active={tab === 'stores'} onClick={() => go('stores')} label="Negozi">

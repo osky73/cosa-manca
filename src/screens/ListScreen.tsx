@@ -30,7 +30,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
     <div className="screen">
       <header className="top">
         <div className="top-row">
-          <h1>Cosa manca</h1>
+          <h1>Elencone</h1>
           {(!d.online || d.pendingOps > 0) && (
             <span className="pill warn">
               {d.online
