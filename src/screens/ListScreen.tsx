@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { ProposeSheet, StoreLogo, StorePickerSheet } from '../components'
-import { IconChevron, IconPlus, IconSearch, IconX } from '../icons'
+import { IconPlus, IconSearch, IconX } from '../icons'
 import { articleFor, byCategoryThenName, catRank, norm } from '../lib'
 import type { Item, Tab } from '../types'
 
@@ -19,19 +19,6 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
     for (const i of [...visible].sort(byCategoryThenName)) m.set(i.category, [...(m.get(i.category) ?? []), i])
     return [...m.entries()].sort((a, b) => catRank(a[0]) - catRank(b[0]) || a[0].localeCompare(b[0], 'it'))
   }, [visible])
-  // All'inizio sono aperti solo i settori con prodotti che mancano, poi decide l'utente.
-  const [open, setOpen] = useState<Set<string> | null>(null)
-  useEffect(() => {
-    if (open === null && d.loaded) {
-      setOpen(new Set(visible.filter((i) => d.needByItem.has(i.id)).map((i) => i.category)))
-    }
-  }, [open, d.loaded, visible, d.needByItem])
-  function toggleBlock(c: string) {
-    const n = new Set(open ?? [])
-    if (n.has(c)) n.delete(c)
-    else n.add(c)
-    setOpen(n)
-  }
   const missingCount = d.needByItem.size
 
   const results = qn ? visible.filter((i) => norm(i.name).includes(qn)) : []
@@ -130,31 +117,18 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
               {d.loaded ? 'Il catalogo è vuoto. Aggiungi il primo prodotto.' : 'Carico la lista…'}
             </p>
           ) : (
-            blocks.map(([cat, items]) => {
-              const isOpen = open?.has(cat) ?? false
-              const miss = items.filter((i) => d.needByItem.has(i.id)).length
-              return (
-                <div key={cat} className="cat">
-                  <button className={'sect-head' + (isOpen ? ' open' : '')} onClick={() => toggleBlock(cat)} aria-expanded={isOpen}>
-                    <IconChevron open={isOpen} />
-                    <span className="grow">{cat}</span>
-                    {miss > 0 && (
-                      <span className="count miss">
-                        {miss} {miss === 1 ? 'manca' : 'mancano'}
-                      </span>
-                    )}
-                    <span className="count">{items.length}</span>
-                  </button>
-                  {isOpen && (
-                    <ul className="slist">
-                      {items.map((item) => (
-                        <SlideRow key={item.id} item={item} goto={goto} />
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              )
-            })
+            blocks.map(([cat, items]) => (
+              <div key={cat} className="cat">
+                <h2 className="sect-label">
+                  <span>{cat}</span>
+                </h2>
+                <ul className="slist">
+                  {items.map((item) => (
+                    <SlideRow key={item.id} item={item} goto={goto} />
+                  ))}
+                </ul>
+              </div>
+            ))
           )}
           {d.stores.length === 0 && missingCount > 0 && d.isAdmin && (
             <p className="hint pad">
