@@ -59,7 +59,7 @@ export default function Login() {
       <div className="brand">
         <img src="/pwa-192.png" width="72" height="72" alt="" />
         <h1>Cosa manca</h1>
-        <p>La lista di ciò che manca in casa, insieme alla famiglia.</p>
+        <p>Sai quando chiami a casa e chiedi «cosa manca?» e nessuno ha voglia di andare a vedere? Ecco fatto.</p>
       </div>
 
       {step === 'email' ? (

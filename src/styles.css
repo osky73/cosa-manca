@@ -54,7 +54,7 @@ code { background: var(--line); padding: 1px 6px; border-radius: 6px; }
 .brand { text-align: center; display: grid; gap: 6px; justify-items: center; }
 .brand img { border-radius: 18px; }
 .brand h1 { font-size: 30px; }
-.brand p { color: var(--muted); }
+.brand p { color: var(--muted); max-width: 22em; text-wrap: balance; }
 
 /* header */
 .top { padding: calc(10px + var(--safe-t)) 0 8px; background: var(--bg); }
