@@ -122,7 +122,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
               className={filter === 'all' ? 'on' : ''}
               onClick={() => setFilter('all')}
             >
-              Tutto <span className="count">{rows.length}</span>
+              Ovunque <span className="count">{rows.length}</span>
             </button>
             {d.stores
               .filter((s) => countFor(s.id) > 0 || filter === s.id)
@@ -138,14 +138,6 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
                   <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
                 </button>
               ))}
-            <button
-              role="tab"
-              aria-selected={filter === 'none'}
-              className={filter === 'none' ? 'on' : ''}
-              onClick={() => setFilter('none')}
-            >
-              Ovunque <span className="count">{countNone}</span>
-            </button>
           </div>
         )}
         <div className="cols only-right" aria-hidden="true">
