@@ -124,26 +124,30 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
             >
               Tutto <span className="count">{rows.length}</span>
             </button>
-            {d.stores.map((s) => (
+            {d.stores
+              .filter((s) => countFor(s.id) > 0 || filter === s.id)
+              .map((s) => (
+                <button
+                  key={s.id}
+                  role="tab"
+                  aria-selected={filter === s.id}
+                  className={filter === s.id ? 'on' : ''}
+                  style={{ ['--c' as string]: s.color }}
+                  onClick={() => setFilter(s.id)}
+                >
+                  <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
+                </button>
+              ))}
+            {(countNone > 0 || filter === 'none') && (
               <button
-                key={s.id}
                 role="tab"
-                aria-selected={filter === s.id}
-                className={filter === s.id ? 'on' : ''}
-                style={{ ['--c' as string]: s.color }}
-                onClick={() => setFilter(s.id)}
+                aria-selected={filter === 'none'}
+                className={filter === 'none' ? 'on' : ''}
+                onClick={() => setFilter('none')}
               >
-                <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
+                Ovunque <span className="count">{countNone}</span>
               </button>
-            ))}
-            <button
-              role="tab"
-              aria-selected={filter === 'none'}
-              className={filter === 'none' ? 'on' : ''}
-              onClick={() => setFilter('none')}
-            >
-              Ovunque <span className="count">{countNone}</span>
-            </button>
+            )}
           </div>
         )}
         <div className="cols only-right" aria-hidden="true">
