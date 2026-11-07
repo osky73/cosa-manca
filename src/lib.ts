@@ -65,3 +65,25 @@ export function writeLS(key: string, value: unknown) {
     /* quota o modalità privata: ignora */
   }
 }
+
+// Catene più comuni in Italia: proposte rapide nel modulo "Nuovo supermercato".
+export const SUGGESTED_STORES = [
+  'Esselunga',
+  'Coop',
+  'Conad',
+  'Carrefour',
+  'Lidl',
+  'Eurospin',
+  'MD',
+  'Penny',
+  'Aldi',
+  'Pam',
+]
+
+// Sigla da mostrare nel badge colorato (al posto del logo): prime lettere delle prime due parole.
+export function storeInitials(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean)
+  if (words.length === 0) return '?'
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
+  return (words[0][0] + words[1][0]).toUpperCase()
+}

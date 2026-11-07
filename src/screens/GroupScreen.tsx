@@ -4,7 +4,7 @@ import { Sheet } from '../components'
 import { InstallCard } from '../install'
 import { supabase } from '../supabase'
 import { IconEye, IconEyeOff, IconMail, IconShare, IconTrash } from '../icons'
-import { STORE_COLORS, byCategoryThenName, norm } from '../lib'
+import { STORE_COLORS, SUGGESTED_STORES, byCategoryThenName, norm, storeInitials } from '../lib'
 import { useToast } from '../toast'
 import type { GroupRef, Member, Role } from '../types'
 
@@ -34,6 +34,8 @@ export default function GroupScreen({
   const [catalogOpen, setCatalogOpen] = useState(false)
   const [catQuery, setCatQuery] = useState('')
   const [name, setName] = useState(displayName)
+
+  const suggested = SUGGESTED_STORES.filter((n) => !d.stores.some((x) => norm(x.name) === norm(n)))
 
   const catalog = useMemo(() => {
     const qn = norm(catQuery)
@@ -215,7 +217,7 @@ export default function GroupScreen({
         <ul className="rows">
           {d.stores.map((s) => (
             <li key={s.id} className="static" style={{ ['--c' as string]: s.color }}>
-              <i className="dot big" />
+              <i className="badge">{storeInitials(s.name)}</i>
               <span className="grow">
                 <span className="name">{s.name}</span>
               </span>
@@ -233,6 +235,23 @@ export default function GroupScreen({
               <span>Nuovo supermercato</span>
               <input value={storeName} onChange={(e) => setStoreName(e.target.value)} maxLength={40} placeholder="es. Esselunga" />
             </label>
+            {suggested.length > 0 && (
+              <div className="suggest" aria-label="Proposte">
+                {suggested.map((n) => (
+                  <button
+                    type="button"
+                    key={n}
+                    className={norm(storeName) === norm(n) ? 'on' : ''}
+                    onClick={() => {
+                      setStoreName(n)
+                      setStoreColor(STORE_COLORS[(d.stores.length + SUGGESTED_STORES.indexOf(n)) % STORE_COLORS.length])
+                    }}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="swatches" role="radiogroup" aria-label="Colore">
               {STORE_COLORS.map((c) => (
                 <button
