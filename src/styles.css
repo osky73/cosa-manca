@@ -252,3 +252,11 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 
 .tagline { color: var(--muted); font-size: 15px; line-height: 1.35; margin-top: 2px; text-wrap: balance; }
 .top.sticky.bar { top: var(--safe-t); padding: 4px 0 8px; }
+
+/* intestazioni dei settori: titolo piatto con linea, diverso dai riquadri dei prodotti */
+.cat:has(> .sect-head) { margin-bottom: 4px; }
+.sect-head { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 14px 2px 6px; background: none; border: 0; border-bottom: 2px solid var(--line); border-radius: 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .9px; color: var(--muted); }
+.sect-head.open { color: var(--ink); border-bottom-color: var(--accent); }
+.sect-head .count { background: none; padding: 0; font-weight: 700; color: var(--muted); }
+.sect-head .count.miss { background: var(--accent); color: var(--accent-ink); padding: 2px 9px; letter-spacing: .3px; }
+.sect-head svg { width: 18px; height: 18px; }

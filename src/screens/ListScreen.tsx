@@ -135,7 +135,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
               const miss = items.filter((i) => d.needByItem.has(i.id)).length
               return (
                 <div key={cat} className="cat">
-                  <button className="cat-head" onClick={() => toggleBlock(cat)} aria-expanded={isOpen}>
+                  <button className={'sect-head' + (isOpen ? ' open' : '')} onClick={() => toggleBlock(cat)} aria-expanded={isOpen}>
                     <IconChevron open={isOpen} />
                     <span className="grow">{cat}</span>
                     {miss > 0 && (
