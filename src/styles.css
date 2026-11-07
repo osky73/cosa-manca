@@ -187,3 +187,17 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .grab { width: 44px; height: 5px; border-radius: 3px; background: var(--line); margin: 4px auto 0; }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; }
 .sheet h2 { font-size: 22px; }
+
+/* lista a scorrimento: Tutti (sinistra) / Mancano (destra) */
+.cols { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px 2px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+.cols .count { margin-left: 6px; }
+.cols span:last-child { color: var(--accent); }
+.slist { padding-top: 6px; }
+.slrow { position: relative; height: 54px; margin-bottom: 8px; }
+.slider { display: block; position: relative; width: 79%; height: 100%; margin-left: 0; background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; transition: margin-left .25s ease, background .25s, border-color .25s, color .25s; }
+.slider.on { margin-left: 21%; background: var(--ok-bg); border-color: var(--accent); color: var(--accent); }
+.slname { position: absolute; top: 50%; left: 16px; max-width: calc(100% - 32px); transform: translate(0, -50%); transition: left .25s ease, transform .25s ease; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+.slider.on .slname { left: calc(100% - 16px); transform: translate(-100%, -50%); text-align: right; }
+.slstore { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 12px; border: 2px dashed var(--line); color: var(--muted); font-weight: 800; font-size: 14px; display: grid; place-items: center; text-align: center; }
+.slstore.set { border: 0; background: var(--c); color: #fff; }
+@media (prefers-reduced-motion: reduce) { .slider, .slname { transition: none; } }
