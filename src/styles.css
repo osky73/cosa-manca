@@ -175,6 +175,7 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .tabbar button.on { color: var(--accent); }
 .ico { position: relative; display: inline-flex; }
 .badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: 12px; display: grid; place-items: center; padding: 0 5px; }
+.badge { top: -4px; right: -9px; min-width: 16px; height: 16px; border-radius: 8px; font-size: 10px; font-weight: 800; padding: 0 4px; }
 .badge.alert { background: var(--warn); color: #fff; }
 
 /* toast + sheet */

@@ -196,10 +196,10 @@ function Shell({
         )}
       </main>
       <nav className="tabbar" aria-label="Sezioni">
-        <TabBtn active={tab === 'shop'} onClick={() => go('shop')} label="Cosa manca">
+        <TabBtn active={tab === 'shop'} onClick={() => go('shop')} label="Cosa manca" badge={d.needs.length}>
           <IconCart />
         </TabBtn>
-        <TabBtn active={tab === 'list'} onClick={() => go('list')} label="Elencone" badge={d.needs.length}>
+        <TabBtn active={tab === 'list'} onClick={() => go('list')} label="Elencone">
           <IconList />
         </TabBtn>
         <TabBtn active={tab === 'stores'} onClick={() => go('stores')} label="Negozi">
