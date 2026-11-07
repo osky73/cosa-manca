@@ -168,7 +168,7 @@ function Shell({
   onNameChanged: () => void
 }) {
   const d = useData()
-  const [tab, setTab] = useState<Tab>('list')
+  const [tab, setTab] = useState<Tab>('shop')
   const pending = d.suggestions.filter((s) => s.status === 'pending').length
 
   const go = (t: Tab) => {
