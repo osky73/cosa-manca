@@ -28,6 +28,8 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // la mappa serve solo online: non va nella cache iniziale (è pesante)
+        globIgnores: ['**/StoresMap-*'],
       },
     }),
   ],

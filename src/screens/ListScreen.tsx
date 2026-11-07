@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { ProposeSheet, StoreLogo, StorePickerSheet } from '../components'
 import { IconChevron, IconPlus, IconSearch, IconX } from '../icons'
-import { byCategoryThenName, catRank, norm } from '../lib'
+import { articleFor, byCategoryThenName, catRank, norm } from '../lib'
 import type { Item, Tab } from '../types'
 
 export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
@@ -330,7 +330,7 @@ function SlideRow({ item, goto }: { item: Item; goto: (t: Tab) => void }) {
       </div>
       {picking && need && (
         <StorePickerSheet
-          title={`Dove compri «${item.name}»?`}
+          title={`Dove compri ${articleFor(item.name)}${item.name}?`}
           current={need.store_id}
           onPick={(id) => {
             d.setNeedStore(need.id, id)

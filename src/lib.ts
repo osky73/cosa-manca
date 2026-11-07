@@ -92,3 +92,32 @@ export function storeInitials(name: string): string {
   if (words.length === 1) return words[0].slice(0, 2).toUpperCase()
   return (words[0][0] + words[1][0]).toUpperCase()
 }
+
+/**
+ * Articolo determinativo per il nome di un prodotto («la mozzarella», «l'olio», «gli spinaci»).
+ * Si deduce dalla desinenza del nome: se non si può capire, restituisce '' e la frase resta senza articolo.
+ */
+export function articleFor(name: string): string {
+  const w = name.trim().toLowerCase().split(/\s+/)[0] ?? ''
+  if (!w) return ''
+  const vowel = /^[aeiouàèéìòù]/.test(w)
+  const special = /^(s[^aeiouàèéìòù]|z|gn|ps|pn|x|y)/.test(w)
+  const sing = { m: vowel ? "l'" : special ? 'lo ' : 'il ', f: vowel ? "l'" : 'la ' }
+  const pl = { m: vowel || special ? 'gli ' : 'i ', f: 'le ' }
+
+  const FEM_PL = new Set(['uova', 'noci', 'olive', 'arance'])
+  const MASC_SING_E = new Set(['latte', 'pane', 'sale', 'caffè', 'sapone', 'ammorbidente', 'limone', 'melone', 'formaggio'])
+  const FEM_SING_E = new Set(['carne', 'pelle', 'chiave', 'crema'])
+
+  if (FEM_PL.has(w)) return pl.f
+  if (['yogurt', 'ketchup', 'caffè', 'tè'].includes(w)) return w === 'yogurt' || w === 'ketchup' ? sing.m : 'il '
+  if (w.endsWith('a')) return sing.f
+  if (w.endsWith('o')) return sing.m
+  if (w.endsWith('i')) return pl.m
+  if (w.endsWith('e')) {
+    if (MASC_SING_E.has(w) || /(one|ente|ore)$/.test(w)) return sing.m
+    if (FEM_SING_E.has(w) || /(zione|ice)$/.test(w)) return sing.f
+    if (/(che|ghe|gne|lle|ate|ane|ele|ote|ine|ere|eze|ole|ive|nce|ure|se|ie)$/.test(w)) return pl.f
+  }
+  return ''
+}

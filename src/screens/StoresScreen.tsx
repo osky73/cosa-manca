@@ -1,14 +1,17 @@
-import { useState, type FormEvent } from 'react'
+import { lazy, Suspense, useState, type FormEvent } from 'react'
 import { useData } from '../data'
 import { StoreLogo } from '../components'
 import { IconTrash } from '../icons'
 import { STORE_CATALOG, STORE_COLORS, logoUrl, norm } from '../lib'
 import { useToast } from '../toast'
 
+const StoresMap = lazy(() => import('../StoresMap'))
+
 export default function StoresScreen() {
   const d = useData()
   const toast = useToast()
   const [busy, setBusy] = useState<string | null>(null)
+  const [mapOpen, setMapOpen] = useState(false)
   const [name, setName] = useState('')
   const [color, setColor] = useState(STORE_COLORS[0])
 
@@ -76,6 +79,10 @@ export default function StoresScreen() {
         })}
       </div>
 
+      <button className="btn ghost wide" onClick={() => setMapOpen(true)}>
+        Mostra i negozi vicino a te sulla mappa
+      </button>
+
       <section>
         <h2 className="section">Un altro negozio</h2>
         {custom.length > 0 && (
@@ -122,6 +129,11 @@ export default function StoresScreen() {
           </button>
         </form>
       </section>
+      {mapOpen && (
+        <Suspense fallback={<div className="mapwrap mapload">Carico la mappa…</div>}>
+          <StoresMap onClose={() => setMapOpen(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }
