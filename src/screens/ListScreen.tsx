@@ -298,7 +298,7 @@ function SlideRow({ item, goto }: { item: Item; goto: (t: Tab) => void }) {
                 : `Scegli dove comprare ${item.name}`
             }
           >
-            {store ? <StoreLogo store={store} size={24} /> : '+'}
+            {store ? <StoreLogo store={store} size={27} /> : '+'}
           </button>
         )}
       </div>
