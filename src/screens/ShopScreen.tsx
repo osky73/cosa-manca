@@ -92,13 +92,18 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
 
   return (
     <div className="screen">
-      <header className="top sticky">
+      <header className="top">
         <div className="top-row">
-          <h1>Spesa</h1>
+          <h1>Cosa manca</h1>
           {(!d.online || d.pendingOps > 0) && (
             <span className="pill warn">{d.online ? 'Sincronizzo…' : 'Offline'}</span>
           )}
         </div>
+        <p className="tagline">
+          Sai quando chiami a casa e chiedi «cosa manca?» e nessuno ha voglia di andare a vedere? Ecco fatto.
+        </p>
+      </header>
+      <div className="top sticky bar">
         {d.stores.length > 0 && (
           <div className="filters" role="tablist" aria-label="Filtra per supermercato">
             <button
@@ -134,7 +139,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         <div className="cols only-right" aria-hidden="true">
           <span>Mancano{rows.length > 0 && <span className="count">{rows.length}</span>}</span>
         </div>
-      </header>
+      </div>
 
       {sections.length === 0 ? (
         <p className="empty">{d.loaded ? 'Tutto a posto: non manca niente.' : 'Carico la lista…'}</p>
