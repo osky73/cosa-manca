@@ -86,6 +86,10 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     return out
   }, [shown, filter, d.stores, d.storeOf])
 
+  const hasAssigned = rows.some((x) => x.need.store_id && d.storeOf(x.need.store_id))
+  useEffect(() => {
+    if (!hasAssigned && filter !== 'all') setFilter('all')
+  }, [hasAssigned, filter])
   const countFor = (id: string) => rows.filter((x) => x.need.store_id === id).length
   const countNone = rows.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id)).length
 
@@ -103,7 +107,14 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         </p>
       </header>
       <div className="top sticky bar">
-        {d.stores.length > 0 && (
+        {d.stores.length > 0 && !hasAssigned && rows.length > 0 && (
+          <div className="filters" role="tablist" aria-label="Supermercato">
+            <button role="tab" aria-selected="true" className="on">
+              Ovunque <span className="count">{rows.length}</span>
+            </button>
+          </div>
+        )}
+        {d.stores.length > 0 && hasAssigned && (
           <div className="filters" role="tablist" aria-label="Filtra per supermercato">
             <button
               role="tab"
