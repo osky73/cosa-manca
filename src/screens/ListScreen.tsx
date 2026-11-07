@@ -40,7 +40,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
           )}
         </div>
         <p className="tagline">
-          Sai quando chiami a casa e chiedi «cosa manca?» e nessuno ha voglia di andare a vedere? Ecco fatto.
+          Qui si selezionano i prodotti che mancano dalla lista globale di tutti i prodotti che comprate di solito.
         </p>
       </header>
       <div className="top sticky bar">
