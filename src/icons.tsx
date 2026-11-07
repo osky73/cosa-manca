@@ -95,3 +95,10 @@ export const IconEyeOff = () => (
     <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
   </Svg>
 )
+
+export const IconMail = () => (
+  <Svg>
+    <rect x="3" y="5" width="18" height="14" rx="2" />
+    <path d="M3 7l9 6 9-6" />
+  </Svg>
+)

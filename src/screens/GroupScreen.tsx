@@ -3,7 +3,7 @@ import { useData } from '../data'
 import { Sheet } from '../components'
 import { InstallCard } from '../install'
 import { supabase } from '../supabase'
-import { IconEye, IconEyeOff, IconShare, IconTrash } from '../icons'
+import { IconEye, IconEyeOff, IconMail, IconShare, IconTrash } from '../icons'
 import { STORE_COLORS, byCategoryThenName, norm } from '../lib'
 import { useToast } from '../toast'
 import type { GroupRef, Member } from '../types'
@@ -59,8 +59,16 @@ export default function GroupScreen({
     if (!em) return
     if (await d.invite(em)) {
       setEmail('')
-      toast.show('Invito creato: ora condividilo')
-      void share(em)
+      await sendEmail(em)
+    }
+  }
+
+  async function sendEmail(to: string) {
+    if (await d.sendInviteEmail(to)) {
+      toast.show(`Invito inviato a ${to}`)
+    } else {
+      toast.show("Invito creato, ma l'email non è partita: condividilo a mano")
+      void share(to)
     }
   }
 
@@ -153,6 +161,9 @@ export default function GroupScreen({
                         <span className="name">{inv.email}</span>
                         <span className="meta">Entra da solo al primo accesso con questa email</span>
                       </span>
+                      <button className="icon-btn" onClick={() => void sendEmail(inv.email)} aria-label="Rimanda l'email di invito">
+                        <IconMail />
+                      </button>
                       <button className="icon-btn" onClick={() => void share(inv.email)} aria-label="Condividi invito">
                         <IconShare />
                       </button>
