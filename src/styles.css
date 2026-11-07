@@ -194,10 +194,16 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .cols span:last-child { color: var(--accent); }
 .slist { padding-top: 6px; }
 .slrow { position: relative; height: 54px; margin-bottom: 8px; }
-.slider { display: block; position: relative; width: 79%; height: 100%; margin-left: 0; background: var(--card); border: 1.5px solid var(--line); border-radius: 14px; transition: margin-left .25s ease, background .25s, border-color .25s, color .25s; }
-.slider.on { margin-left: 21%; background: var(--ok-bg); border-color: var(--accent); color: var(--accent); }
-.slname { position: absolute; top: 50%; left: 16px; max-width: calc(100% - 32px); transform: translate(0, -50%); transition: left .25s ease, transform .25s ease; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
-.slider.on .slname { left: calc(100% - 16px); transform: translate(-100%, -50%); text-align: right; }
+.slider { position: relative; width: 79%; height: 100%; margin-left: calc(var(--f) * 21%); cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; outline-offset: 2px;
+  background: color-mix(in srgb, var(--ok-bg) calc(var(--m) * 100%), var(--card));
+  border: 1.5px solid color-mix(in srgb, var(--accent) calc(var(--m) * 100%), var(--line));
+  color: color-mix(in srgb, var(--accent) calc(var(--m) * 100%), var(--ink));
+  border-radius: 14px; box-shadow: 0 1px 0 rgba(0,0,0,.04); }
+.slider.dragging { cursor: grabbing; box-shadow: 0 6px 16px rgba(0,0,0,.12); z-index: 2; }
+.slider.glide { transition: margin-left .22s cubic-bezier(.2,.9,.3,1.25), box-shadow .2s; }
+.slider.dragging.glide { transition: margin-left .16s cubic-bezier(.2,.9,.3,1.25), box-shadow .2s; }
+.slname { position: absolute; top: 50%; left: calc(16px + var(--f) * (100% - 32px)); max-width: calc(100% - 32px); transform: translate(calc(var(--f) * -100%), -50%); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; pointer-events: none; }
+.slider.glide .slname { transition: left .22s cubic-bezier(.2,.9,.3,1.25), transform .22s cubic-bezier(.2,.9,.3,1.25); }
 .slstore { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 12px; border: 2px dashed var(--line); color: var(--muted); font-weight: 800; font-size: 14px; display: grid; place-items: center; text-align: center; }
 .slstore.set { border: 0; background: var(--c); color: #fff; }
-@media (prefers-reduced-motion: reduce) { .slider, .slname { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .slider.glide, .slider.glide .slname { transition: none; } }

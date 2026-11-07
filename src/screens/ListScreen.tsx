@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { ProposeSheet, StoreChip } from '../components'
 import { InstallCard, useInstall } from '../install'
@@ -140,10 +140,88 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
   )
 }
 
+// Soglia di aggancio (quota del percorso) e quanto "pesa" la resistenza iniziale.
+const SNAP = 0.45
+const RESIST = 0.38
+
+/** Posizione mostrata (0..1) in base a quanto il dito ha percorso verso l'altro lato. */
+function pull(q: number, locked: boolean): number {
+  if (q < 0) return -0.12 * (1 - Math.exp(q * 3)) // verso il lato opposto: elastico corto
+  if (locked) return 1 + Math.min(0.05, (q - 1) * 0.1) // agganciato: resta incollato al bordo
+  return RESIST * Math.pow(Math.min(q, SNAP) / SNAP, 1.7) // prima della soglia: resistenza
+}
+
 function SlideRow({ item }: { item: Item }) {
   const d = useData()
   const need = d.needByItem.get(item.id)
   const store = need ? d.storeOf(need.store_id) : undefined
+  const rowRef = useRef<HTMLLIElement>(null)
+  const drag = useRef<{ id: number; x: number; y: number; side: 0 | 1; travel: number; on: boolean; locked: boolean } | null>(null)
+  const [f, setF] = useState<number | null>(null) // posizione durante il trascinamento
+  const [snapAnim, setSnapAnim] = useState(false)
+  const [pend, setPend] = useState<0 | 1 | null>(null) // destinazione dopo il rilascio, finché i dati non si aggiornano
+  const side: 0 | 1 = need ? 1 : 0
+
+  useEffect(() => setPend(null), [side])
+
+  const pos = f ?? pend ?? side
+  const shown = Math.max(-0.1, Math.min(1.06, pos))
+  const mix = Math.max(0, Math.min(1, pos))
+
+  function flash() {
+    setSnapAnim(true)
+    window.setTimeout(() => setSnapAnim(false), 190)
+  }
+
+  function onDown(e: React.PointerEvent) {
+    if (e.button !== 0 && e.pointerType === 'mouse') return
+    const w = rowRef.current?.offsetWidth ?? 300
+    drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, side, travel: w * 0.21, on: false, locked: false }
+  }
+
+  function onMove(e: React.PointerEvent) {
+    const g = drag.current
+    if (!g || g.id !== e.pointerId) return
+    const dx = e.clientX - g.x
+    const dy = e.clientY - g.y
+    if (!g.on) {
+      if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return
+      g.on = true
+      ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    }
+    const q = (g.side === 0 ? dx : -dx) / g.travel
+    const locked = g.locked ? q > SNAP * 0.7 : q >= SNAP // isteresi: per sganciarsi serve tornare indietro un po'
+    if (locked !== g.locked) {
+      g.locked = locked
+      flash()
+      navigator.vibrate?.(locked ? 12 : 6)
+    }
+    const off = pull(q, locked)
+    setF(g.side === 0 ? off : 1 - off)
+  }
+
+  function end(e: React.PointerEvent, cancelled: boolean) {
+    const g = drag.current
+    if (!g || g.id !== e.pointerId) return
+    drag.current = null
+    if (!g.on) return
+    flash()
+    setF(null)
+    if (g.locked && !cancelled) {
+      setPend(g.side === 0 ? 1 : 0)
+      if (g.side === 0) d.toggleMissing(item)
+      else if (need) d.markBought(need)
+    }
+  }
+
+  // Tastiera / lettori di schermo: nessun trascinamento, quindi un attivatore semplice.
+  function onKey(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ' || (e.key === 'ArrowRight' && !need) || (e.key === 'ArrowLeft' && need)) {
+      e.preventDefault()
+      if (need) d.markBought(need)
+      else d.toggleMissing(item)
+    }
+  }
 
   // Tocca il badge: passa al supermercato successivo (e poi a nessuno).
   function cycleStore() {
@@ -154,7 +232,7 @@ function SlideRow({ item }: { item: Item }) {
   }
 
   return (
-    <li className="slrow">
+    <li className="slrow" ref={rowRef}>
       {need && d.stores.length > 0 && (
         <button
           type="button"
@@ -166,15 +244,21 @@ function SlideRow({ item }: { item: Item }) {
           {store ? storeInitials(store.name) : '+'}
         </button>
       )}
-      <button
-        type="button"
-        className={'slider' + (need ? ' on' : '')}
-        onClick={() => (need ? d.markBought(need) : d.toggleMissing(item))}
+      <div
+        role="button"
+        tabIndex={0}
+        className={'slider' + (f !== null ? ' dragging' : '') + (snapAnim || f === null ? ' glide' : '')}
+        style={{ ['--f' as string]: shown, ['--m' as string]: mix }}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={(e) => end(e, false)}
+        onPointerCancel={(e) => end(e, true)}
+        onKeyDown={onKey}
         aria-pressed={Boolean(need)}
-        aria-label={need ? `${item.name}: manca. Tocca per segnare come preso` : `${item.name}: tocca se manca`}
+        aria-label={need ? `${item.name}: manca. Trascina a sinistra quando l'hai preso` : `${item.name}: trascina a destra se manca`}
       >
         <span className="slname">{item.name}</span>
-      </button>
+      </div>
     </li>
   )
 }
