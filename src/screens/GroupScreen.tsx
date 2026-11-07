@@ -148,6 +148,7 @@ export default function GroupScreen({
                   <span className="meta">{m.profile?.email}</span>
                 </span>
                 <span className={'pill' + (m.role === 'admin' ? ' ok' : '')}>{m.role === 'admin' ? 'Admin' : 'Utente'}</span>
+                {d.isAdmin && m.user_id !== d.userId && <span className="meta">Gestisci ›</span>}
               </button>
             </li>
           ))}
@@ -348,13 +349,18 @@ export default function GroupScreen({
                 setSelected(null)
               }}
             >
-              {selected.role === 'admin' ? 'Rendi membro semplice' : 'Rendi amministratore'}
+              {selected.role === 'admin' ? 'Rendi utente' : 'Rendi amministratore'}
             </button>
             <button
               className="btn danger wide"
               onClick={async () => {
-                if (confirm('Rimuovere questa persona dal gruppo?')) {
+                if (
+                  confirm(
+                    `Rimuovere ${selected.profile?.display_name || selected.profile?.email || 'questa persona'} dal gruppo? Non vedrà più la lista; potrai invitarla di nuovo.`,
+                  )
+                ) {
                   await d.removeMember(selected.user_id)
+                  toast.show('Persona rimossa dal gruppo')
                   setSelected(null)
                 }
               }}
