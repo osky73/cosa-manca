@@ -170,8 +170,8 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .install-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 
 /* bottom nav */
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: grid; grid-template-columns: repeat(4, 1fr); max-width: 600px; margin: 0 auto; background: color-mix(in srgb, var(--card) 94%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding-bottom: var(--safe-b); }
-.tabbar button { display: grid; justify-items: center; gap: 2px; padding: 8px 2px 6px; min-height: 60px; font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: grid; grid-template-columns: repeat(5, 1fr); max-width: 600px; margin: 0 auto; background: color-mix(in srgb, var(--card) 94%, transparent); backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding-bottom: var(--safe-b); }
+.tabbar button { display: grid; justify-items: center; gap: 2px; padding: 8px 2px 6px; min-height: 60px; font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; }
 .tabbar button.on { color: var(--accent); }
 .ico { position: relative; display: inline-flex; }
 .badge { position: absolute; top: -6px; right: -12px; min-width: 20px; height: 20px; border-radius: 10px; background: var(--accent); color: var(--accent-ink); font-size: 12px; display: grid; place-items: center; padding: 0 5px; }
@@ -225,3 +225,27 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 
 .count.miss { background: var(--ok-bg); color: var(--accent); }
 .cat .slist { padding-top: 10px; padding-bottom: 2px; }
+
+/* loghi supermercati */
+.slogo { display: block; object-fit: contain; border-radius: 8px; background: #fff; }
+.slogo-ini { display: grid; place-items: center; border-radius: 10px; color: #fff; font-weight: 800; flex: none; }
+.slogo-ini.none { width: 44px; height: 44px; background: var(--line); color: var(--muted); font-size: 20px; }
+.chip { overflow: hidden; background: #fff; border-color: var(--line); }
+.chip.on { background: #fff; border-color: var(--c); box-shadow: 0 0 0 2px var(--c); }
+.slstore.set { background: #fff; border: 1.5px solid var(--line); padding: 0; }
+.filters .slogo { border-radius: 6px; }
+.picker { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.pick { display: grid; justify-items: center; gap: 6px; padding: 12px 6px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--card); font-size: 14px; font-weight: 600; text-align: center; }
+.pick.on { border-color: var(--accent); background: var(--ok-bg); }
+.pick .slogo { background: transparent; }
+
+/* scheda Negozi */
+.shopgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 6px; }
+.shopcard { position: relative; display: grid; justify-items: center; gap: 6px; padding: 14px 10px 12px; border: 1.5px solid var(--line); border-radius: 16px; background: var(--card); text-align: center; transition: border-color .2s, background .2s; }
+.shopcard img { background: #fff; border-radius: 12px; }
+.shopcard.on { border-color: var(--accent); background: var(--ok-bg); }
+.shopname { font-weight: 700; }
+.switch { width: 46px; height: 26px; border-radius: 999px; background: var(--line); position: relative; transition: background .2s; }
+.switch i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform .2s; }
+.shopcard.on .switch { background: var(--accent); }
+.shopcard.on .switch i { transform: translateX(20px); }

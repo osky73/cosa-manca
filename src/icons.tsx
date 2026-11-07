@@ -102,3 +102,14 @@ export const IconMail = () => (
     <path d="M3 7l9 6 9-6" />
   </Svg>
 )
+
+export function IconStore() {
+  return (
+    <Svg>
+      <path d="M3 9l1.5-5h15L21 9" />
+      <path d="M4 9v11h16V9" />
+      <path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" />
+      <path d="M10 20v-5h4v5" />
+    </Svg>
+  )
+}

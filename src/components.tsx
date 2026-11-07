@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { IconX } from './icons'
 import { useData, type ProposeInput } from './data'
 import { useToast } from './toast'
-import { categoriesOf, initials } from './lib'
+import { categoriesOf, initials, logoUrl } from './lib'
 import type { Recurrence, Store } from './types'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -35,15 +35,19 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
   )
 }
 
-export function StoreChip({
-  store,
-  active,
-  onClick,
-}: {
-  store: Store
-  active: boolean
-  onClick: () => void
-}) {
+/** Logo del supermercato, o la sigla colorata se è personalizzato. */
+export function StoreLogo({ store, size = 36 }: { store: Store; size?: number }) {
+  const url = logoUrl(store.logo)
+  return url ? (
+    <img className="slogo" src={url} width={size} height={size} alt="" loading="lazy" draggable={false} />
+  ) : (
+    <span className="slogo-ini" style={{ width: size, height: size, background: store.color, fontSize: size * 0.4 }}>
+      {initials(store.name)}
+    </span>
+  )
+}
+
+export function StoreChip({ store, active, onClick }: { store: Store; active: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
@@ -54,8 +58,61 @@ export function StoreChip({
       aria-label={`${store.name}${active ? ' (scelto)' : ''}`}
       title={store.name}
     >
-      {initials(store.name)}
+      <StoreLogo store={store} size={38} />
     </button>
+  )
+}
+
+/** Scelta del supermercato per un prodotto che manca. */
+export function StorePickerSheet({
+  title,
+  current,
+  onPick,
+  onClose,
+  goStores,
+}: {
+  title: string
+  current: string | null
+  onPick: (id: string | null) => void
+  onClose: () => void
+  goStores: () => void
+}) {
+  const d = useData()
+  return (
+    <Sheet title={title} onClose={onClose}>
+      {d.stores.length === 0 ? (
+        <p className="hint">Non hai ancora attivato nessun supermercato.</p>
+      ) : (
+        <div className="picker">
+          {d.stores.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              className={'pick' + (current === s.id ? ' on' : '')}
+              onClick={() => onPick(s.id)}
+              aria-pressed={current === s.id}
+            >
+              <StoreLogo store={s} size={44} />
+              <span>{s.name}</span>
+            </button>
+          ))}
+          <button type="button" className={'pick' + (current === null ? ' on' : '')} onClick={() => onPick(null)}>
+            <span className="slogo-ini none">–</span>
+            <span>Ovunque</span>
+          </button>
+        </div>
+      )}
+      <button
+        type="button"
+        className="link"
+        onClick={() => {
+          onClose()
+          goStores()
+        }}
+      >
+        Attiva altri supermercati
+      </button>
+    </Sheet>
   )
 }
 
@@ -96,7 +153,9 @@ export function ProposeSheet({
         markMissing: mark,
       }
       const res = await d.propose(input)
-      toast.show(res === 'pending' ? 'Suggerimento inviato: lo approva un admin' : `«${input.name}» aggiunto alla lista`)
+      toast.show(
+        res === 'pending' ? 'Suggerimento inviato: lo approva un admin' : `«${input.name}» aggiunto alla lista`,
+      )
       onDone()
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Qualcosa è andato storto')
@@ -140,7 +199,12 @@ export function ProposeSheet({
           <span>Dove comprarlo (facoltativo)</span>
           <div className="chips">
             {d.stores.map((s) => (
-              <StoreChip key={s.id} store={s} active={store === s.id} onClick={() => setStore(store === s.id ? null : s.id)} />
+              <StoreChip
+                key={s.id}
+                store={s}
+                active={store === s.id}
+                onClick={() => setStore(store === s.id ? null : s.id)}
+              />
             ))}
           </div>
         </div>
@@ -148,7 +212,12 @@ export function ProposeSheet({
 
       <label className="field">
         <span>Nota (facoltativa)</span>
-        <input value={note} onChange={(e) => setNote(e.target.value)} maxLength={120} placeholder="es. senza lattosio" />
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={120}
+          placeholder="es. senza lattosio"
+        />
       </label>
 
       {d.isAdmin && rec === 'recurring' && (

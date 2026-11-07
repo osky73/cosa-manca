@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
-import { ProposeSheet, StoreChip } from '../components'
+import { ProposeSheet, StoreLogo, StorePickerSheet } from '../components'
 import { IconChevron, IconPlus, IconSearch, IconX } from '../icons'
-import { byCategoryThenName, catRank, norm, storeInitials } from '../lib'
+import { byCategoryThenName, catRank, norm } from '../lib'
 import type { Item, Tab } from '../types'
 
 export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
@@ -143,7 +143,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                   {isOpen && (
                     <ul className="slist">
                       {items.map((item) => (
-                        <SlideRow key={item.id} item={item} />
+                        <SlideRow key={item.id} item={item} goto={goto} />
                       ))}
                     </ul>
                   )}
@@ -187,8 +187,9 @@ function pull(q: number, locked: boolean): number {
   return RESIST * Math.pow(Math.min(q, SNAP) / SNAP, 1.7) // prima della soglia: resistenza
 }
 
-function SlideRow({ item }: { item: Item }) {
+function SlideRow({ item, goto }: { item: Item; goto: (t: Tab) => void }) {
   const d = useData()
+  const [picking, setPicking] = useState(false)
   const need = d.needByItem.get(item.id)
   const store = need ? d.storeOf(need.store_id) : undefined
   const rowRef = useRef<HTMLLIElement>(null)
@@ -282,14 +283,6 @@ function SlideRow({ item }: { item: Item }) {
     }
   }
 
-  // Tocca il badge: passa al supermercato successivo (e poi a nessuno).
-  function cycleStore() {
-    if (!need || d.stores.length === 0) return
-    const i = d.stores.findIndex((x) => x.id === need.store_id)
-    const next = i + 1 < d.stores.length ? d.stores[i + 1].id : null
-    d.setNeedStore(need.id, next)
-  }
-
   return (
     <li className="slrow" ref={rowRef}>
       <div
@@ -310,14 +303,13 @@ function SlideRow({ item }: { item: Item }) {
         }
       >
         <span className="slname">{item.name}</span>
-        {need && d.stores.length > 0 && (
+        {need && (
           <button
             type="button"
             className={'slstore' + (store ? ' set' : '')}
-            style={store ? { ['--c' as string]: store.color } : undefined}
             onClick={(e) => {
               e.stopPropagation()
-              cycleStore()
+              setPicking(true)
             }}
             onPointerDown={(e) => e.stopPropagation()}
             onKeyDown={(e) => e.stopPropagation()}
@@ -327,10 +319,22 @@ function SlideRow({ item }: { item: Item }) {
                 : `Scegli dove comprare ${item.name}`
             }
           >
-            {store ? storeInitials(store.name) : '+'}
+            {store ? <StoreLogo store={store} size={30} /> : '+'}
           </button>
         )}
       </div>
+      {picking && need && (
+        <StorePickerSheet
+          title={`Dove compri «${item.name}»?`}
+          current={need.store_id}
+          onPick={(id) => {
+            d.setNeedStore(need.id, id)
+            setPicking(false)
+          }}
+          onClose={() => setPicking(false)}
+          goStores={() => goto('stores')}
+        />
+      )}
     </li>
   )
 }

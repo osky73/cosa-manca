@@ -4,12 +4,13 @@ import { configured, supabase } from './supabase'
 import { ToastProvider } from './toast'
 import { DataProvider, useData } from './data'
 import { readLS, writeLS } from './lib'
-import { IconCart, IconInbox, IconList, IconUsers } from './icons'
+import { IconCart, IconInbox, IconList, IconStore, IconUsers } from './icons'
 import { InstallPopup } from './install'
 import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
 import ListScreen from './screens/ListScreen'
 import ShopScreen from './screens/ShopScreen'
+import StoresScreen from './screens/StoresScreen'
 import SuggestionsScreen from './screens/SuggestionsScreen'
 import GroupScreen from './screens/GroupScreen'
 import type { GroupRef, Profile, Role, Tab } from './types'
@@ -181,6 +182,7 @@ function Shell({
       <main>
         {tab === 'list' && <ListScreen goto={go} />}
         {tab === 'shop' && <ShopScreen />}
+        {tab === 'stores' && <StoresScreen />}
         {tab === 'sugg' && <SuggestionsScreen />}
         {tab === 'group' && (
           <GroupScreen
@@ -199,6 +201,9 @@ function Shell({
         </TabBtn>
         <TabBtn active={tab === 'shop'} onClick={() => go('shop')} label="Spesa">
           <IconCart />
+        </TabBtn>
+        <TabBtn active={tab === 'stores'} onClick={() => go('stores')} label="Negozi">
+          <IconStore />
         </TabBtn>
         <TabBtn active={tab === 'sugg'} onClick={() => go('sugg')} label="Suggerimenti" badge={d.isAdmin ? pending : 0} alert>
           <IconInbox />

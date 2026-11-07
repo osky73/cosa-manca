@@ -63,7 +63,7 @@ interface DataCtx {
   markBought: (need: Need) => void
   propose: (p: ProposeInput) => Promise<'added' | 'pending'>
   decide: (id: string, approve: boolean, recurrence?: Recurrence) => Promise<void>
-  addStore: (name: string, color: string) => Promise<void>
+  addStore: (name: string, color: string, logo?: string | null) => Promise<void>
   deleteStore: (id: string) => Promise<void>
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
   archiveItem: (id: string) => Promise<void>
@@ -438,9 +438,11 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     decide: async (id, approve, recurrence) => {
       await act(supabase.rpc('decide_suggestion', { p_id: id, p_approve: approve, p_recurrence: recurrence ?? null }))
     },
-    addStore: async (name, color) => {
+    addStore: async (name, color, logo = null) => {
       await act(
-        supabase.from('stores').insert({ group_id: groupId, name: name.trim(), color, sort: snap.stores.length }),
+        supabase
+          .from('stores')
+          .insert({ group_id: groupId, name: name.trim(), color, logo, sort: snap.stores.length }),
       )
     },
     deleteStore: async (id) => {

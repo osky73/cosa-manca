@@ -61,9 +61,11 @@ create table public.stores (
   name text not null check (char_length(name) between 1 and 40),
   color text not null default '#2f7d4f',
   sort int not null default 0,
+  logo text, -- nome del file in /stores (es. 'esselunga'); null = supermercato personalizzato
   created_at timestamptz not null default now()
 );
 create index on public.stores (group_id);
+create unique index stores_group_logo_unique on public.stores (group_id, logo) where logo is not null;
 
 create table public.group_items (
   id uuid primary key default gen_random_uuid(),
@@ -388,10 +390,10 @@ create policy catalog_select on public.catalog_items for select to authenticated
 
 -- stores
 create policy stores_select on public.stores for select to authenticated using (public.is_member(group_id));
-create policy stores_insert on public.stores for insert to authenticated with check (public.is_admin(group_id));
+create policy stores_insert on public.stores for insert to authenticated with check (public.is_member(group_id));
 create policy stores_update on public.stores for update to authenticated
   using (public.is_admin(group_id)) with check (public.is_admin(group_id));
-create policy stores_delete on public.stores for delete to authenticated using (public.is_admin(group_id));
+create policy stores_delete on public.stores for delete to authenticated using (public.is_member(group_id));
 
 -- group_items: i membri leggono; solo admin modificano (i membri passano da propose_item)
 create policy items_select on public.group_items for select to authenticated using (public.is_member(group_id));

@@ -66,19 +66,24 @@ export function writeLS(key: string, value: unknown) {
   }
 }
 
-// Catene più comuni in Italia: proposte rapide nel modulo "Nuovo supermercato".
-export const SUGGESTED_STORES = [
-  'Esselunga',
-  'Coop',
-  'Conad',
-  'Carrefour',
-  'Lidl',
-  'Eurospin',
-  'MD',
-  'Penny',
-  'Aldi',
-  'Pam',
+// Supermercati con logo (file in public/stores/<logo>.svg). Il colore serve per i filtri e i segnaposto.
+export const STORE_CATALOG: { logo: string; name: string; color: string }[] = [
+  { logo: 'esselunga', name: 'Esselunga', color: '#d9480f' },
+  { logo: 'coop', name: 'Coop', color: '#e03131' },
+  { logo: 'conad', name: 'Conad', color: '#e8590c' },
+  { logo: 'carrefour', name: 'Carrefour', color: '#1c7ed6' },
+  { logo: 'lidl', name: 'Lidl', color: '#1971c2' },
+  { logo: 'eurospin', name: 'Eurospin', color: '#2f7d4f' },
+  { logo: 'md', name: 'MD', color: '#0b7285' },
+  { logo: 'penny', name: 'Penny', color: '#c2255c' },
+  { logo: 'aldi', name: 'Aldi', color: '#1864ab' },
+  { logo: 'pam', name: 'Pam', color: '#e8a600' },
+  { logo: 'iper', name: 'Iper', color: '#ae3ec9' },
 ]
+
+export function logoUrl(logo: string | null | undefined): string | null {
+  return logo && STORE_CATALOG.some((c) => c.logo === logo) ? `/stores/${logo}.svg` : null
+}
 
 // Sigla da mostrare nel badge colorato (al posto del logo): prime lettere delle prime due parole.
 export function storeInitials(name: string): string {

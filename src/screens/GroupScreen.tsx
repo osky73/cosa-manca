@@ -4,7 +4,7 @@ import { Sheet } from '../components'
 import { InstallCard } from '../install'
 import { supabase } from '../supabase'
 import { IconEye, IconEyeOff, IconMail, IconShare, IconTrash } from '../icons'
-import { STORE_COLORS, SUGGESTED_STORES, byCategoryThenName, norm, storeInitials } from '../lib'
+import { byCategoryThenName, norm } from '../lib'
 import { useToast } from '../toast'
 import type { GroupRef, Member, Role } from '../types'
 
@@ -29,13 +29,9 @@ export default function GroupScreen({
   const [selected, setSelected] = useState<Member | null>(null)
   const [email, setEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<Role>('member')
-  const [storeName, setStoreName] = useState('')
-  const [storeColor, setStoreColor] = useState(STORE_COLORS[0])
   const [catalogOpen, setCatalogOpen] = useState(false)
   const [catQuery, setCatQuery] = useState('')
   const [name, setName] = useState(displayName)
-
-  const suggested = SUGGESTED_STORES.filter((n) => !d.stores.some((x) => norm(x.name) === norm(n)))
 
   const catalog = useMemo(() => {
     const qn = norm(catQuery)
@@ -76,18 +72,11 @@ export default function GroupScreen({
     }
   }
 
-  async function addStore(e: FormEvent) {
-    e.preventDefault()
-    if (!storeName.trim()) return
-    await d.addStore(storeName, storeColor)
-    setStoreName('')
-  }
-
   async function setOptIn(value: boolean) {
     const { error } = await supabase.from('profiles').update({ marketing_opt_in: value }).eq('id', d.userId)
     if (error) toast.show('Non sono riuscito a salvare la scelta')
     else {
-      toast.show(value ? 'Riceverai gli aggiornamenti sull\'app' : 'Non riceverai più aggiornamenti')
+      toast.show(value ? "Riceverai gli aggiornamenti sull'app" : 'Non riceverai più aggiornamenti')
       onNameChanged()
     }
   }
@@ -147,7 +136,9 @@ export default function GroupScreen({
                   </span>
                   <span className="meta">{m.profile?.email}</span>
                 </span>
-                <span className={'pill' + (m.role === 'admin' ? ' ok' : '')}>{m.role === 'admin' ? 'Admin' : 'Utente'}</span>
+                <span className={'pill' + (m.role === 'admin' ? ' ok' : '')}>
+                  {m.role === 'admin' ? 'Admin' : 'Utente'}
+                </span>
                 {d.isAdmin && m.user_id !== d.userId && <span className="meta">Gestisci ›</span>}
               </button>
             </li>
@@ -165,16 +156,25 @@ export default function GroupScreen({
                       <span className="grow">
                         <span className="name">{inv.email}</span>
                         <span className="meta">
-                          {inv.role === 'admin' ? 'Amministratore' : 'Utente'} · entra da solo al primo accesso con questa email
+                          {inv.role === 'admin' ? 'Amministratore' : 'Utente'} · entra da solo al primo accesso con
+                          questa email
                         </span>
                       </span>
-                      <button className="icon-btn" onClick={() => void sendEmail(inv.email)} aria-label="Rimanda l'email di invito">
+                      <button
+                        className="icon-btn"
+                        onClick={() => void sendEmail(inv.email)}
+                        aria-label="Rimanda l'email di invito"
+                      >
                         <IconMail />
                       </button>
                       <button className="icon-btn" onClick={() => void share(inv.email)} aria-label="Condividi invito">
                         <IconShare />
                       </button>
-                      <button className="icon-btn" onClick={() => void d.removeInvitation(inv.id)} aria-label="Annulla invito">
+                      <button
+                        className="icon-btn"
+                        onClick={() => void d.removeInvitation(inv.id)}
+                        aria-label="Annulla invito"
+                      >
                         <IconTrash />
                       </button>
                     </li>
@@ -198,10 +198,22 @@ export default function GroupScreen({
               <div className="field">
                 <span>Ruolo</span>
                 <div className="role-seg" role="radiogroup" aria-label="Ruolo">
-                  <button type="button" role="radio" aria-checked={inviteRole === 'member'} className={inviteRole === 'member' ? 'on' : ''} onClick={() => setInviteRole('member')}>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={inviteRole === 'member'}
+                    className={inviteRole === 'member' ? 'on' : ''}
+                    onClick={() => setInviteRole('member')}
+                  >
                     Utente
                   </button>
-                  <button type="button" role="radio" aria-checked={inviteRole === 'admin'} className={inviteRole === 'admin' ? 'on' : ''} onClick={() => setInviteRole('admin')}>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={inviteRole === 'admin'}
+                    className={inviteRole === 'admin' ? 'on' : ''}
+                    onClick={() => setInviteRole('admin')}
+                  >
                     Amministratore
                   </button>
                 </div>
@@ -219,70 +231,6 @@ export default function GroupScreen({
         )}
       </section>
 
-      <section>
-        <h2 className="section">
-          Supermercati <span className="count">{d.stores.length}</span>
-        </h2>
-        {d.stores.length === 0 && <p className="empty small">Nessun supermercato{d.isAdmin ? ': aggiungine uno qui sotto.' : ' ancora.'}</p>}
-        <ul className="rows">
-          {d.stores.map((s) => (
-            <li key={s.id} className="static" style={{ ['--c' as string]: s.color }}>
-              <i className="badge">{storeInitials(s.name)}</i>
-              <span className="grow">
-                <span className="name">{s.name}</span>
-              </span>
-              {d.isAdmin && (
-                <button className="icon-btn" onClick={() => void d.deleteStore(s.id)} aria-label={`Elimina ${s.name}`}>
-                  <IconTrash />
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-        {d.isAdmin && (
-          <form className="card" onSubmit={(e) => void addStore(e)}>
-            <label className="field">
-              <span>Nuovo supermercato</span>
-              <input value={storeName} onChange={(e) => setStoreName(e.target.value)} maxLength={40} placeholder="es. Esselunga" />
-            </label>
-            {suggested.length > 0 && (
-              <div className="suggest" aria-label="Proposte">
-                {suggested.map((n) => (
-                  <button
-                    type="button"
-                    key={n}
-                    className={norm(storeName) === norm(n) ? 'on' : ''}
-                    onClick={() => {
-                      setStoreName(n)
-                      setStoreColor(STORE_COLORS[(d.stores.length + SUGGESTED_STORES.indexOf(n)) % STORE_COLORS.length])
-                    }}
-                  >
-                    {n}
-                  </button>
-                ))}
-              </div>
-            )}
-            <div className="swatches" role="radiogroup" aria-label="Colore">
-              {STORE_COLORS.map((c) => (
-                <button
-                  type="button"
-                  key={c}
-                  role="radio"
-                  aria-checked={storeColor === c}
-                  aria-label={c}
-                  className={storeColor === c ? 'on' : ''}
-                  style={{ background: c }}
-                  onClick={() => setStoreColor(c)}
-                />
-              ))}
-            </div>
-            <button className="btn primary" disabled={!storeName.trim()}>
-              Aggiungi supermercato
-            </button>
-          </form>
-        )}
-      </section>
-
       {d.isAdmin && (
         <section>
           <button className="cat-head" onClick={() => setCatalogOpen(!catalogOpen)} aria-expanded={catalogOpen}>
@@ -292,7 +240,12 @@ export default function GroupScreen({
           {catalogOpen && (
             <>
               <div className="searchbar slim">
-                <input type="search" value={catQuery} onChange={(e) => setCatQuery(e.target.value)} placeholder="Cerca nel catalogo" />
+                <input
+                  type="search"
+                  value={catQuery}
+                  onChange={(e) => setCatQuery(e.target.value)}
+                  placeholder="Cerca nel catalogo"
+                />
               </div>
               <ul className="rows">
                 {catalog.map((i) => (
@@ -314,9 +267,13 @@ export default function GroupScreen({
                     <button
                       className="icon-btn"
                       onClick={async () => {
-                        if (!confirm(`Eliminare «${i.name}» dal catalogo? Sparisce per tutti e non si propone più.`)) return
+                        if (!confirm(`Eliminare «${i.name}» dal catalogo? Sparisce per tutti e non si propone più.`))
+                          return
                         await d.archiveItem(i.id)
-                        toast.show(`«${i.name}» eliminato dal catalogo`, { label: 'Annulla', run: () => void d.restoreItem(i.id) })
+                        toast.show(`«${i.name}» eliminato dal catalogo`, {
+                          label: 'Annulla',
+                          run: () => void d.restoreItem(i.id),
+                        })
                       }}
                       aria-label={`Elimina ${i.name}`}
                     >
@@ -357,7 +314,10 @@ export default function GroupScreen({
       <InstallCard />
 
       {selected && (
-        <Sheet title={selected.profile?.display_name || selected.profile?.email || 'Persona'} onClose={() => setSelected(null)}>
+        <Sheet
+          title={selected.profile?.display_name || selected.profile?.email || 'Persona'}
+          onClose={() => setSelected(null)}
+        >
           <div className="stack">
             <button
               className="btn ghost wide"

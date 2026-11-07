@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useData } from '../data'
+import { StoreLogo } from '../components'
 import { byCategoryThenName } from '../lib'
 import type { Item, Need } from '../types'
 
@@ -101,7 +102,7 @@ export default function ShopScreen() {
                 style={{ ['--c' as string]: s.color }}
                 onClick={() => setFilter(s.id)}
               >
-                <i className="dot" /> {s.name} <span className="count">{countFor(s.id)}</span>
+                <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
               </button>
             ))}
             <button role="tab" aria-selected={filter === 'none'} className={filter === 'none' ? 'on' : ''} onClick={() => setFilter('none')}>
