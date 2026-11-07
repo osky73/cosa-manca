@@ -275,8 +275,7 @@ end $$;
 
 -- Propone/aggiunge un prodotto con le regole dei ruoli:
 --  * admin            -> aggiunge subito (e, se vuole, lo segna come mancante)
---  * membro, una tantum -> compare subito in lista (non tocca il catalogo)
---  * membro, ricorrente -> suggerimento in attesa di approvazione
+--  * membro (una tantum o ricorrente) -> suggerimento in attesa: lo approva un admin
 -- Ritorna 'added' | 'pending'.
 create function public.propose_item(
   p_group uuid, p_name text, p_category text, p_recurrence text,
@@ -298,7 +297,7 @@ begin
   end if;
   admin_ok := public.is_admin(p_group);
 
-  if admin_ok or p_recurrence = 'one_off' then
+  if admin_ok then
     insert into public.group_items (group_id, name, category, recurrence, created_by)
       values (p_group, nm, cat, p_recurrence, uid) returning id into item;
     if p_recurrence = 'one_off' or p_mark_missing then
@@ -314,7 +313,7 @@ begin
   return 'pending';
 end $$;
 
--- L'admin approva o rifiuta un suggerimento ricorrente.
+-- L'admin approva o rifiuta un suggerimento.
 create function public.decide_suggestion(p_id uuid, p_approve boolean) returns void
 language plpgsql security definer set search_path = public as $$
 declare

@@ -79,7 +79,7 @@ export function ProposeSheet({
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
 
-  const label = d.isAdmin ? 'Aggiungi' : rec === 'one_off' ? 'Aggiungi alla lista' : 'Invia per approvazione'
+  const label = d.isAdmin ? 'Aggiungi' : 'Invia per approvazione'
   const canSend = name.trim().length > 0 && rec !== null && !busy
 
   async function submit() {
@@ -157,10 +157,11 @@ export function ProposeSheet({
           <span>Segnalo subito come mancante</span>
         </label>
       )}
-      {!d.isAdmin && rec === 'recurring' && (
-        <p className="hint">Un amministratore deve approvarlo prima che entri nel catalogo.</p>
+      {!d.isAdmin && (
+        <p className="hint">
+          Un amministratore deve approvarlo: dopo l'approvazione entra in lista{rec === 'recurring' ? ' e nel catalogo' : ''}.
+        </p>
       )}
-      {!d.isAdmin && rec === 'one_off' && <p className="hint">Compare subito in lista, senza approvazione.</p>}
 
       {err && <p className="error">{err}</p>}
       <button className="btn primary big" disabled={!canSend} onClick={() => void submit()}>

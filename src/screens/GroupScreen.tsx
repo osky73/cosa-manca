@@ -205,10 +205,10 @@ export default function GroupScreen({
                     Amministratore
                   </button>
                 </div>
-                <small className="hint">
+                <small className="seg-hint">
                   {inviteRole === 'admin'
-                    ? 'Gestisce anche persone, supermercati e catalogo.'
-                    : 'Aggiunge prodotti e segna cosa manca.'}
+                    ? 'Approva i suggerimenti e gestisce persone, supermercati e catalogo.'
+                    : 'Segna cosa manca e suggerisce nuovi prodotti, che un amministratore approva.'}
                 </small>
               </div>
               <button className="btn primary wide" disabled={!email.trim()}>
