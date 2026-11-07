@@ -116,12 +116,7 @@ export default function ShopScreen() {
         <p className="empty">{d.loaded ? 'Tutto a posto: non manca niente.' : 'Carico la lista…'}</p>
       ) : (
         sections.map((sec) => (
-          <section key={sec.key}>
-            {(sections.length > 1 || d.stores.length > 0) && (
-              <h2 className="section" style={sec.color ? { ['--c' as string]: sec.color } : undefined}>
-                {sec.color && <i className="dot" />} {sec.title} <span className="count">{sec.rows.length}</span>
-              </h2>
-            )}
+          <section key={sec.key} className="shopsec">
             <ul className="rows">
               {sec.rows.map(({ need, item }) => (
                 <li key={need.id} className={leaving.has(need.id) ? 'leaving' : ''}>
