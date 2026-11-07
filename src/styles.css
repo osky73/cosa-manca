@@ -146,9 +146,10 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .check { display: flex; align-items: center; gap: 12px; min-height: 44px; }
 .check input { width: 24px; height: 24px; accent-color: var(--accent); }
 .inline-form { grid-template-columns: 1fr auto; align-items: end; }
-.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 4px; }
-.seg button { min-height: 44px; border-radius: 9px; border: 0; background: transparent; font-weight: 700; font-size: 16px; }
-.seg button.on { background: var(--accent); color: #fff; }
+.role-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg); border: 1.5px solid var(--line); border-radius: 12px; padding: 4px; }
+.role-seg button { min-height: 44px; border-radius: 9px; border: 0; background: transparent; font-weight: 700; font-size: 16px; }
+.role-seg button.on { background: var(--accent); color: #fff; }
+.decide { display: grid; gap: 8px; margin-top: 10px; }
 .seg-hint { display: block; margin-top: 6px; color: var(--muted); font-size: 14px; }
 .swatches { display: flex; gap: 10px; flex-wrap: wrap; }
 .swatches button { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; }

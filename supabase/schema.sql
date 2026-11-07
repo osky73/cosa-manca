@@ -314,11 +314,12 @@ begin
 end $$;
 
 -- L'admin approva o rifiuta un suggerimento.
-create function public.decide_suggestion(p_id uuid, p_approve boolean) returns void
+create function public.decide_suggestion(p_id uuid, p_approve boolean, p_recurrence text default null) returns void
 language plpgsql security definer set search_path = public as $$
 declare
   s public.suggestions;
   item uuid;
+  rec text;
 begin
   select * into s from public.suggestions where id = p_id for update;
   if s.id is null then raise exception 'Suggerimento inesistente'; end if;
@@ -326,10 +327,13 @@ begin
   if s.status <> 'pending' then return; end if;
 
   if p_approve then
+    -- L'admin può confermare la scelta di chi ha suggerito o cambiarla: fisso (catalogo) o temporaneo (solo spesa).
+    rec := coalesce(p_recurrence, s.recurrence);
+    if rec not in ('recurring', 'one_off') then raise exception 'Ricorrenza non valida'; end if;
     insert into public.group_items (group_id, name, category, recurrence, created_by)
-      values (s.group_id, s.name, s.category, s.recurrence, s.suggested_by) returning id into item;
+      values (s.group_id, s.name, s.category, rec, s.suggested_by) returning id into item;
     insert into public.needs (group_id, item_id, store_id, note) values (s.group_id, item, s.store_id, s.note);
-    update public.suggestions set status = 'approved', decided_by = auth.uid(), decided_at = now() where id = p_id;
+    update public.suggestions set status = 'approved', recurrence = rec, decided_by = auth.uid(), decided_at = now() where id = p_id;
   else
     update public.suggestions set status = 'rejected', decided_by = auth.uid(), decided_at = now() where id = p_id;
   end if;
@@ -410,11 +414,11 @@ create policy suggestions_select on public.suggestions for select to authenticat
 revoke all on function public.create_group(text) from public, anon;
 revoke all on function public.accept_my_invitations() from public, anon;
 revoke all on function public.propose_item(uuid, text, text, text, text, uuid, boolean) from public, anon;
-revoke all on function public.decide_suggestion(uuid, boolean) from public, anon;
+revoke all on function public.decide_suggestion(uuid, boolean, text) from public, anon;
 grant execute on function public.create_group(text) to authenticated;
 grant execute on function public.accept_my_invitations() to authenticated;
 grant execute on function public.propose_item(uuid, text, text, text, text, uuid, boolean) to authenticated;
-grant execute on function public.decide_suggestion(uuid, boolean) to authenticated;
+grant execute on function public.decide_suggestion(uuid, boolean, text) to authenticated;
 
 -- ---------- Realtime ----------
 alter publication supabase_realtime add table public.needs;

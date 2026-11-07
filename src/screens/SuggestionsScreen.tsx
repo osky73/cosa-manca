@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useData } from '../data'
-import type { Suggestion } from '../types'
+import type { Recurrence, Suggestion } from '../types'
 
 function recLabel(s: Suggestion) {
-  return s.recurrence === 'recurring' ? 'Ricorrente' : 'Una tantum'
+  return s.recurrence === 'recurring' ? 'Fisso' : 'Temporaneo'
 }
 
 export default function SuggestionsScreen() {
@@ -12,9 +12,9 @@ export default function SuggestionsScreen() {
   const pending = d.suggestions.filter((s) => s.status === 'pending')
   const decided = d.suggestions.filter((s) => s.status !== 'pending').slice(0, 15)
 
-  async function decide(id: string, approve: boolean) {
+  async function decide(id: string, approve: boolean, recurrence?: Recurrence) {
     setBusy(id)
-    await d.decide(id, approve)
+    await d.decide(id, approve, recurrence)
     setBusy(null)
   }
 
@@ -41,12 +41,23 @@ export default function SuggestionsScreen() {
                 {s.note && <span className="meta">«{s.note}»</span>}
               </div>
               {d.isAdmin ? (
-                <div className="two-btns">
-                  <button className="btn ghost" disabled={busy === s.id} onClick={() => void decide(s.id, false)}>
-                    Rifiuta
+                <div className="decide">
+                  <button
+                    className={'btn wide ' + (s.recurrence === 'recurring' ? 'primary' : 'ghost')}
+                    disabled={busy === s.id}
+                    onClick={() => void decide(s.id, true, 'recurring')}
+                  >
+                    Accetta come fisso{s.recurrence === 'recurring' ? ' (richiesto)' : ''}
                   </button>
-                  <button className="btn primary" disabled={busy === s.id} onClick={() => void decide(s.id, true)}>
-                    Approva
+                  <button
+                    className={'btn wide ' + (s.recurrence === 'one_off' ? 'primary' : 'ghost')}
+                    disabled={busy === s.id}
+                    onClick={() => void decide(s.id, true, 'one_off')}
+                  >
+                    Accetta come temporaneo{s.recurrence === 'one_off' ? ' (richiesto)' : ''}
+                  </button>
+                  <button className="btn ghost wide" disabled={busy === s.id} onClick={() => void decide(s.id, false)}>
+                    Rifiuta
                   </button>
                 </div>
               ) : (

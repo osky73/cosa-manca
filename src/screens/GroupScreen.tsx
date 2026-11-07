@@ -197,7 +197,7 @@ export default function GroupScreen({
               </label>
               <div className="field">
                 <span>Ruolo</span>
-                <div className="seg" role="radiogroup" aria-label="Ruolo">
+                <div className="role-seg" role="radiogroup" aria-label="Ruolo">
                   <button type="button" role="radio" aria-checked={inviteRole === 'member'} className={inviteRole === 'member' ? 'on' : ''} onClick={() => setInviteRole('member')}>
                     Utente
                   </button>
@@ -300,7 +300,7 @@ export default function GroupScreen({
                     <span className="grow">
                       <span className="name">{i.name}</span>
                       <span className="meta">
-                        {i.category} · {i.recurrence === 'recurring' ? 'ricorrente' : 'una tantum'}
+                        {i.category} · {i.recurrence === 'recurring' ? 'fisso' : 'temporaneo'}
                         {i.hidden ? ' · nascosto' : ''}
                       </span>
                     </span>

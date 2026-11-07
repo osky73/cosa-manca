@@ -62,7 +62,7 @@ interface DataCtx {
   setNeedStore: (needId: string, storeId: string | null) => void
   markBought: (need: Need) => void
   propose: (p: ProposeInput) => Promise<'added' | 'pending'>
-  decide: (id: string, approve: boolean) => Promise<void>
+  decide: (id: string, approve: boolean, recurrence?: Recurrence) => Promise<void>
   addStore: (name: string, color: string) => Promise<void>
   deleteStore: (id: string) => Promise<void>
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
@@ -435,8 +435,8 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     setNeedStore,
     markBought,
     propose,
-    decide: async (id, approve) => {
-      await act(supabase.rpc('decide_suggestion', { p_id: id, p_approve: approve }))
+    decide: async (id, approve, recurrence) => {
+      await act(supabase.rpc('decide_suggestion', { p_id: id, p_approve: approve, p_recurrence: recurrence ?? null }))
     },
     addStore: async (name, color) => {
       await act(

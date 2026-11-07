@@ -116,11 +116,11 @@ export function ProposeSheet({
         <span>Quanto serve?</span>
         <div className="seg two">
           <button type="button" className={rec === 'recurring' ? 'on' : ''} onClick={() => setRec('recurring')}>
-            <b>Ricorrente</b>
+            <b>Fisso</b>
             <small>Lo compriamo spesso: resta nel catalogo</small>
           </button>
           <button type="button" className={rec === 'one_off' ? 'on' : ''} onClick={() => setRec('one_off')}>
-            <b>Una tantum</b>
+            <b>Temporaneo</b>
             <small>Serve solo stavolta: sparisce dopo l'acquisto</small>
           </button>
         </div>
@@ -159,13 +159,13 @@ export function ProposeSheet({
       )}
       {!d.isAdmin && (
         <p className="hint">
-          Un amministratore deve approvarlo: dopo l'approvazione entra in lista{rec === 'recurring' ? ' e nel catalogo' : ''}.
+          Lo vede un amministratore, che decide se tenerlo fisso (nel catalogo) o temporaneo (solo nella spesa).
         </p>
       )}
 
       {err && <p className="error">{err}</p>}
       <button className="btn primary big" disabled={!canSend} onClick={() => void submit()}>
-        {busy ? 'Un attimo…' : rec === null ? 'Scegli prima: ricorrente o una tantum' : label}
+        {busy ? 'Un attimo…' : rec === null ? 'Scegli prima: fisso o temporaneo' : label}
       </button>
     </Sheet>
   )
