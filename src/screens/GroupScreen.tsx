@@ -311,7 +311,15 @@ export default function GroupScreen({
                     >
                       {i.hidden ? <IconEyeOff /> : <IconEye />}
                     </button>
-                    <button className="icon-btn" onClick={() => void d.archiveItem(i.id)} aria-label={`Elimina ${i.name}`}>
+                    <button
+                      className="icon-btn"
+                      onClick={async () => {
+                        if (!confirm(`Eliminare «${i.name}» dal catalogo? Sparisce per tutti e non si propone più.`)) return
+                        await d.archiveItem(i.id)
+                        toast.show(`«${i.name}» eliminato dal catalogo`, { label: 'Annulla', run: () => void d.restoreItem(i.id) })
+                      }}
+                      aria-label={`Elimina ${i.name}`}
+                    >
                       <IconTrash />
                     </button>
                   </li>

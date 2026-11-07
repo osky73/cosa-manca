@@ -67,6 +67,7 @@ interface DataCtx {
   deleteStore: (id: string) => Promise<void>
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
   archiveItem: (id: string) => Promise<void>
+  restoreItem: (id: string) => Promise<void>
   invite: (email: string, role: Role) => Promise<boolean>
   sendInviteEmail: (email: string) => Promise<boolean>
   removeInvitation: (id: string) => Promise<void>
@@ -450,6 +451,9 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     },
     archiveItem: async (id) => {
       await act(supabase.from('group_items').update({ archived: true }).eq('id', id))
+    },
+    restoreItem: async (id) => {
+      await act(supabase.from('group_items').update({ archived: false }).eq('id', id))
     },
     invite: async (email, inviteRole) =>
       act(
