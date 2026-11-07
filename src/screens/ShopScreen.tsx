@@ -56,10 +56,9 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     const left = prev.current.filter((r) => !now.has(r.item.id))
     prev.current = rows
     if (left.length === 0) return
-    setGone((g) => [...g, ...left])
+    setGone((g) => [...g, ...left.filter((r) => !g.some((x) => x.item.id === r.item.id))])
     const ids = new Set(left.map((r) => r.item.id))
-    const t = window.setTimeout(() => setGone((g) => g.filter((r) => !ids.has(r.item.id))), 1600)
-    return () => window.clearTimeout(t)
+    window.setTimeout(() => setGone((g) => g.filter((r) => !ids.has(r.item.id))), 1600)
   }, [rows])
 
   const shown = useMemo(() => {

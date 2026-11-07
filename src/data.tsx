@@ -103,6 +103,10 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
   const [outbox, setOutboxState] = useState<Op[]>(() => readLS<Op[]>(outKey, []))
   const [online, setOnline] = useState(navigator.onLine)
 
+  // Operazioni già inviate ma non ancora confermate da una lettura aggiornata: restano applicate per evitare
+  // che una lettura "vecchia" faccia rimbalzare l'interfaccia (prodotto che sparisce, riappare e sparisce).
+  const [settled, setSettled] = useState<Op[]>([])
+  const settledRef = useRef<Op[]>([])
   const outboxRef = useRef<Op[]>(outbox)
   const needCache = useRef(new Map<string, Need>())
   const itemCache = useRef(new Map<string, Item>())
@@ -208,12 +212,21 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
           setOnline(false)
           break
         }
+        settledRef.current = [...settledRef.current, op]
+        setSettled(settledRef.current)
         setOutbox((o) => o.filter((x) => x !== op))
       }
     } finally {
       flushing.current = false
     }
-    if (outboxRef.current.length === 0) await refetch()
+    if (outboxRef.current.length === 0) {
+      const n = settledRef.current.length
+      await refetch()
+      if (navigator.onLine) {
+        settledRef.current = settledRef.current.slice(n)
+        setSettled(settledRef.current)
+      }
+    }
   }, [execOp, refetch, setOutbox])
 
   /** Aggiunge un'operazione compattando quelle ridondanti. */
@@ -287,7 +300,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
   // ---------- Stato derivato (server + operazioni in coda) ----------
   const needs = useMemo(() => {
     const m = new Map(snap.needs.map((n) => [n.id, n]))
-    for (const op of outbox) {
+    for (const op of [...settled, ...outbox]) {
       switch (op.k) {
         case 'add': {
           const n: Need = {
@@ -325,7 +338,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
       }
     }
     return [...m.values()]
-  }, [snap.needs, outbox, groupId, userId])
+  }, [snap.needs, settled, outbox, groupId, userId])
 
   const needByItem = useMemo(() => new Map(needs.map((n) => [n.item_id, n])), [needs])
 
