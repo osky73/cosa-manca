@@ -222,3 +222,6 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .ipop-arrow { position: fixed; left: 50%; bottom: calc(6px + var(--safe-b)); transform: translateX(-50%); z-index: 42; font-size: 44px; line-height: 1; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,.6); animation: bob 1s ease-in-out infinite; pointer-events: none; }
 @keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 10px); } }
 .ipop.ios { padding-bottom: calc(68px + var(--safe-b)); }
+
+.count.miss { background: var(--ok-bg); color: var(--accent); }
+.cat .slist { padding-top: 10px; padding-bottom: 2px; }
