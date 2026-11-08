@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { supabase } from '../supabase'
 import { useData } from '../data'
 import { useToast } from '../toast'
-import { IconIdea } from '../icons'
 
 export default function IdeasScreen() {
   const d = useData()
@@ -34,9 +33,6 @@ export default function IdeasScreen() {
         </div>
       </header>
 
-      <div className="ideas-ico" aria-hidden="true">
-        <IconIdea />
-      </div>
       <p className="tagline">
         Indicaci le migliorie o le funzionalità che vorresti implementassimo nell'app; ci sarà molto utile e te ne
         saremo eternamente grati.
