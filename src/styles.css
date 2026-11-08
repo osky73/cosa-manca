@@ -2306,3 +2306,20 @@ textarea {
   padding: 0;
   flex: none;
 }
+
+/* quantità ben visibile sul pulsante, nota con (i) */
+.slmeta:not(.note) {
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  padding: 2px 9px;
+}
+.slmeta.note {
+  background: none;
+  padding: 0;
+  margin-left: 7px;
+}
+.slmeta.note svg {
+  width: 17px;
+  height: 17px;
+}
