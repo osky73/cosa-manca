@@ -20,6 +20,31 @@ export default function IdeasScreen() {
   const [wish, setWish] = useState('')
   const [received, setReceived] = useState<Received[] | null>(null)
   const [busy, setBusy] = useState<'idea' | 'wish' | null>(null)
+  // risposta via email a chi ha scritto (solo super admin)
+  const [replyTo, setReplyTo] = useState<string | null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [replying, setReplying] = useState(false)
+  const [replied, setReplied] = useState<Set<string>>(new Set())
+
+  async function sendReply(id: string) {
+    const message = replyText.trim()
+    if (!message || replying) return
+    setReplying(true)
+    const { data: sess } = await supabase.auth.getSession()
+    const { error } = await supabase.functions.invoke('reply-feedback', {
+      body: { id, message },
+      headers: sess.session ? { Authorization: `Bearer ${sess.session.access_token}` } : undefined,
+    })
+    setReplying(false)
+    if (error) {
+      toast.show('Non sono riuscito a inviare la risposta. Riprova tra poco.')
+      return
+    }
+    setReplied((r) => new Set(r).add(id))
+    setReplyTo(null)
+    setReplyText('')
+    toast.show('Risposta inviata via email')
+  }
 
   // Solo il super admin riceve la lista dei messaggi degli altri (la funzione risponde con errore a tutti gli altri).
   useEffect(() => {
@@ -115,6 +140,52 @@ export default function IdeasScreen() {
                     {m.group_name ? ` · ${m.group_name}` : ''}
                   </div>
                   <p className="rec-body">{m.body}</p>
+                  {m.email &&
+                    (replyTo === m.id ? (
+                      <form
+                        className="rec-reply"
+                        onSubmit={(e) => {
+                          e.preventDefault()
+                          void sendReply(m.id)
+                        }}
+                      >
+                        <textarea
+                          rows={4}
+                          maxLength={4000}
+                          autoFocus
+                          placeholder={`Scrivi la risposta per ${m.display_name?.trim() || 'chi ha scritto'}…`}
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          aria-label="La tua risposta"
+                        />
+                        <div className="rec-reply-btns">
+                          <button
+                            type="button"
+                            className="btn ghost"
+                            onClick={() => {
+                              setReplyTo(null)
+                              setReplyText('')
+                            }}
+                          >
+                            Annulla
+                          </button>
+                          <button className="btn primary" disabled={!replyText.trim() || replying}>
+                            {replying ? 'Invio…' : 'Invia email'}
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn ghost rec-reply-open"
+                        onClick={() => {
+                          setReplyTo(m.id)
+                          setReplyText('')
+                        }}
+                      >
+                        {replied.has(m.id) ? 'Risposta inviata · scrivi ancora' : 'Rispondi'}
+                      </button>
+                    ))}
                 </li>
               ))}
             </ul>

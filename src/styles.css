@@ -2505,3 +2505,37 @@ textarea {
   width: 22px;
   height: 22px;
 }
+
+/* risposta via email ai messaggi ricevuti */
+.rec-reply-open {
+  margin-top: 8px;
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+.rec-reply {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.rec-reply textarea {
+  width: 100%;
+  font-size: 15px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--ink);
+  font-family: inherit;
+  resize: vertical;
+}
+.rec-reply-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.rec-reply-btns .btn {
+  min-height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+}

@@ -122,8 +122,15 @@ const rpc = async (name: string, a: Row = {}) => {
     }
     return { data: null, error: null }
   }
-  if (name === 'is_super_admin') return { data: false, error: null }
-  if (name === 'list_feedback') return { data: [], error: null }
+  if (name === 'is_super_admin') return { data: true, error: null }
+  if (name === 'list_feedback')
+    return {
+      data: [
+        { id: 'f1', kind: 'idea', body: 'Sarebbe bello poter aggiungere una foto al prodotto.', created_at: '2026-11-07T18:20:00Z', display_name: 'Giulia', email: 'giulia@example.com', group_name: 'Casa Rossi' },
+        { id: 'f2', kind: 'wish', body: 'Il mare d\'inverno', created_at: '2026-11-06T09:05:00Z', display_name: 'Marco', email: 'marco@example.com', group_name: 'Casa Bianchi' },
+      ],
+      error: null,
+    }
   return { data: null, error: null }
 }
 
