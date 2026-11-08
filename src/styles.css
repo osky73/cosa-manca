@@ -2152,12 +2152,12 @@ textarea {
   pointer-events: none;
 }
 .rails.elen {
-  --rl: 54px;
-  --rr: 84px;
+  --rl: 44px;
+  --rr: 94px;
 }
 .rails.shop {
-  --rl: 72px;
-  --rr: 84px;
+  --rl: 62px;
+  --rr: 94px;
 }
 .rails::before {
   left: var(--rl);
