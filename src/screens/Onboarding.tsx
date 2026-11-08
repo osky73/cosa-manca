@@ -49,7 +49,7 @@ export default function Onboarding({
   return (
     <main className="auth">
       <div className="brand">
-        <h1>Benvenuto</h1>
+        <h1>Benvenuto/a</h1>
         <p>{hasGroup ? 'Come ti chiami?' : 'Crea il tuo gruppo di persone a cui «manca qualcosa».'}</p>
       </div>
       <form onSubmit={(e) => void submit(e)} className="card">
