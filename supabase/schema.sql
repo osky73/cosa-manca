@@ -605,3 +605,13 @@ end $$;
 
 -- quantità sui prodotti che mancano
 alter table public.needs add column if not exists quantity text check (quantity is null or char_length(quantity) <= 20);
+
+-- Il super admin può cancellare i messaggi ricevuti in "Idee" (restano le email)
+create or replace function public.delete_feedback(p_id uuid) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  if not public.is_super_admin() then raise exception 'Non autorizzato'; end if;
+  delete from public.feedback where id = p_id and user_id <> auth.uid();
+end $$;
+revoke all on function public.delete_feedback(uuid) from public, anon;
+grant execute on function public.delete_feedback(uuid) to authenticated;

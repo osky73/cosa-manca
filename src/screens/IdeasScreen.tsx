@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useData } from '../data'
 import { useToast } from '../toast'
+import { Sheet } from '../components'
+import { IconTrash } from '../icons'
 
 interface Received {
   id: string
@@ -25,6 +27,18 @@ export default function IdeasScreen() {
   const [replyText, setReplyText] = useState('')
   const [replying, setReplying] = useState(false)
   const [replied, setReplied] = useState<Set<string>>(new Set())
+  const [deleting, setDeleting] = useState<string | null>(null)
+
+  async function removeMessage(id: string) {
+    const { error } = await supabase.rpc('delete_feedback', { p_id: id })
+    if (error) {
+      toast.show('Non sono riuscito a cancellare. Riprova tra poco.')
+      return
+    }
+    setReceived((r) => (r ? r.filter((m) => m.id !== id) : r))
+    setDeleting(null)
+    toast.show('Messaggio cancellato')
+  }
 
   async function sendReply(id: string) {
     const message = replyText.trim()
@@ -133,6 +147,14 @@ export default function IdeasScreen() {
                   <div className="rec-head">
                     <strong>{m.display_name?.trim() || 'Senza nome'}</strong>
                     <span className="pill">{m.kind === 'idea' ? 'Idea' : 'Cosa manca'}</span>
+                    <button
+                      type="button"
+                      className="icon-btn rec-del"
+                      aria-label="Cancella il messaggio"
+                      onClick={() => setDeleting(m.id)}
+                    >
+                      <IconTrash />
+                    </button>
                   </div>
                   <div className="rec-meta">
                     {m.email && <a href={`mailto:${m.email}`}>{m.email}</a>} ·{' '}
@@ -191,6 +213,20 @@ export default function IdeasScreen() {
             </ul>
           )}
         </section>
+      )}
+
+      {deleting && (
+        <Sheet title="Cancellare il messaggio?" onClose={() => setDeleting(null)}>
+          <p className="hint">Sparisce da questa lista. Resta nelle email che hai ricevuto.</p>
+          <div className="stack">
+            <button className="btn danger wide" onClick={() => void removeMessage(deleting)}>
+              Sì, cancella
+            </button>
+            <button className="btn ghost wide" onClick={() => setDeleting(null)}>
+              No, tienilo
+            </button>
+          </div>
+        </Sheet>
       )}
 
       <div className="ideas-bottom">

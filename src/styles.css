@@ -2539,3 +2539,11 @@ textarea {
   padding: 0 14px;
   font-size: 14px;
 }
+
+.rec-head strong {
+  margin-right: auto;
+}
+.rec-del {
+  flex: none;
+  margin: -6px -8px -6px 0;
+}
