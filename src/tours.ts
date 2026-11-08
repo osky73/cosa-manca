@@ -8,6 +8,7 @@ export interface Tour {
   selector: string // l'elemento da evidenziare (attributo data-tour)
   text: (isAdmin: boolean) => string
   scroll?: 'end'
+  empty?: string // avviso se il punto da mostrare non c'è (es. nessun prodotto che manca)
   doneWhen?: 'need-added' | 'store-added'
 }
 
@@ -16,9 +17,18 @@ export const TOURS: Tour[] = [
     id: 'mark-missing',
     question: 'Come si segnalano i prodotti che mancano?',
     tab: 'list',
-    selector: '[data-tour="first-row"]',
+    selector: '[data-tour~="first-row"]',
     text: () => 'In Elencone, sposta un prodotto a destra e viene segnalato come mancante.',
     doneWhen: 'need-added',
+  },
+  {
+    id: 'note',
+    question: 'Come aggiungo una nota o la quantità a un prodotto?',
+    tab: 'list',
+    selector: '[data-tour~="missing-row"]',
+    text: () =>
+      'In Elencone, tocca un prodotto che manca: si apre la scheda dove scrivi la quantità (es. 500 gr) e una nota. Poi tocca «Salva».',
+    empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {
     id: 'new-product',

@@ -62,7 +62,7 @@ export default function Spotlight({
             : { x: r.left, y: r.top, w: r.width, h: r.height },
         )
       } else if (Date.now() - t0 > 3000) {
-        toast.show('Non trovo il punto da mostrarti')
+        toast.show(tour.empty ?? 'Non trovo il punto da mostrarti')
         return onClose()
       }
       raf = requestAnimationFrame(tick)
