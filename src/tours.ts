@@ -8,7 +8,7 @@ export interface Tour {
   selector: string // l'elemento da evidenziare (attributo data-tour)
   text: (isAdmin: boolean) => string
   scroll?: 'end'
-  doneWhen?: 'need-added'
+  doneWhen?: 'need-added' | 'store-added'
 }
 
 export const TOURS: Tour[] = [
@@ -30,5 +30,15 @@ export const TOURS: Tour[] = [
         ? 'Aggiungi un nuovo prodotto: finisce subito in Elencone.'
         : "Suggerisci un nuovo prodotto e l'amministratore del Gruppo lo mette in Elencone.",
     scroll: 'end',
+  },
+  {
+    id: 'add-store',
+    question: 'Come faccio ad aggiungere un nuovo negozio per le nostre spese?',
+    tab: 'stores',
+    selector: '[data-tour="add-store"]',
+    // tutti i membri del gruppo possono aggiungere negozi: il percorso è lo stesso per admin e utenti
+    text: () =>
+      'Se il negozio è tra i loghi, accendilo con il suo interruttore. Se non c’è, scrivi qui il nome, scegli un colore e tocca «Aggiungi negozio».',
+    doneWhen: 'store-added',
   },
 ]

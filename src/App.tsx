@@ -190,11 +190,14 @@ export function Shell({
   const [tour, setTour] = useState<Tour | null>(null)
   const [tourOpen, setTourOpen] = useState(true)
   const needCount = useRef(d.needs.length)
+  const storeCount = useRef(d.allStores.length)
   useEffect(() => {
-    // il passaggio "segna ciò che manca" finisce quando un prodotto viene davvero segnato
+    // il passaggio finisce quando la persona fa davvero l'azione mostrata
     if (tour?.doneWhen === 'need-added' && d.needs.length > needCount.current) setTourOpen(false)
+    if (tour?.doneWhen === 'store-added' && d.allStores.length > storeCount.current) setTourOpen(false)
     needCount.current = d.needs.length
-  }, [d.needs.length, tour])
+    storeCount.current = d.allStores.length
+  }, [d.needs.length, d.allStores.length, tour])
   useEffect(() => {
     if (OPENED_BY_SHARE) history.replaceState(null, '', '/')
   }, [])
@@ -235,6 +238,7 @@ export function Shell({
               const t = TOURS.find((x) => x.id === id)
               if (!t) return
               needCount.current = d.needs.length
+              storeCount.current = d.allStores.length
               go(t.tab)
               setTourOpen(true)
               setTour(t)

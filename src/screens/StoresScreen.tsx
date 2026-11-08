@@ -151,7 +151,7 @@ export default function StoresScreen() {
       </div>
 
       <section>
-        <form className="card" onSubmit={(e) => void addCustom(e)}>
+        <form className="card" data-tour="add-store" onSubmit={(e) => void addCustom(e)}>
           <label className="field">
             <span>Non è nell'elenco? Aggiungilo</span>
             <input
