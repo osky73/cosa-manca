@@ -146,3 +146,10 @@ export const IconMic = () => (
     <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
   </Svg>
 )
+
+export const IconBook = () => (
+  <Svg>
+    <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5v-15z" />
+    <path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3M9 8h6M9 12h4" />
+  </Svg>
+)

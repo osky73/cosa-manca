@@ -704,7 +704,7 @@ input.code {
   bottom: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   max-width: 600px;
   margin: 0 auto;
   background: color-mix(in srgb, var(--card) 94%, transparent);
@@ -2056,4 +2056,35 @@ textarea {
   display: grid;
   gap: 8px;
   padding: 16px 0 110px;
+}
+
+.tabbar button {
+  font-size: 10px;
+}
+.guide-list {
+  display: grid;
+  gap: 10px;
+  padding-top: 6px;
+}
+.guide-card {
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 6px;
+}
+.guide-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.guide-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+.guide-card .btn {
+  justify-self: start;
+  margin-top: 4px;
 }

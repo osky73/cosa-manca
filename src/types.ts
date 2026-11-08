@@ -1,6 +1,6 @@
 export type Role = 'admin' | 'member'
 export type Recurrence = 'recurring' | 'one_off'
-export type Tab = 'list' | 'shop' | 'stores' | 'group' | 'ideas'
+export type Tab = 'list' | 'shop' | 'stores' | 'group' | 'ideas' | 'guide'
 
 export interface Profile {
   id: string

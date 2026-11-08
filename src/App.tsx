@@ -4,7 +4,7 @@ import { configured, supabase } from './supabase'
 import { ToastProvider } from './toast'
 import { DataProvider, useData } from './data'
 import { readLS, writeLS } from './lib'
-import { IconCart, IconInbox, IconList, IconStore, IconUsers } from './icons'
+import { IconBook, IconCart, IconInbox, IconList, IconStore, IconUsers } from './icons'
 import { InstallPopup } from './install'
 import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
@@ -14,6 +14,7 @@ import StoresScreen from './screens/StoresScreen'
 import IdeasScreen from './screens/IdeasScreen'
 import GroupScreen from './screens/GroupScreen'
 import ShareScreen from './screens/ShareScreen'
+import GuideScreen from './screens/GuideScreen'
 import type { GroupRef, Profile, Role, Tab } from './types'
 
 // Aperta dal menu Condividi di Android? (il service worker rimanda a /?condiviso=1)
@@ -217,6 +218,7 @@ function Shell({
         {!sharing && tab === 'shop' && <ShopScreen goto={go} />}
         {!sharing && tab === 'stores' && <StoresScreen />}
         {!sharing && tab === 'ideas' && <IdeasScreen />}
+        {!sharing && tab === 'guide' && <GuideScreen goto={go} />}
         {!sharing && tab === 'group' && (
           <GroupScreen
             groups={groups}
@@ -244,6 +246,9 @@ function Shell({
         </TabBtn>
         <TabBtn active={tab === 'ideas'} onClick={() => go('ideas')} label="Idee">
           <IconInbox />
+        </TabBtn>
+        <TabBtn active={tab === 'guide'} onClick={() => go('guide')} label="Guida">
+          <IconBook />
         </TabBtn>
       </nav>
     </div>
