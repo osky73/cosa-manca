@@ -42,6 +42,7 @@ interface DataCtx {
   pendingOps: number
   items: Item[]
   stores: Store[]
+  allStores: Store[]
   needs: Need[]
   suggestions: Suggestion[]
   members: Member[]
@@ -58,7 +59,8 @@ interface DataCtx {
   markBought: (need: Need) => void
   propose: (p: ProposeInput) => Promise<'added' | 'pending'>
   decide: (id: string, approve: boolean, recurrence?: Recurrence) => Promise<void>
-  addStore: (name: string, color: string, logo?: string | null) => Promise<void>
+  addStore: (name: string, color: string, logo?: string | null, note?: string | null) => Promise<void>
+  updateStore: (id: string, patch: { note?: string | null; active?: boolean }) => Promise<void>
   deleteStore: (id: string) => Promise<void>
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
   archiveItem: (id: string) => Promise<void>
@@ -364,8 +366,9 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     (id: string) => snap.items.find((i) => i.id === id) ?? itemCache.current.get(id),
     [snap.items],
   )
+  const activeStores = useMemo(() => snap.stores.filter((s) => s.active !== false), [snap.stores])
   const storeOf = useCallback(
-    (id: string | null) => (id ? snap.stores.find((s) => s.id === id) : undefined),
+    (id: string | null) => (id ? snap.stores.find((s) => s.id === id && s.active !== false) : undefined),
     [snap.stores],
   )
   const nameOf = useCallback(
@@ -476,7 +479,8 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     online,
     pendingOps: outbox.length,
     items: snap.items,
-    stores: snap.stores,
+    stores: activeStores,
+    allStores: snap.stores,
     needs,
     suggestions: snap.suggestions,
     members: snap.members,
@@ -495,10 +499,15 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     decide: async (id, approve, recurrence) => {
       await act(supabase.rpc('decide_suggestion', { p_id: id, p_approve: approve, p_recurrence: recurrence ?? null }))
     },
-    addStore: async (name, color, logo = null) => {
+    addStore: async (name, color, logo = null, note = null) => {
       await act(
-        supabase.from('stores').insert({ group_id: groupId, name: name.trim(), color, logo, sort: snap.stores.length }),
+        supabase
+          .from('stores')
+          .insert({ group_id: groupId, name: name.trim(), color, logo, note, sort: snap.stores.length }),
       )
+    },
+    updateStore: async (id, patch) => {
+      await act(supabase.from('stores').update(patch).eq('id', id))
     },
     deleteStore: async (id) => {
       await act(supabase.from('stores').delete().eq('id', id))

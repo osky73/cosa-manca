@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState, type FormEvent } from 'react'
 import { useData } from '../data'
-import { StoreLogo } from '../components'
-import { IconMapPin, IconTrash } from '../icons'
+import { Sheet } from '../components'
+import { IconMapPin, IconNote, IconTrash } from '../icons'
 import { STORE_CATALOG, STORE_COLORS, logoUrl, norm } from '../lib'
 import { useToast } from '../toast'
 
@@ -15,7 +15,26 @@ export default function StoresScreen() {
   const [name, setName] = useState('')
   const [color, setColor] = useState(STORE_COLORS[0])
 
-  const custom = d.stores.filter((s) => !logoUrl(s.logo))
+  const custom = d.allStores.filter((s) => !logoUrl(s.logo))
+  const [noteFor, setNoteFor] = useState<string | null>(null)
+  const [noteText, setNoteText] = useState('')
+  const noteStore = d.allStores.find((s) => s.id === noteFor)
+
+  function openNote(id: string) {
+    setNoteText(d.allStores.find((s) => s.id === id)?.note ?? '')
+    setNoteFor(id)
+  }
+
+  async function saveNote() {
+    if (!noteFor) return
+    await d.updateStore(noteFor, { note: noteText.trim() || null })
+    setNoteFor(null)
+  }
+
+  async function removeCustom(s: (typeof custom)[number]) {
+    await d.deleteStore(s.id)
+    toast.show(`${s.name} eliminato`, { label: 'Annulla', run: () => void d.addStore(s.name, s.color, null, s.note) })
+  }
 
   async function toggle(c: (typeof STORE_CATALOG)[number]) {
     if (busy) return
@@ -67,43 +86,82 @@ export default function StoresScreen() {
       <div className="shopgrid">
         {STORE_CATALOG.map((c) => {
           const active = d.stores.some((s) => s.logo === c.logo)
+          const st = d.stores.find((x) => x.logo === c.logo)
           return (
-            <button
-              key={c.logo}
-              type="button"
-              className={'shopcard' + (active ? ' on' : '')}
-              onClick={() => void toggle(c)}
-              disabled={busy === c.logo}
-              role="switch"
-              aria-checked={active}
-              aria-label={c.name}
-            >
-              <img src={`/stores/${c.logo}.svg`} width="60" height="60" alt="" loading="lazy" draggable={false} />
-              <span className="switch" aria-hidden="true">
-                <i />
-              </span>
-            </button>
+            <div key={c.logo} className="shopcell">
+              <button
+                type="button"
+                className={'shopcard' + (active ? ' on' : '')}
+                onClick={() => void toggle(c)}
+                disabled={busy === c.logo}
+                role="switch"
+                aria-checked={active}
+                aria-label={c.name}
+              >
+                <img src={`/stores/${c.logo}.svg`} width="60" height="60" alt="" loading="lazy" draggable={false} />
+                <span className="switch" aria-hidden="true">
+                  <i />
+                </span>
+              </button>
+              {st && (
+                <button
+                  type="button"
+                  className={'notebtn' + (st.note ? ' has' : '')}
+                  onClick={() => openNote(st.id)}
+                  aria-label={`Nota su ${c.name}`}
+                >
+                  <IconNote />
+                </button>
+              )}
+            </div>
+          )
+        })}
+        {custom.map((s) => {
+          const on = s.active !== false
+          return (
+            <div key={s.id} className="shopcell">
+              <div className={'shopcard custom' + (on ? ' on' : ' off')} style={{ ['--c' as string]: s.color }}>
+                <span className="cname">{s.name}</span>
+                <span className="tri" role="radiogroup" aria-label={`Stato di ${s.name}`}>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    aria-label="Acceso"
+                    className={on ? 'sel' : ''}
+                    onClick={() => void d.updateStore(s.id, { active: true })}
+                  >
+                    <i className="dot on" />
+                  </button>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={!on}
+                    aria-label="Spento"
+                    className={!on ? 'sel' : ''}
+                    onClick={() => void d.updateStore(s.id, { active: false })}
+                  >
+                    <i className="dot" />
+                  </button>
+                  <button type="button" aria-label={`Elimina ${s.name}`} onClick={() => void removeCustom(s)}>
+                    <IconTrash />
+                  </button>
+                </span>
+              </div>
+              <button
+                type="button"
+                className={'notebtn' + (s.note ? ' has' : '')}
+                onClick={() => openNote(s.id)}
+                aria-label={`Nota su ${s.name}`}
+              >
+                <IconNote />
+              </button>
+            </div>
           )
         })}
       </div>
 
       <section>
-        <h2 className="section">Un altro negozio</h2>
-        {custom.length > 0 && (
-          <ul className="rows">
-            {custom.map((s) => (
-              <li key={s.id} className="static">
-                <StoreLogo store={s} size={34} />
-                <span className="grow">
-                  <span className="name">{s.name}</span>
-                </span>
-                <button className="icon-btn" onClick={() => void d.deleteStore(s.id)} aria-label={`Elimina ${s.name}`}>
-                  <IconTrash />
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
         <form className="card" onSubmit={(e) => void addCustom(e)}>
           <label className="field">
             <span>Non è nell'elenco? Aggiungilo</span>
@@ -133,6 +191,23 @@ export default function StoresScreen() {
           </button>
         </form>
       </section>
+      {noteStore && (
+        <Sheet title={`Dove si trova ${noteStore.name}`} onClose={() => setNoteFor(null)}>
+          <label className="field">
+            <span>Nota (indirizzo, zona, come arrivarci)</span>
+            <textarea
+              rows={3}
+              maxLength={300}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="es. Via Roma 12, di fianco al bar"
+            />
+          </label>
+          <button className="btn primary wide" onClick={() => void saveNote()}>
+            Salva nota
+          </button>
+        </Sheet>
+      )}
       {mapOpen && (
         <Suspense fallback={<div className="mapwrap mapload">Carico la mappa…</div>}>
           <StoresMap onClose={() => setMapOpen(false)} />

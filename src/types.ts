@@ -16,6 +16,8 @@ export interface Store {
   color: string
   sort: number
   logo: string | null
+  note?: string | null
+  active?: boolean
 }
 
 export interface Item {
