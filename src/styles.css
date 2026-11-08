@@ -2170,3 +2170,22 @@ textarea {
 .cat .sect-label::after {
   display: none;
 }
+
+/* freccina sotto "Mancano", all'inizio della linea */
+.rails::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: calc(var(--rr) - 3px);
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid rgba(47, 125, 79, 0.55);
+  border-bottom: 1.5px solid rgba(47, 125, 79, 0.55);
+  transform: rotate(45deg);
+  pointer-events: none;
+  z-index: 0;
+}
+.rails.elen .sect-label:first-child,
+.rails.elen .cat:first-child .sect-label {
+  margin-top: 14px;
+}
