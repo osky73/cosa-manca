@@ -88,6 +88,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   }, [shown, filter, d.stores, d.storeOf])
 
   // Negozi che hanno avuto prodotti: restano come pillole spente a 0 finché non si cancella la lista.
+  const hasList = rows.length + boughtRows.length > 0
   const [asking, setAsking] = useState(false)
   const doClear = () => {
     d.clearAll()
@@ -138,7 +139,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         </p>
       </header>
       <div className="top sticky bar">
-        {d.stores.length > 0 && (
+        {hasList && d.stores.length > 0 && (
           <div className="filters" role="tablist" aria-label="Filtra per supermercato">
             <button
               role="tab"
@@ -164,20 +165,22 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
               ))}
           </div>
         )}
-        <div className="cols" aria-hidden="true">
-          <span>
-            Comprati
-            {boughtRows.length > 0 && <span className="count">{boughtRows.length}</span>}
-          </span>
-          <span>
-            Mancano
-            {rows.length > 0 && <span className="count">{rows.length}</span>}
-          </span>
-        </div>
+        {hasList && (
+          <div className="cols" aria-hidden="true">
+            <span>
+              Comprati
+              {boughtRows.length > 0 && <span className="count">{boughtRows.length}</span>}
+            </span>
+            <span>
+              Mancano
+              {rows.length > 0 && <span className="count">{rows.length}</span>}
+            </span>
+          </div>
+        )}
       </div>
 
       {sections.length === 0 ? (
-        <p className="empty">{d.loaded ? 'Tutto a posto: non manca niente.' : 'Carico la lista…'}</p>
+        <p className="empty">{d.loaded ? 'Non manca nulla' : 'Carico la lista…'}</p>
       ) : (
         sections.map((sec) => (
           <section key={sec.key} className="shopsec">
