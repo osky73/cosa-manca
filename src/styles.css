@@ -2235,3 +2235,11 @@ textarea {
 .cols {
   margin-bottom: 16px;
 }
+
+/* freccina vicina alla parola, con margine sotto prima dei prodotti */
+.cols .mlbl::after {
+  bottom: -12px;
+}
+.cols {
+  margin-bottom: 24px;
+}
