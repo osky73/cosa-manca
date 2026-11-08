@@ -1,13 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { supabase } from './supabase'
 import { useToast } from './toast'
 import { friendly, isNetworkError, readLS, writeLS } from './lib'
@@ -58,6 +49,7 @@ interface DataCtx {
   needByItem: Map<string, Need>
   boughtNeeds: Need[]
   clearBought: () => Promise<void>
+  clearAll: () => void
   itemOf: (id: string) => Item | undefined
   storeOf: (id: string | null) => Store | undefined
   nameOf: (userId: string | null) => string
@@ -132,7 +124,12 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         supabase.from('group_items').select('*').eq('group_id', groupId).eq('archived', false).order('name'),
         supabase.from('stores').select('*').eq('group_id', groupId).order('sort').order('created_at'),
         supabase.from('needs').select('*').eq('group_id', groupId).eq('status', 'missing'),
-        supabase.from('suggestions').select('*').eq('group_id', groupId).order('created_at', { ascending: false }).limit(60),
+        supabase
+          .from('suggestions')
+          .select('*')
+          .eq('group_id', groupId)
+          .order('created_at', { ascending: false })
+          .limit(60),
         supabase.from('memberships').select('user_id, role').eq('group_id', groupId),
         supabase.from('needs').select('*').eq('group_id', groupId).eq('status', 'bought').gte('bought_at', since),
       ])
@@ -142,7 +139,10 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
       const pr = await supabase
         .from('profiles')
         .select('id, email, display_name')
-        .in('id', memberRows.map((m) => m.user_id))
+        .in(
+          'id',
+          memberRows.map((m) => m.user_id),
+        )
       const profiles = new Map(((pr.data ?? []) as Profile[]).map((p) => [p.id, p]))
 
       let invitations: Invitation[] = []
@@ -409,7 +409,10 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     (need: Need) => {
       const item = itemOf(need.item_id)
       pushOp({ k: 'bought', id: need.id })
-      toast.show(`Preso: ${item?.name ?? 'prodotto'}`, { label: 'Annulla', run: () => pushOp({ k: 'unbought', id: need.id }) })
+      toast.show(`Preso: ${item?.name ?? 'prodotto'}`, {
+        label: 'Annulla',
+        run: () => pushOp({ k: 'unbought', id: need.id }),
+      })
     },
     [itemOf, pushOp, toast],
   )
@@ -426,6 +429,17 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     }
     await refetch()
   }, [boughtNeeds, refetch, toast])
+
+  const clearAll = useCallback(() => {
+    const open = needs.map((n) => ({ id: n.id, item_id: n.item_id, store_id: n.store_id }))
+    open.forEach((n) => pushOp({ k: 'cancel', id: n.id }))
+    void clearBought()
+    if (open.length > 0)
+      toast.show('Lista azzerata', {
+        label: 'Annulla',
+        run: () => open.forEach((n) => addNeed(n.item_id, n.store_id)),
+      })
+  }, [needs, pushOp, clearBought, addNeed, toast])
 
   const act = useCallback(
     async (p: PromiseLike<{ error: { message: string } | null }>): Promise<boolean> => {
@@ -474,6 +488,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     needByItem,
     boughtNeeds,
     clearBought,
+    clearAll,
     itemOf,
     storeOf,
     nameOf,
@@ -486,9 +501,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     },
     addStore: async (name, color, logo = null) => {
       await act(
-        supabase
-          .from('stores')
-          .insert({ group_id: groupId, name: name.trim(), color, logo, sort: snap.stores.length }),
+        supabase.from('stores').insert({ group_id: groupId, name: name.trim(), color, logo, sort: snap.stores.length }),
       )
     },
     deleteStore: async (id) => {

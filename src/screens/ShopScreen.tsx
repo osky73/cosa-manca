@@ -158,11 +158,11 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         ))
       )}
 
-      {boughtRows.length > 0 && (
+      {rows.length + boughtRows.length > 0 && (
         <button
           className="btn ghost wide clear-all"
           onClick={() => {
-            if (confirm(`Togliere dalla lista i ${boughtRows.length} prodotti comprati?`)) void d.clearBought()
+            if (confirm('Azzerare la lista di cosa manca?')) d.clearAll()
           }}
         >
           Cancella tutto
