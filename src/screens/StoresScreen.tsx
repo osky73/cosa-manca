@@ -103,16 +103,6 @@ export default function StoresScreen() {
                   <i />
                 </span>
               </button>
-              {st && (
-                <button
-                  type="button"
-                  className={'notebtn' + (st.note ? ' has' : '')}
-                  onClick={() => openNote(st.id)}
-                  aria-label={`Nota su ${c.name}`}
-                >
-                  <IconNote />
-                </button>
-              )}
             </div>
           )
         })}
