@@ -59,7 +59,11 @@ export default function IdeasScreen() {
       </form>
 
       <div className="ideas-bottom">
-        <p className="hint ideas-small">Cos'altro ti manca? Tutti abbiamo qualcosa che ci manca in fondo...</p>
+        <p className="hint ideas-small">
+          Cos'altro ti manca?
+          <br />
+          Tutti abbiamo qualcosa che ci manca in fondo...
+        </p>
         <form
           className="ideas-row"
           onSubmit={(e) => {
@@ -70,7 +74,7 @@ export default function IdeasScreen() {
           <input
             type="text"
             maxLength={300}
-            placeholder="Cosa ti manca?"
+            placeholder="Es. una persona cara, il cane di quando ero bambino, l'estate..."
             value={wish}
             onChange={(e) => setWish(e.target.value)}
             aria-label="Cos'altro ti manca"
