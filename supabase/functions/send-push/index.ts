@@ -34,16 +34,26 @@ Deno.serve(async (req) => {
   if (!u.user) return json({ error: 'unauthorized' }, 401)
 
   // Il chiamante deve essere membro del gruppo (la RLS filtra le righe).
-  const { data: grp } = await userClient.from('groups').select('name, notify_admins').eq('id', groupId).maybeSingle()
+  const { data: grp } = await userClient.from('groups').select('name').eq('id', groupId).maybeSingle()
   if (!grp) return json({ error: 'forbidden' }, 403)
-  if (!grp.notify_admins) return json({ ok: true, skipped: 'off' })
 
   const db = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
   const { data: cfg } = await db.from('push_config').select('public_key, private_key').eq('id', 1).maybeSingle()
   if (!cfg) return json({ error: 'push_not_configured' }, 500)
   webpush.setVapidDetails('mailto:andrea.valle.1973@gmail.com', cfg.public_key, cfg.private_key)
 
-  const { data: admins } = await db.from('memberships').select('user_id').eq('group_id', groupId).eq('role', 'admin')
+  const { data: adminRows } = await db.from('memberships').select('user_id').eq('group_id', groupId).eq('role', 'admin')
+  // Ognuno spegne le notifiche solo per sé (profiles.notify_new).
+  const { data: off } = await db
+    .from('profiles')
+    .select('id')
+    .in(
+      'id',
+      (adminRows ?? []).map((r) => r.user_id),
+    )
+    .eq('notify_new', false)
+  const offIds = new Set((off ?? []).map((r) => r.id))
+  const admins = (adminRows ?? []).filter((r) => !offIds.has(r.user_id))
   const since = new Date(Date.now() - WINDOW_MIN * 60 * 1000).toISOString()
   const { data: recent } = await db
     .from('needs')
@@ -56,7 +66,7 @@ Deno.serve(async (req) => {
   type R = { requested_by: string | null; group_items: { name: string } | { name: string }[] | null }
   const rows = (recent ?? []) as unknown as R[]
   let sent = 0
-  for (const a of admins ?? []) {
+  for (const a of admins) {
     if (a.user_id === u.user.id) continue
     // riepilogo per questo admin: ciò che hanno segnato gli altri (non lui) negli ultimi minuti
     const names = rows

@@ -7,6 +7,7 @@ export interface Profile {
   email: string
   display_name: string | null
   marketing_opt_in?: boolean
+  notify_new?: boolean
 }
 
 export interface Store {
@@ -76,5 +77,4 @@ export interface GroupRef {
   id: string
   name: string
   role: Role
-  notify_admins?: boolean
 }

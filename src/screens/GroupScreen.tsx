@@ -15,6 +15,7 @@ export default function GroupScreen({
   onSwitch,
   displayName,
   marketingOptIn,
+  notifyNew,
   onNameChanged,
 }: {
   groups: GroupRef[]
@@ -22,6 +23,7 @@ export default function GroupScreen({
   onSwitch: (id: string) => void
   displayName: string
   marketingOptIn: boolean
+  notifyNew: boolean
   onNameChanged: () => void
 }) {
   const d = useData()
@@ -31,15 +33,15 @@ export default function GroupScreen({
   const [email, setEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<Role>('member')
   const [catalogOpen, setCatalogOpen] = useState(false)
-  const [notifyOn, setNotifyOn] = useState(groups.find((g) => g.id === groupId)?.notify_admins ?? true)
+  const [notifyOn, setNotifyOn] = useState(notifyNew)
   async function setNotify(v: boolean) {
     setNotifyOn(v)
-    const { error } = await supabase.from('groups').update({ notify_admins: v }).eq('id', groupId)
+    const { error } = await supabase.from('profiles').update({ notify_new: v }).eq('id', d.userId)
     if (error) {
       setNotifyOn(!v)
       toast.show('Non sono riuscito a salvare la scelta')
     } else {
-      toast.show(v ? 'Gli admin riceveranno gli avvisi' : 'Avvisi spenti per tutto il gruppo')
+      toast.show(v ? 'Riceverai gli avvisi' : 'Avvisi spenti per te')
       onNameChanged()
     }
   }
@@ -311,7 +313,7 @@ export default function GroupScreen({
         {d.isAdmin && (
           <label className="check">
             <input type="checkbox" checked={notifyOn} onChange={(e) => void setNotify(e.target.checked)} />
-            <span>Avvisa gli amministratori quando manca qualcosa</span>
+            <span>Avvisami quando manca qualcosa</span>
           </label>
         )}
         <label className="check">

@@ -78,16 +78,20 @@ function Authed({ userId }: { userId: string }) {
     try {
       await supabase.rpc('accept_my_invitations')
       const [pr, ms] = await Promise.all([
-        supabase.from('profiles').select('id, email, display_name, marketing_opt_in').eq('id', userId).maybeSingle(),
-        supabase.from('memberships').select('role, groups(id, name, notify_admins)').eq('user_id', userId),
+        supabase
+          .from('profiles')
+          .select('id, email, display_name, marketing_opt_in, notify_new')
+          .eq('id', userId)
+          .maybeSingle(),
+        supabase.from('memberships').select('role, groups(id, name)').eq('user_id', userId),
       ])
       if (pr.error) throw pr.error
       if (ms.error) throw ms.error
-      type G = { id: string; name: string; notify_admins: boolean }
+      type G = { id: string; name: string }
       type Row = { role: Role; groups: G | G[] | null }
       const groups: GroupRef[] = ((ms.data ?? []) as unknown as Row[]).flatMap((r) => {
         const g = Array.isArray(r.groups) ? r.groups[0] : r.groups
-        return g ? [{ id: g.id, name: g.name, role: r.role, notify_admins: g.notify_admins }] : []
+        return g ? [{ id: g.id, name: g.name, role: r.role }] : []
       })
       const next: Boot = { profile: (pr.data as Profile | null) ?? null, groups }
       setBoot(next)
@@ -149,6 +153,7 @@ function Authed({ userId }: { userId: string }) {
         }}
         displayName={boot.profile?.display_name ?? ''}
         marketingOptIn={boot.profile?.marketing_opt_in ?? false}
+        notifyNew={boot.profile?.notify_new ?? true}
         onNameChanged={() => void load()}
       />
     </DataProvider>
@@ -161,6 +166,7 @@ function Shell({
   onSwitch,
   displayName,
   marketingOptIn,
+  notifyNew,
   onNameChanged,
 }: {
   groups: GroupRef[]
@@ -168,6 +174,7 @@ function Shell({
   onSwitch: (id: string) => void
   displayName: string
   marketingOptIn: boolean
+  notifyNew: boolean
   onNameChanged: () => void
 }) {
   const d = useData()
@@ -200,6 +207,7 @@ function Shell({
             onSwitch={onSwitch}
             displayName={displayName}
             marketingOptIn={marketingOptIn}
+            notifyNew={notifyNew}
             onNameChanged={onNameChanged}
           />
         )}

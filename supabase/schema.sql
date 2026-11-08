@@ -546,3 +546,6 @@ create policy push_sub_insert on public.push_subscriptions for insert to authent
 create policy push_sub_update on public.push_subscriptions for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy push_sub_delete on public.push_subscriptions for delete to authenticated using (user_id = auth.uid());
 alter table public.groups add column if not exists notify_admins boolean not null default true;
+
+-- Notifiche: ogni admin le spegne per sé.
+alter table public.profiles add column if not exists notify_new boolean not null default true;
