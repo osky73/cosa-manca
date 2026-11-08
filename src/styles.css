@@ -2102,8 +2102,10 @@ textarea {
   font-size: 14px;
 }
 /* guida: oscuramento verde con apertura sfumata */
-.spot { position: fixed; inset: 0; z-index: 80; pointer-events: none; animation: spotin 0.7s ease-in-out backwards; transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1); }
-.spot.out { opacity: 0; }
+.spot { position: fixed; inset: 0; z-index: 80; pointer-events: none; animation: spotin 0.7s ease-in-out backwards; }
+.spot.out { animation: spotout 0.7s ease-in-out forwards; }
+.spot.out .spot-hit { pointer-events: none; }
+@keyframes spotout { from { opacity: 1; } to { opacity: 0; } }
 .spot-svg { position: fixed; left: 0; top: 0; pointer-events: none; }
 .spot-hit { position: fixed; pointer-events: auto; }
 .spot-text { position: fixed; left: 0; right: 0; width: min(290px, calc(100% - 56px)); margin: 0 auto; text-align: center; color: #fff; font-size: 17px; line-height: 1.28; font-weight: 300; letter-spacing: -0.012em; text-shadow: 0 1px 6px rgba(0, 30, 15, 0.5); pointer-events: none; }

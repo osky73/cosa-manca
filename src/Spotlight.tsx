@@ -9,7 +9,7 @@ interface Box {
   h: number
 }
 const PAD = 10
-const FADE = 900 // dissolvenza morbida (ms)
+const FADE = 700 // dissolvenza morbida (ms), uguale a quella di comparsa
 
 /** Oscura tutto tranne un punto dell'app (lasciato toccabile) e mostra una breve spiegazione. */
 export default function Spotlight({
