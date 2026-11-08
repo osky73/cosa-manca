@@ -1,6 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { supabase } from '../supabase'
-import { InstallCard } from '../install'
 
 function explain(message: string): string {
   if (/rate limit|security purposes|too many/i.test(message)) return 'Troppi tentativi: riprova tra qualche minuto.'
@@ -118,7 +117,6 @@ export default function Login() {
         </form>
       )}
 
-      <InstallCard loginHint />
     </main>
   )
 }
