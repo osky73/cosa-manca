@@ -197,24 +197,30 @@ export default function GroupScreen({
               </label>
               <div className="field">
                 <span>Ruolo</span>
-                <div className="role-seg" role="radiogroup" aria-label="Ruolo">
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={inviteRole === 'member'}
-                    className={inviteRole === 'member' ? 'on' : ''}
-                    onClick={() => setInviteRole('member')}
-                  >
-                    Utente
-                  </button>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={inviteRole === 'admin'}
-                    className={inviteRole === 'admin' ? 'on' : ''}
-                    onClick={() => setInviteRole('admin')}
-                  >
-                    Amministratore
+                <div className="invite-row">
+                  <div className="role-seg" role="radiogroup" aria-label="Ruolo">
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={inviteRole === 'member'}
+                      className={inviteRole === 'member' ? 'on' : ''}
+                      onClick={() => setInviteRole('member')}
+                    >
+                      Utente
+                    </button>
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={inviteRole === 'admin'}
+                      aria-label="Amministratore"
+                      className={inviteRole === 'admin' ? 'on' : ''}
+                      onClick={() => setInviteRole('admin')}
+                    >
+                      Admin
+                    </button>
+                  </div>
+                  <button className="btn primary" disabled={!email.trim()}>
+                    Invita
                   </button>
                 </div>
                 <small className="seg-hint">
@@ -223,9 +229,6 @@ export default function GroupScreen({
                     : 'Segna cosa manca e suggerisce nuovi prodotti, che un amministratore approva.'}
                 </small>
               </div>
-              <button className="btn primary wide" disabled={!email.trim()}>
-                Invita
-              </button>
             </form>
           </>
         )}
