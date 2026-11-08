@@ -2227,3 +2227,11 @@ textarea {
 .cols {
   margin-bottom: 8px;
 }
+
+/* freccina più staccata dalla parola sopra */
+.cols .mlbl::after {
+  bottom: -20px;
+}
+.cols {
+  margin-bottom: 16px;
+}
