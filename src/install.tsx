@@ -156,7 +156,7 @@ export function InstallPopup() {
       <div className="backdrop" />
       <div className={"sheet ipop" + (inst.isIOS ? " ios" : "")}>
         <img src="/pwa-192.png" width="64" height="64" alt="" className="ipop-icon" />
-        <h2 id="ip-title">Per usare Cosa manca con la tua famiglia, salvala sul telefono</h2>
+        <h2 id="ip-title">Per usare Cosa manca la cosa migliore è salvarla sul tuo smartphone</h2>
         <p className="hint">Così la apri con un tocco dalla Home, a schermo intero, come un'app vera. Ci vuole mezzo minuto.</p>
 
         {inst.isIOS ? (
