@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useHintWindow } from '../useHint'
 import { useData } from '../data'
 import { ProposeSheet } from '../components'
 import { SlideRow } from '../SlideRow'
@@ -21,6 +22,15 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
     return [...m.entries()].sort((a, b) => catRank(a[0]) - catRank(b[0]) || a[0].localeCompare(b[0], 'it'))
   }, [visible])
   const missingCount = d.needByItem.size
+  const hintOn = useHintWindow()
+  const hintIds = blocks
+    .flatMap(([, items]) => items)
+    .slice(0, 3)
+    .map((i) => i.id)
+  const hintDelay = (id: string) => {
+    const i = hintIds.indexOf(id)
+    return i < 0 ? undefined : 500 + i * 140
+  }
 
   const results = qn ? visible.filter((i) => norm(i.name).includes(qn)) : []
   const exact = qn ? visible.some((i) => norm(i.name) === qn) : false
@@ -125,7 +135,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                 </h2>
                 <ul className="slist">
                   {items.map((item) => (
-                    <SlideRow key={item.id} item={item} goto={goto} />
+                    <SlideRow key={item.id} item={item} goto={goto} hint={hintOn ? hintDelay(item.id) : undefined} />
                   ))}
                 </ul>
               </div>

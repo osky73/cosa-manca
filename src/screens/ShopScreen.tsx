@@ -3,6 +3,7 @@ import { useData } from '../data'
 import { Sheet } from '../components'
 import { IconTrash } from '../icons'
 import { useFade } from '../useFade'
+import { useHintWindow } from '../useHint'
 import { SlideRow } from '../SlideRow'
 import { byCategoryThenName } from '../lib'
 import type { Item, Need, Tab } from '../types'
@@ -81,6 +82,8 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const lastBought = allBought ? Math.max(...boughtRows.map((r) => fadeOf(r) ?? 0)) : undefined
   const fadeOff = useFade(lastBought, 0)
 
+  const hintOn = useHintWindow()
+
   const shown = useMemo(
     () => [...rows, ...boughtRows].sort((a, b) => byCategoryThenName(a.item, b.item)),
     [rows, boughtRows],
@@ -143,6 +146,16 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     if (filter !== 'all' && filter !== 'none' && countFor(filter) === 0) setFilter('all')
   })
   const countNone = rows.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id)).length
+
+  const hintIds = sections
+    .flatMap((sec) => sec.rows)
+    .filter((r) => r.need.status === 'missing')
+    .slice(0, 3)
+    .map((r) => r.item.id)
+  const hintDelay = (id: string) => {
+    const i = hintIds.indexOf(id)
+    return i < 0 ? undefined : 500 + i * 140
+  }
 
   return (
     <div className="screen shopscreen">
@@ -211,7 +224,14 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
           <section key={sec.key} className="shopsec">
             <ul className="slist">
               {sec.rows.map((r) => (
-                <SlideRow key={r.item.id} item={r.item} goto={goto} pickStore={false} fadeFrom={fadeOf(r)} />
+                <SlideRow
+                  key={r.item.id}
+                  item={r.item}
+                  goto={goto}
+                  pickStore={false}
+                  fadeFrom={fadeOf(r)}
+                  hint={hintOn ? hintDelay(r.item.id) : undefined}
+                />
               ))}
             </ul>
           </section>

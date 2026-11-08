@@ -20,10 +20,12 @@ export function SlideRow({
   goto,
   pickStore = true,
   fadeFrom,
+  hint,
 }: {
   item: Item
   goto: (t: Tab) => void
   pickStore?: boolean
+  hint?: number // ritardo (ms) con cui la riga fa una piccola oscillazione per suggerire che si trascina
   fadeFrom?: number // se presente: da quel momento (ms) la riga sfuma fino al 30% in 5 secondi
 }) {
   const d = useData()
@@ -44,6 +46,24 @@ export function SlideRow({
   const [snapAnim, setSnapAnim] = useState(false)
   const [pend, setPend] = useState<0 | 1 | null>(null) // destinazione dopo il rilascio, finché i dati non si aggiornano
   const side: 0 | 1 = need ? 1 : 0
+  const [wig, setWig] = useState<number | null>(null)
+  const side0 = need ? 1 : 0
+  useEffect(() => {
+    if (hint === undefined || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return
+    // piccola oscillazione verso l'altro lato, due volte (la seconda più breve)
+    const away = side0 === 1 ? 1 - 0.34 : 0.34
+    const away2 = side0 === 1 ? 1 - 0.18 : 0.18
+    const steps: [number, number][] = [
+      [hint, away],
+      [hint + 300, side0],
+      [hint + 560, away2],
+      [hint + 820, side0],
+      [hint + 1100, -1],
+    ]
+    const ts = steps.map(([t, v]) => window.setTimeout(() => setWig(v < 0 ? null : v), t))
+    return () => ts.forEach((t) => window.clearTimeout(t))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hint])
   const [fade, setFade] = useState<{ o: number; ms: number }>({ o: 1, ms: 250 })
   useEffect(() => {
     if (fadeFrom === undefined) {
@@ -69,7 +89,7 @@ export function SlideRow({
     return () => window.clearTimeout(t)
   }, [pend])
 
-  const pos = f ?? pend ?? side
+  const pos = f ?? wig ?? pend ?? side
   const shown = Math.max(-0.1, Math.min(1.06, pos))
   const mix = Math.max(0, Math.min(1, pos))
 
