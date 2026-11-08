@@ -1,4 +1,5 @@
 // Edge Function: invia l'email di invito a una persona già invitata (riga in public.invitations).
+// verify_jwt è spento: l'identità viene verificata qui sotto con auth.getUser(token).
 // Chiamata dall'app dall'admin del gruppo. Richiede il secret RESEND_API_KEY (chiave Resend "Sending access").
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
@@ -38,7 +39,8 @@ Deno.serve(async (req) => {
     global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
   })
 
-  const { data: userData, error: userErr } = await supabase.auth.getUser()
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
+  const { data: userData, error: userErr } = await supabase.auth.getUser(token)
   if (userErr || !userData.user) return json({ error: 'unauthorized' }, 401)
 
   const { data: inv } = await supabase

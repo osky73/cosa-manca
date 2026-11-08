@@ -1,5 +1,6 @@
 // Edge Function: avvisa via email quando qualcuno invia un'idea (riga in public.feedback).
-// Richiede il secret RESEND_API_KEY. Destinatario: secret FEEDBACK_TO (se assente, andrea.valle.1973@gmail.com).
+// Richiede il secret RESEND_API_KEY. verify_jwt è spento: l'identità viene verificata con auth.getUser(token).
+// Destinatario: secret FEEDBACK_TO (se assente, andrea.valle.1973@gmail.com).
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const FROM = 'Cosa manca <noreply@cosa-manca.it>'
@@ -31,8 +32,12 @@ Deno.serve(async (req) => {
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
     global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
   })
-  const { data: u } = await supabase.auth.getUser()
-  if (!u.user) return json({ error: 'unauthorized' }, 401)
+  const token = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '')
+  const { data: u, error: uerr } = await supabase.auth.getUser(token)
+  if (!u.user) {
+    console.error('auth error', uerr?.message)
+    return json({ error: 'unauthorized' }, 401)
+  }
 
   const { data: fb } = await supabase.from('feedback').select('kind, body, group_id, created_at').eq('id', id).maybeSingle()
   if (!fb) return json({ error: 'forbidden' }, 403)
