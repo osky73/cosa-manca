@@ -22,6 +22,18 @@ export default defineConfig({
         orientation: 'portrait',
         background_color: '#faf7f2',
         theme_color: '#2f7d4f',
+        // Condividi da Android (WhatsApp, galleria…): il service worker riceve il POST e apre la schermata di conferma.
+        share_target: {
+          action: '/share-target',
+          method: 'POST',
+          enctype: 'multipart/form-data',
+          params: {
+            title: 'title',
+            text: 'text',
+            url: 'url',
+            files: [{ name: 'files', accept: ['image/*'] }],
+          },
+        },
         icons: [
           { src: 'pwa-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512.png', sizes: '512x512', type: 'image/png' },

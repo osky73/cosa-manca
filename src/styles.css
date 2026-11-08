@@ -2031,3 +2031,29 @@ textarea {
     animation: none;
   }
 }
+
+.share-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.share-row input[type='checkbox'] {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+  flex: none;
+}
+.share-unknown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.share-unknown .name {
+  text-transform: capitalize;
+}
+.share-actions {
+  display: grid;
+  gap: 8px;
+  padding: 16px 0 110px;
+}

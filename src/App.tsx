@@ -13,7 +13,11 @@ import ShopScreen from './screens/ShopScreen'
 import StoresScreen from './screens/StoresScreen'
 import IdeasScreen from './screens/IdeasScreen'
 import GroupScreen from './screens/GroupScreen'
+import ShareScreen from './screens/ShareScreen'
 import type { GroupRef, Profile, Role, Tab } from './types'
+
+// Aperta dal menu Condividi di Android? (il service worker rimanda a /?condiviso=1)
+const OPENED_BY_SHARE = new URLSearchParams(location.search).has('condiviso')
 
 interface Boot {
   profile: Profile | null
@@ -179,9 +183,13 @@ function Shell({
 }) {
   const d = useData()
   const [tab, setTab] = useState<Tab>('shop')
+  const [sharing, setSharing] = useState(OPENED_BY_SHARE)
+  useEffect(() => {
+    if (OPENED_BY_SHARE) history.replaceState(null, '', '/')
+  }, [])
   const entered = useRef(false)
   useEffect(() => {
-    if (entered.current || !d.loaded) return
+    if (entered.current || !d.loaded || sharing) return
     entered.current = true
     if (d.needs.length === 0 && d.boughtNeeds.length === 0 && !d.suggestions.some((x) => x.status === 'pending'))
       setTab('list')
@@ -196,11 +204,20 @@ function Shell({
     <div className="app">
       <InstallPopup />
       <main>
-        {tab === 'list' && <ListScreen goto={go} />}
-        {tab === 'shop' && <ShopScreen goto={go} />}
-        {tab === 'stores' && <StoresScreen />}
-        {tab === 'ideas' && <IdeasScreen />}
-        {tab === 'group' && (
+        {sharing && (
+          <ShareScreen
+            onDone={() => {
+              setSharing(false)
+              entered.current = true
+              go('shop')
+            }}
+          />
+        )}
+        {!sharing && tab === 'list' && <ListScreen goto={go} />}
+        {!sharing && tab === 'shop' && <ShopScreen goto={go} />}
+        {!sharing && tab === 'stores' && <StoresScreen />}
+        {!sharing && tab === 'ideas' && <IdeasScreen />}
+        {!sharing && tab === 'group' && (
           <GroupScreen
             groups={groups}
             groupId={groupId}
