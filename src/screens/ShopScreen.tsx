@@ -86,10 +86,9 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     return out
   }, [shown, filter, d.stores, d.storeOf])
 
-  const hasAssigned = rows.some((x) => x.need.store_id && d.storeOf(x.need.store_id))
   const countFor = (id: string) => rows.filter((x) => x.need.store_id === id).length
   useEffect(() => {
-    if (filter !== 'all' && (filter === 'none' || countFor(filter) === 0)) setFilter('all')
+    if (filter !== 'all' && filter !== 'none' && countFor(filter) === 0) setFilter('all')
   })
   const countNone = rows.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id)).length
 
@@ -107,23 +106,8 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         </p>
       </header>
       <div className="top sticky bar">
-        {d.stores.length > 0 && !hasAssigned && (
-          <div className="filters" role="tablist" aria-label="Supermercato">
-            <button role="tab" aria-selected="true" className="on">
-              Ovunque <span className="count">{rows.length}</span>
-            </button>
-          </div>
-        )}
-        {d.stores.length > 0 && hasAssigned && (
+        {d.stores.length > 0 && (
           <div className="filters" role="tablist" aria-label="Filtra per supermercato">
-            <button
-              role="tab"
-              aria-selected={filter === 'all'}
-              className={filter === 'all' ? 'on' : ''}
-              onClick={() => setFilter('all')}
-            >
-              Ovunque <span className="count">{rows.length}</span>
-            </button>
             {d.stores
               .filter((s) => countFor(s.id) > 0)
               .map((s) => (
@@ -133,11 +117,19 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
                   aria-selected={filter === s.id}
                   className={filter === s.id ? 'on' : ''}
                   style={{ ['--c' as string]: s.color }}
-                  onClick={() => setFilter(s.id)}
+                  onClick={() => setFilter(filter === s.id ? 'all' : s.id)}
                 >
                   <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
                 </button>
               ))}
+            <button
+              role="tab"
+              aria-selected={filter === 'none'}
+              className={filter === 'none' ? 'on' : ''}
+              onClick={() => setFilter(filter === 'none' ? 'all' : 'none')}
+            >
+              Ovunque <span className="count">{countNone}</span>
+            </button>
           </div>
         )}
         <div className="cols" aria-hidden="true">
