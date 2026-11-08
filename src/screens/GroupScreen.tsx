@@ -97,7 +97,7 @@ export default function GroupScreen({
     <div className="screen">
       <header className="top sticky">
         <div className="top-row">
-          <h1>{group?.name ?? 'Gruppo'}</h1>
+          <h1>{group?.name ? `Gruppo ${group.name}` : 'Gruppo'}</h1>
           {d.isAdmin && <span className="pill">Admin</span>}
         </div>
       </header>
