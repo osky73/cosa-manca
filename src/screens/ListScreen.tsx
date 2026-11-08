@@ -108,6 +108,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
     .flatMap(([, items]) => items)
     .slice(0, 1)
     .map((i) => i.id)
+  const firstId = blocks.flatMap(([, items]) => items)[0]?.id
   const hintOn = useHintWindow('list', hintIds.length > 0)
   const hintDelay = (id: string) => (hintIds.includes(id) ? 500 : undefined)
 
@@ -370,7 +371,13 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                         </button>
                       </li>
                     ) : (
-                      <SlideRow key={item.id} item={item} goto={goto} hint={hintOn ? hintDelay(item.id) : undefined} />
+                      <SlideRow
+                        key={item.id}
+                        item={item}
+                        goto={goto}
+                        tour={item.id === firstId ? 'first-row' : undefined}
+                        hint={hintOn ? hintDelay(item.id) : undefined}
+                      />
                     )
                   })}
                 </ul>
@@ -382,7 +389,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
               Aggiungi i supermercati nella scheda Gruppo per indicare dove comprare ogni cosa.
             </p>
           )}
-          <button className="btn ghost wide" onClick={() => setProposeName('')}>
+          <button className="btn ghost wide" data-tour="new-product" onClick={() => setProposeName('')}>
             {d.isAdmin ? '+ Nuovo prodotto' : '+ Suggerisci un prodotto'}
           </button>
         </section>

@@ -2088,3 +2088,73 @@ textarea {
   justify-self: start;
   margin-top: 4px;
 }
+
+.guide-q {
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+.guide-q .meta {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 14px;
+}
+.spot {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+}
+.spot-dim {
+  position: fixed;
+  background: rgba(15, 25, 20, 0.72);
+  pointer-events: auto;
+}
+.spot-ring {
+  position: fixed;
+  border-radius: 14px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 4px rgba(47, 125, 79, 0.55);
+  pointer-events: none;
+  animation: spotpulse 1.6s ease-in-out infinite;
+}
+.spot-tip {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #fff;
+  color: #1b2a21;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: grid;
+  gap: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+.spot-tip p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 600;
+}
+.spot-tip .btn {
+  justify-self: end;
+}
+@keyframes spotpulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 4px rgba(47, 125, 79, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 9px rgba(47, 125, 79, 0.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spot-ring {
+    animation: none;
+  }
+}

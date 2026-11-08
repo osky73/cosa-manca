@@ -22,10 +22,12 @@ export function SlideRow({
   pickStore = true,
   fadeFrom,
   hint,
+  tour,
 }: {
   item: Item
   goto: (t: Tab) => void
   pickStore?: boolean
+  tour?: string // punto evidenziabile dalla Guida
   hint?: number // ritardo (ms) con cui la riga fa una piccola oscillazione per suggerire che si trascina
   fadeFrom?: number // se presente: da quel momento (ms) la riga sfuma fino al 30% in 5 secondi
 }) {
@@ -163,6 +165,7 @@ export function SlideRow({
   return (
     <li
       className="slrow"
+      data-tour={tour}
       ref={rowRef}
       style={{ opacity: fade.o, transition: fade.ms ? `opacity ${fade.ms}ms linear` : 'none' }}
     >

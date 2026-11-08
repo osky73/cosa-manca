@@ -15,6 +15,8 @@ import IdeasScreen from './screens/IdeasScreen'
 import GroupScreen from './screens/GroupScreen'
 import ShareScreen from './screens/ShareScreen'
 import GuideScreen from './screens/GuideScreen'
+import Spotlight from './Spotlight'
+import { TOURS, type Tour } from './tours'
 import type { GroupRef, Profile, Role, Tab } from './types'
 
 // Aperta dal menu Condividi di Android? (il service worker rimanda a /?condiviso=1)
@@ -185,6 +187,13 @@ function Shell({
   const d = useData()
   const [tab, setTab] = useState<Tab>('shop')
   const [sharing, setSharing] = useState(OPENED_BY_SHARE)
+  const [tour, setTour] = useState<Tour | null>(null)
+  const needCount = useRef(d.needs.length)
+  useEffect(() => {
+    // il passaggio "segna ciò che manca" finisce quando un prodotto viene davvero segnato
+    if (tour?.doneWhen === 'need-added' && d.needs.length > needCount.current) setTour(null)
+    needCount.current = d.needs.length
+  }, [d.needs.length, tour])
   useEffect(() => {
     if (OPENED_BY_SHARE) history.replaceState(null, '', '/')
   }, [])
@@ -204,6 +213,7 @@ function Shell({
   return (
     <div className="app">
       <InstallPopup />
+      {tour && <Spotlight tour={tour} text={tour.text(d.isAdmin)} onClose={() => setTour(null)} />}
       <main>
         {sharing && (
           <ShareScreen
@@ -218,7 +228,17 @@ function Shell({
         {!sharing && tab === 'shop' && <ShopScreen goto={go} />}
         {!sharing && tab === 'stores' && <StoresScreen />}
         {!sharing && tab === 'ideas' && <IdeasScreen />}
-        {!sharing && tab === 'guide' && <GuideScreen goto={go} />}
+        {!sharing && tab === 'guide' && (
+          <GuideScreen
+            onTour={(id) => {
+              const t = TOURS.find((x) => x.id === id)
+              if (!t) return
+              needCount.current = d.needs.length
+              go(t.tab)
+              setTour(t)
+            }}
+          />
+        )}
         {!sharing && tab === 'group' && (
           <GroupScreen
             groups={groups}
