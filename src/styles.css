@@ -2161,11 +2161,6 @@ textarea {
 .rails::after {
   right: var(--rr);
 }
-.rails .slrow,
-.rails .sect-label {
-  position: relative;
-  z-index: 1;
-}
 
 .cat .sect-label::after {
   display: none;
@@ -2304,4 +2299,10 @@ textarea {
   font-size: 22px;
   font-weight: 700;
   color: var(--ink);
+}
+.qbtn {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  flex: none;
 }
