@@ -79,7 +79,6 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
 
   const allBought = rows.length === 0 && boughtRows.length > 0
   const lastBought = allBought ? Math.max(...boughtRows.map((r) => fadeOf(r) ?? 0)) : undefined
-  const fadeSoft = useFade(lastBought, 0.3)
   const fadeOff = useFade(lastBought, 0)
 
   const shown = useMemo(
@@ -193,9 +192,9 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         )}
         {hasList && (
           <div className="cols" aria-hidden="true">
-            <span style={fadeSoft}>
+            <span>
               Comprati
-              {boughtRows.length > 0 && <span className="count">{boughtRows.length}</span>}
+              <span className="count">{boughtRows.length}</span>
             </span>
             <span>
               Mancano
