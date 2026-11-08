@@ -207,7 +207,7 @@ export function ProposeSheet({
 
       {d.stores.length > 0 && (
         <div className="field">
-          <span>Dove comprarlo (facoltativo)</span>
+          <span>Dove prenderlo (facoltativo)</span>
           <div className="chips">
             {d.stores.map((s) => (
               <StoreChip

@@ -288,8 +288,8 @@ export function SlideRow({
             onKeyDown={(e) => e.stopPropagation()}
             aria-label={
               store
-                ? `Dove comprare ${item.name}: ${store.name}. Tocca per cambiare`
-                : `Scegli dove comprare ${item.name}`
+                ? `Dove prendere ${item.name}: ${store.name}. Tocca per cambiare`
+                : `Scegli dove prendere ${item.name}`
             }
           >
             {store ? <StoreLogo store={store} size={27} /> : '+'}
@@ -307,7 +307,7 @@ export function SlideRow({
       )}
       {picking && need && (
         <StorePickerSheet
-          title={`Dove compri ${articleFor(item.name)}${item.name}?`}
+          title={`Dove prendi ${articleFor(item.name)}${item.name}?`}
           current={need.store_id}
           onPick={(id) => {
             d.setNeedStore(need.id, id)

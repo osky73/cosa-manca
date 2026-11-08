@@ -387,7 +387,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
           )}
           {d.stores.length === 0 && missingCount > 0 && d.isAdmin && (
             <p className="hint pad">
-              Aggiungi i supermercati nella scheda Gruppo per indicare dove comprare ogni cosa.
+              Aggiungi i supermercati nella scheda Gruppo per indicare dove prendere ogni cosa.
             </p>
           )}
           <div className="clear-wrap">
