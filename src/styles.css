@@ -400,3 +400,9 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid v
 .catpick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .catpick button { min-height: 44px; border: 2px solid var(--line); border-radius: 12px; background: var(--bg); font-weight: 700; font-size: 15px; }
 .catpick button.on { border-color: var(--accent); background: var(--ok-bg); color: var(--accent); }
+
+.btn.slim { min-height: 36px; padding: 0 12px; font-size: 14px; }
+.btn.ghost.on { border-color: var(--accent); color: var(--accent); }
+.delrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 49px; margin-bottom: 7px; padding: 0 8px 0 16px; background: var(--card); border: 1.5px solid var(--line); border-radius: 12px; }
+.delrow .name { font-weight: 600; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.delrow .icon-btn { color: var(--warn); }

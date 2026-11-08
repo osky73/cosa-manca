@@ -3,7 +3,8 @@ import { useHintWindow } from '../useHint'
 import { useData } from '../data'
 import { ProposeSheet } from '../components'
 import { SlideRow } from '../SlideRow'
-import { IconPlus, IconSearch, IconX } from '../icons'
+import { IconPlus, IconSearch, IconTrash, IconX } from '../icons'
+import { useToast } from '../toast'
 import { articleFor, byCategoryThenName, catRank, norm } from '../lib'
 import type { Item, Tab } from '../types'
 
@@ -11,6 +12,8 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
   const d = useData()
   const [q, setQ] = useState('')
   const [proposeName, setProposeName] = useState<string | null>(null)
+  const toast = useToast()
+  const [deleting, setDeleting] = useState(false) // solo admin: modalità "elimina prodotti"
 
   const qn = norm(q)
   const visible = useMemo(() => d.items.filter((i) => !i.hidden), [d.items])
@@ -38,6 +41,16 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
       <header className="top">
         <div className="top-row">
           <h1>Elencone</h1>
+          {d.isAdmin && (
+            <button
+              type="button"
+              className={'btn ghost slim' + (deleting ? ' on' : '')}
+              onClick={() => setDeleting(!deleting)}
+              aria-pressed={deleting}
+            >
+              {deleting ? 'Fine' : 'Elimina prodotti'}
+            </button>
+          )}
           {(!d.online || d.pendingOps > 0) && (
             <span className="pill warn">
               {d.online
@@ -131,9 +144,29 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                   <span>{cat}</span>
                 </h2>
                 <ul className="slist">
-                  {items.map((item) => (
-                    <SlideRow key={item.id} item={item} goto={goto} hint={hintOn ? hintDelay(item.id) : undefined} />
-                  ))}
+                  {items.map((item) =>
+                    deleting ? (
+                      <li key={item.id} className="delrow">
+                        <span className="name">{item.name}</span>
+                        <button
+                          type="button"
+                          className="icon-btn"
+                          aria-label={`Elimina ${item.name}`}
+                          onClick={async () => {
+                            await d.archiveItem(item.id)
+                            toast.show(`«${item.name}» eliminato`, {
+                              label: 'Annulla',
+                              run: () => void d.restoreItem(item.id),
+                            })
+                          }}
+                        >
+                          <IconTrash />
+                        </button>
+                      </li>
+                    ) : (
+                      <SlideRow key={item.id} item={item} goto={goto} hint={hintOn ? hintDelay(item.id) : undefined} />
+                    ),
+                  )}
                 </ul>
               </div>
             ))
