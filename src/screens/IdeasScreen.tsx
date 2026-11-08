@@ -46,7 +46,15 @@ export default function IdeasScreen() {
       return
     }
     // l'avviso via email è un di più: se fallisce, il messaggio è comunque salvato
-    void supabase.functions.invoke('send-feedback', { body: { id: data.id } }).catch(() => {})
+    void supabase.auth
+      .getSession()
+      .then(({ data: sess }) =>
+        supabase.functions.invoke('send-feedback', {
+          body: { id: data.id },
+          headers: sess.session ? { Authorization: `Bearer ${sess.session.access_token}` } : undefined,
+        }),
+      )
+      .catch(() => {})
     if (kind === 'idea') setIdea('')
     else setWish('')
     toast.show('Grazie! Ricevuto.')

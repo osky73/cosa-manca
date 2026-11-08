@@ -425,7 +425,6 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     [pushOp],
   )
 
-
   const clearBought = useCallback(async () => {
     const ids = boughtNeeds.map((n) => n.id)
     if (ids.length === 0) return
@@ -539,8 +538,10 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
           .insert({ group_id: groupId, email: email.trim().toLowerCase(), role: inviteRole, invited_by: userId }),
       ),
     sendInviteEmail: async (email) => {
+      const { data: sess } = await supabase.auth.getSession()
       const { data, error } = await supabase.functions.invoke('send-invite', {
         body: { group_id: groupId, email: email.trim().toLowerCase() },
+        headers: sess.session ? { Authorization: `Bearer ${sess.session.access_token}` } : undefined,
       })
       return !error && Boolean((data as { ok?: boolean } | null)?.ok)
     },
