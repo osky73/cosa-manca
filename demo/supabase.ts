@@ -82,7 +82,7 @@ const rpc = async (name: string, a: Row = {}) => {
       const id = uid()
       items.push({ id, group_id: 'g1', name: a.p_name, category: a.p_category, recurrence: a.p_recurrence, hidden: false,
         archived: false, default_store_id: null, sort, created_by: 'u1' })
-      if (a.p_mark_missing) {
+      if (a.p_mark_missing || a.p_recurrence === 'one_off') {
         db.needs.push({ id: uid(), group_id: 'g1', item_id: id, status: 'missing', store_id: a.p_store ?? null, note: a.p_note ?? null,
           requested_by: 'u1', requested_at: new Date().toISOString() })
       }
