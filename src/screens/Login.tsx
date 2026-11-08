@@ -117,7 +117,11 @@ export default function Login() {
         </form>
       )}
 
-      <footer className="auth-foot">Questa app non è a fini commerciali ma ad uso privato.</footer>
+      <footer className="auth-foot">
+        Cosa manca è un’applicazione sviluppata senza scopo di lucro, ad esclusivo uso personale e familiare e destinata
+        a una diffusione strettamente privata, limitata a persone di fiducia. Non è offerta al pubblico, non è un
+        servizio commerciale e non comporta alcuna vendita, pubblicità o raccolta di compensi.
+      </footer>
     </main>
   )
 }
