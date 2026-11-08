@@ -2198,3 +2198,24 @@ textarea {
 .rails::after {
   display: none;
 }
+
+/* freccina centrata sotto la parola Mancano */
+.rails::before {
+  display: none;
+}
+.cols .mlbl {
+  position: relative;
+  display: inline-block;
+}
+.cols .mlbl::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -8px;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-right: 1.5px solid rgba(47, 125, 79, 0.6);
+  border-bottom: 1.5px solid rgba(47, 125, 79, 0.6);
+  transform: rotate(45deg);
+}

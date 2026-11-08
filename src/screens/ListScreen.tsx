@@ -257,7 +257,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
         {!qn && (
           <div className="cols" aria-hidden="true">
             <span>
-              Mancano
+              <span className="mlbl">Mancano</span>
               {missingCount > 0 && <span className="count">{missingCount}</span>}
             </span>
           </div>
