@@ -2243,3 +2243,8 @@ textarea {
 .cols {
   margin-bottom: 24px;
 }
+
+/* più margine sopra il bollino della categoria */
+.cat .sect-label {
+  margin-top: 34px;
+}
