@@ -2189,3 +2189,12 @@ textarea {
 .rails.elen .cat:first-child .sect-label {
   margin-top: 14px;
 }
+
+.cols {
+  justify-content: flex-end;
+}
+
+/* nessuna linea verticale: resta solo la freccina sotto Mancano */
+.rails::after {
+  display: none;
+}

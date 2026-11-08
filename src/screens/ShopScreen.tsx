@@ -204,10 +204,6 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         {hasList && (
           <div className="cols" aria-hidden="true">
             <span>
-              Comprati
-              <span className="count">{boughtRows.length}</span>
-            </span>
-            <span>
               Mancano
               <span className="count">{rows.length}</span>
             </span>
