@@ -58,7 +58,7 @@ export default function IdeasScreen() {
         </button>
       </form>
 
-      <p className="hint ideas-small">Cos'altro ti manca? Non possiamo fare tutto, ma leggere quello che ci scrivi.</p>
+      <p className="hint ideas-small">Cos'altro ti manca? Tutti abbiamo qualcosa che ci manca in fondo...</p>
       <form
         className="ideas-row"
         onSubmit={(e) => {
