@@ -89,6 +89,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
 
   // Negozi che hanno avuto prodotti: restano come pillole spente a 0 finché non si cancella la lista.
   const hasList = rows.length + boughtRows.length > 0
+  const isEmpty = d.loaded && rows.length + boughtRows.length === 0
   const [asking, setAsking] = useState(false)
   const doClear = () => {
     d.clearAll()
@@ -166,7 +167,8 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
           </div>
         )}
         {hasList && (
-          <div className="cols" aria-hidden="true">
+          {!isEmpty && (
+        <div className="cols" aria-hidden="true">
             <span>
               Comprati
               {boughtRows.length > 0 && <span className="count">{boughtRows.length}</span>}
@@ -176,6 +178,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
               {rows.length > 0 && <span className="count">{rows.length}</span>}
             </span>
           </div>
+        )}
         )}
       </div>
 
