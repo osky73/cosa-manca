@@ -193,6 +193,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         ))
       )}
 
+      {rows.length + boughtRows.length > 0 && <div className="clear-spacer" />}
       {rows.length + boughtRows.length > 0 && (
         <button
           className="clear-all"
