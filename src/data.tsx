@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { supabase } from './supabase'
 import { useToast } from './toast'
 import { notifyAdmins, pushSupported, subscribePush } from './push'
-import { tidyName, friendly, isNetworkError, readLS, writeLS } from './lib'
+import { tidyName, tidyNote, friendly, isNetworkError, readLS, writeLS } from './lib'
 import type { Invitation, Item, Member, Need, Profile, Recurrence, Role, Store, Suggestion } from './types'
 
 /** Operazioni sulle richieste "manca": accodate e inviate anche dopo, se manca la rete. */
@@ -179,11 +179,12 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         if (!inv.error) invitations = inv.data as Invitation[]
       }
 
+      const brands = (st.data as Store[]).map((x) => x.name)
       const next: Snapshot = {
         items: (it.data as Item[]).map((i) => ({ ...i, name: tidyName(i.name) })),
         stores: st.data as Store[],
-        needs: nd.data as Need[],
-        bought: (bt.data ?? []) as Need[],
+        needs: (nd.data as Need[]).map((n) => ({ ...n, note: tidyNote(n.note, brands) })),
+        bought: ((bt.data ?? []) as Need[]).map((n) => ({ ...n, note: tidyNote(n.note, brands) })),
         suggestions: (sg.data as Suggestion[]).map((x) => ({ ...x, name: tidyName(x.name) })),
         members: memberRows.map((m) => ({ ...m, profile: profiles.get(m.user_id) ?? null })),
         invitations,
@@ -459,8 +460,8 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
 
   const setNeedDetail = useCallback(
     (needId: string, quantity: string | null, note: string | null) =>
-      pushOp({ k: 'detail', id: needId, quantity, note }),
-    [pushOp],
+      pushOp({ k: 'detail', id: needId, quantity, note: tidyNote(note, snap.stores.map((x) => x.name)) }),
+    [pushOp, snap.stores],
   )
 
   const addMissing = useCallback(

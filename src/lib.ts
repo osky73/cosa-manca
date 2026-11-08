@@ -18,6 +18,15 @@ export function spaceUnits(s: string): string {
   return s.replace(/(\d)([a-zA-Zà-ÿ]+)/g, '$1 $2')
 }
 
+// note: prima lettera minuscola, salvo sigle/marchi con maiuscole interne o nomi dei negozi
+export function tidyNote(s: string | null | undefined, brands: string[] = []): string | null {
+  const t = (s ?? '').trim()
+  if (!t) return null
+  const first = t.split(/\s+/)[0]
+  const keep = /[A-ZÀ-Þ].*[A-ZÀ-Þ]/.test(first) || brands.some((b) => first.toLowerCase() === b.trim().toLowerCase().split(/\s+/)[0])
+  return keep ? t : t.charAt(0).toLocaleLowerCase('it') + t.slice(1)
+}
+
 // nomi prodotto: tutto minuscolo, con lo spazio tra numero e unità
 export function tidyName(s: string): string {
   return spaceUnits(s.trim().toLocaleLowerCase('it'))
