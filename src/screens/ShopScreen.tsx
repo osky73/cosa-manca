@@ -108,6 +108,14 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
       <div className="top sticky bar">
         {d.stores.length > 0 && (
           <div className="filters" role="tablist" aria-label="Filtra per supermercato">
+            <button
+              role="tab"
+              aria-selected={filter === 'none'}
+              className={filter === 'none' ? 'on' : ''}
+              onClick={() => setFilter(filter === 'none' ? 'all' : 'none')}
+            >
+              Ovunque <span className="count">{countNone}</span>
+            </button>
             {d.stores
               .filter((s) => countFor(s.id) > 0)
               .map((s) => (
@@ -122,14 +130,6 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
                   <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
                 </button>
               ))}
-            <button
-              role="tab"
-              aria-selected={filter === 'none'}
-              className={filter === 'none' ? 'on' : ''}
-              onClick={() => setFilter(filter === 'none' ? 'all' : 'none')}
-            >
-              Ovunque <span className="count">{countNone}</span>
-            </button>
           </div>
         )}
         <div className="cols" aria-hidden="true">
