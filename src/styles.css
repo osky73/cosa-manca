@@ -397,3 +397,6 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid v
 .shopcard.custom .switch svg { opacity: .55; }
 .shopcard.custom:not(.on) .switch svg { opacity: 0; }
 .shopcard.custom.off { opacity: 1; }
+.catpick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.catpick button { min-height: 44px; border: 2px solid var(--line); border-radius: 12px; background: var(--bg); font-weight: 700; font-size: 15px; }
+.catpick button.on { border-color: var(--accent); background: var(--ok-bg); color: var(--accent); }

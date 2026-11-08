@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { IconX } from './icons'
 import { useData, type ProposeInput } from './data'
 import { useToast } from './toast'
-import { categoriesOf, initials, logoUrl } from './lib'
+import { NEW_PRODUCT_CATEGORIES, initials, logoUrl } from './lib'
 import type { Recurrence, Store } from './types'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -129,7 +129,7 @@ export function ProposeSheet({
   const toast = useToast()
   const [name, setName] = useState(initialName)
   const [rec, setRec] = useState<Recurrence | null>(null)
-  const [cat, setCat] = useState('Altro')
+  const [cat, setCat] = useState('')
   const [store, setStore] = useState<string | null>(null)
   const [note, setNote] = useState('')
   const [mark, setMark] = useState(true)
@@ -137,7 +137,7 @@ export function ProposeSheet({
   const [err, setErr] = useState('')
 
   const label = d.isAdmin ? 'Aggiungi' : 'Invia per approvazione'
-  const canSend = name.trim().length > 0 && rec !== null && !busy
+  const canSend = name.trim().length > 0 && rec !== null && cat !== '' && !busy
 
   async function submit() {
     if (!rec) return
@@ -185,14 +185,23 @@ export function ProposeSheet({
         </div>
       </div>
 
-      <label className="field">
+      <div className="field">
         <span>Categoria</span>
-        <select value={cat} onChange={(e) => setCat(e.target.value)}>
-          {categoriesOf(d.items).map((c) => (
-            <option key={c}>{c}</option>
+        <div className="catpick" role="radiogroup" aria-label="Categoria">
+          {NEW_PRODUCT_CATEGORIES.map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="radio"
+              aria-checked={cat === c}
+              className={cat === c ? 'on' : ''}
+              onClick={() => setCat(c)}
+            >
+              {c}
+            </button>
           ))}
-        </select>
-      </label>
+        </div>
+      </div>
 
       {d.stores.length > 0 && (
         <div className="field">
