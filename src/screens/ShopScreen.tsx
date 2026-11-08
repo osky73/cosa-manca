@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { StoreLogo } from '../components'
+import { IconTrash } from '../icons'
 import { SlideRow } from '../SlideRow'
 import { byCategoryThenName } from '../lib'
 import type { Item, Need, Tab } from '../types'
@@ -160,12 +161,14 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
 
       {rows.length + boughtRows.length > 0 && (
         <button
-          className="btn ghost wide clear-all"
+          className="clear-all"
+          aria-label="Cancella tutto"
+          title="Cancella tutto"
           onClick={() => {
             if (confirm('Azzerare la lista di cosa manca?')) d.clearAll()
           }}
         >
-          Cancella tutto
+          <IconTrash />
         </button>
       )}
     </div>
