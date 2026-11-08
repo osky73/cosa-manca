@@ -845,6 +845,11 @@ input.code {
   inherits: true;
   initial-value: 0;
 }
+@property --o {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
 @property --m {
   syntax: '<number>';
   inherits: true;
@@ -890,6 +895,7 @@ input.code {
   color: color-mix(in srgb, var(--accent) calc(var(--m) * 100%), var(--ink));
   border-radius: 12px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+  opacity: var(--o);
 }
 .slider.dragging {
   cursor: grabbing;
@@ -2116,7 +2122,7 @@ textarea {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 999px;
-  background: rgba(47, 125, 79, 0.1);
+  background: linear-gradient(rgba(47, 125, 79, 0.1), rgba(47, 125, 79, 0.1)), var(--bg);
   color: var(--muted);
 }
 .rails {
@@ -2134,12 +2140,12 @@ textarea {
   pointer-events: none;
 }
 .rails.elen {
-  --rl: 24px;
-  --rr: 54px;
+  --rl: 54px;
+  --rr: 84px;
 }
 .rails.shop {
-  --rl: 42px;
-  --rr: 54px;
+  --rl: 72px;
+  --rr: 84px;
 }
 .rails::before {
   left: var(--rl);

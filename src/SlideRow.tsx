@@ -167,7 +167,7 @@ export function SlideRow({
       className="slrow"
       data-tour={tour}
       ref={rowRef}
-      style={{ opacity: fade.o, transition: fade.ms ? `opacity ${fade.ms}ms linear` : 'none' }}
+      style={{ ['--o' as string]: fade.o, transition: fade.ms ? `--o ${fade.ms}ms linear` : 'none' }}
     >
       <div
         role="button"
