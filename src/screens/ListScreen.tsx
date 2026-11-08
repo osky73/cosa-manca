@@ -221,6 +221,12 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
           Qui si selezionano i prodotti che mancano dalla lista globale di tutti i prodotti che comprate di solito.
         </p>
       </header>
+      {d.isAdmin && pendingCount > 0 && !q && (
+        <button className="banner" onClick={() => goto('shop')}>
+          {pendingCount === 1 ? '1 suggerimento da approvare' : `${pendingCount} suggerimenti da approvare`} →
+        </button>
+      )}
+
       <div className="top sticky bar">
         <div className="searchbar">
           <IconSearch />
@@ -258,12 +264,6 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
           </div>
         )}
       </div>
-
-      {d.isAdmin && pendingCount > 0 && !q && (
-        <button className="banner" onClick={() => goto('shop')}>
-          {pendingCount === 1 ? '1 suggerimento da approvare' : `${pendingCount} suggerimenti da approvare`} →
-        </button>
-      )}
 
       {qn ? (
         <section>
