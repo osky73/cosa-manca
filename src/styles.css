@@ -317,7 +317,7 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid v
 .shopcard.custom { align-content: start; min-height: 0; gap: 8px; }
 .shopcard.custom .cname { height: 60px; display: grid; place-items: center; padding: 0 4px; }
 .shopcard.custom .switch, .shopcard.custom.on .switch { background: rgba(255, 255, 255, .35); }
-.shopcard.custom .switch svg { position: absolute; left: 5px; top: 5px; width: 12px; height: 12px; color: #fff; }
+.shopcard.custom .switch svg { position: absolute; left: 3px; top: 2px; width: 18px; height: 18px; color: #fff; }
 
 /* Copertina d'ingresso */
 .splash { position: fixed; inset: 0; z-index: 1000; background: #2f7d4f; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; color: #fff; transition: opacity .6s ease; }
