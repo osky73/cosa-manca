@@ -25,12 +25,13 @@ interface Snapshot {
   items: Item[]
   stores: Store[]
   needs: Need[]
+  bought?: Need[]
   suggestions: Suggestion[]
   members: Member[]
   invitations: Invitation[]
 }
 
-const EMPTY: Snapshot = { items: [], stores: [], needs: [], suggestions: [], members: [], invitations: [] }
+const EMPTY: Snapshot = { items: [], stores: [], needs: [], bought: [], suggestions: [], members: [], invitations: [] }
 
 export interface ProposeInput {
   name: string
@@ -55,6 +56,8 @@ interface DataCtx {
   members: Member[]
   invitations: Invitation[]
   needByItem: Map<string, Need>
+  boughtNeeds: Need[]
+  clearBought: () => Promise<void>
   itemOf: (id: string) => Item | undefined
   storeOf: (id: string | null) => Store | undefined
   nameOf: (userId: string | null) => string
@@ -124,12 +127,14 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
   // ---------- Lettura ----------
   const refetch = useCallback(async () => {
     try {
-      const [it, st, nd, sg, mb] = await Promise.all([
+      const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
+      const [it, st, nd, sg, mb, bt] = await Promise.all([
         supabase.from('group_items').select('*').eq('group_id', groupId).eq('archived', false).order('name'),
         supabase.from('stores').select('*').eq('group_id', groupId).order('sort').order('created_at'),
         supabase.from('needs').select('*').eq('group_id', groupId).eq('status', 'missing'),
         supabase.from('suggestions').select('*').eq('group_id', groupId).order('created_at', { ascending: false }).limit(60),
         supabase.from('memberships').select('user_id, role').eq('group_id', groupId),
+        supabase.from('needs').select('*').eq('group_id', groupId).eq('status', 'bought').gte('bought_at', since),
       ])
       for (const r of [it, st, nd, sg, mb]) if (r.error) throw r.error
 
@@ -150,6 +155,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         items: it.data as Item[],
         stores: st.data as Store[],
         needs: nd.data as Need[],
+        bought: (bt.data ?? []) as Need[],
         suggestions: sg.data as Suggestion[],
         members: memberRows.map((m) => ({ ...m, profile: profiles.get(m.user_id) ?? null })),
         invitations,
@@ -340,6 +346,18 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     return [...m.values()]
   }, [snap.needs, settled, outbox, groupId, userId])
 
+  const [cleared, setCleared] = useState<Set<string>>(new Set())
+  const boughtNeeds = useMemo(() => {
+    const m = new Map((snap.bought ?? []).map((n) => [n.id, n]))
+    for (const op of [...settled, ...outbox]) {
+      if (op.k === 'bought') {
+        const n = needCache.current.get(op.id)
+        if (n) m.set(op.id, { ...n, status: 'bought' })
+      } else if (op.k === 'unbought') m.delete(op.id)
+    }
+    return [...m.values()].filter((n) => !cleared.has(n.id))
+  }, [snap.bought, settled, outbox, cleared])
+
   const needByItem = useMemo(() => new Map(needs.map((n) => [n.item_id, n])), [needs])
 
   const itemOf = useCallback(
@@ -396,6 +414,19 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     [itemOf, pushOp, toast],
   )
 
+  const clearBought = useCallback(async () => {
+    const ids = boughtNeeds.map((n) => n.id)
+    if (ids.length === 0) return
+    setCleared((c) => new Set([...c, ...ids]))
+    const { error } = await supabase.from('needs').delete().in('id', ids).eq('status', 'bought')
+    if (error) {
+      setCleared((c) => new Set([...c].filter((x) => !ids.includes(x))))
+      toast.show(friendly(error.message))
+      return
+    }
+    await refetch()
+  }, [boughtNeeds, refetch, toast])
+
   const act = useCallback(
     async (p: PromiseLike<{ error: { message: string } | null }>): Promise<boolean> => {
       const { error } = await p
@@ -441,6 +472,8 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     members: snap.members,
     invitations: snap.invitations,
     needByItem,
+    boughtNeeds,
+    clearBought,
     itemOf,
     storeOf,
     nameOf,

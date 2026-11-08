@@ -407,7 +407,7 @@ create policy needs_insert on public.needs for insert to authenticated with chec
 create policy needs_update on public.needs for update to authenticated
   using (public.is_member(group_id)) with check (public.is_member(group_id));
 create policy needs_delete on public.needs for delete to authenticated
-  using (public.is_member(group_id) and status = 'missing');
+  using (public.is_member(group_id) and status in ('missing', 'bought'));
 
 -- suggestions: lettura per i membri; scrittura solo via funzioni
 create policy suggestions_select on public.suggestions for select to authenticated using (public.is_member(group_id));

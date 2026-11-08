@@ -12,9 +12,6 @@ type Row = { need: Need; item: Item }
 export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const d = useData()
   const [filter, setFilter] = useState<Filter>('all')
-  // Prodotti appena presi: restano un attimo a sinistra prima di sparire dalla spesa.
-  const [gone, setGone] = useState<Row[]>([])
-  const prev = useRef<Row[]>([])
 
   // Tiene lo schermo acceso mentre si fa la spesa.
   useEffect(() => {
@@ -51,20 +48,23 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     [d.needs, d.itemOf],
   )
 
-  useEffect(() => {
-    const now = new Set(rows.map((r) => r.item.id))
-    const left = prev.current.filter((r) => !now.has(r.item.id))
-    prev.current = rows
-    if (left.length === 0) return
-    setGone((g) => [...g, ...left.filter((r) => !g.some((x) => x.item.id === r.item.id))])
-    const ids = new Set(left.map((r) => r.item.id))
-    window.setTimeout(() => setGone((g) => g.filter((r) => !ids.has(r.item.id))), 1600)
-  }, [rows])
+  const boughtRows = useMemo(() => {
+    const open = new Set(rows.map((r) => r.item.id))
+    const seen = new Set<string>()
+    const out: Row[] = []
+    for (const need of d.boughtNeeds) {
+      const item = d.itemOf(need.item_id)
+      if (!item || open.has(item.id) || seen.has(item.id)) continue
+      seen.add(item.id)
+      out.push({ need, item })
+    }
+    return out
+  }, [rows, d.boughtNeeds, d.itemOf])
 
-  const shown = useMemo(() => {
-    const ids = new Set(rows.map((r) => r.item.id))
-    return [...rows, ...gone.filter((r) => !ids.has(r.item.id))].sort((a, b) => byCategoryThenName(a.item, b.item))
-  }, [rows, gone])
+  const shown = useMemo(
+    () => [...rows, ...boughtRows].sort((a, b) => byCategoryThenName(a.item, b.item)),
+    [rows, boughtRows],
+  )
 
   const sections = useMemo(() => {
     const out: { key: string; title: string; color?: string; rows: Row[] }[] = []
@@ -87,10 +87,10 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   }, [shown, filter, d.stores, d.storeOf])
 
   const hasAssigned = rows.some((x) => x.need.store_id && d.storeOf(x.need.store_id))
-  useEffect(() => {
-    if (!hasAssigned && filter !== 'all') setFilter('all')
-  }, [hasAssigned, filter])
   const countFor = (id: string) => rows.filter((x) => x.need.store_id === id).length
+  useEffect(() => {
+    if (filter !== 'all' && (filter === 'none' || countFor(filter) === 0)) setFilter('all')
+  })
   const countNone = rows.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id)).length
 
   return (
@@ -125,7 +125,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
               Ovunque <span className="count">{rows.length}</span>
             </button>
             {d.stores
-              .filter((s) => countFor(s.id) > 0 || filter === s.id)
+              .filter((s) => countFor(s.id) > 0)
               .map((s) => (
                 <button
                   key={s.id}
@@ -140,8 +140,15 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
               ))}
           </div>
         )}
-        <div className="cols only-right" aria-hidden="true">
-          <span>Mancano{rows.length > 0 && <span className="count">{rows.length}</span>}</span>
+        <div className="cols" aria-hidden="true">
+          <span>
+            Comprati
+            {boughtRows.length > 0 && <span className="count">{boughtRows.length}</span>}
+          </span>
+          <span>
+            Mancano
+            {rows.length > 0 && <span className="count">{rows.length}</span>}
+          </span>
         </div>
       </div>
 
@@ -157,6 +164,17 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
             </ul>
           </section>
         ))
+      )}
+
+      {boughtRows.length > 0 && (
+        <button
+          className="btn ghost wide clear-all"
+          onClick={() => {
+            if (confirm(`Togliere dalla lista i ${boughtRows.length} prodotti comprati?`)) void d.clearBought()
+          }}
+        >
+          Cancella tutto
+        </button>
       )}
     </div>
   )

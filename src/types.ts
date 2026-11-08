@@ -38,6 +38,7 @@ export interface Need {
   note: string | null
   requested_by: string | null
   requested_at: string
+  bought_at?: string | null
 }
 
 export interface Suggestion {
