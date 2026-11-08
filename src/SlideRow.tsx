@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useData } from './data'
 import { NeedDetailSheet, StoreLogo, StorePickerSheet } from './components'
 import { IconNote } from './icons'
-import { articleFor } from './lib'
+import { articleFor, logoUrl } from './lib'
 import { WhoDot } from './Pending'
 import type { Item, Tab } from './types'
 
@@ -45,6 +45,9 @@ export function SlideRow({
     setPeek(false)
   }
   useEffect(() => () => window.clearTimeout(peekTimer.current), [])
+  const [tip, setTip] = useState(false) // nome del negozio quando manca il logo
+  const tipTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(tipTimer.current), [])
   const need = d.needByItem.get(item.id)
   const store = need ? d.storeOf(need.store_id) : undefined
   useEffect(() => {
@@ -244,9 +247,31 @@ export function SlideRow({
           </div>
         )}
         {need && !pickStore && store && (
-          <span className="slstore set static" aria-label={`Negozio: ${store.name}`}>
-            <StoreLogo store={store} size={27} />
-          </span>
+          logoUrl(store.logo) ? (
+            <span className="slstore set static" aria-label={`Negozio: ${store.name}`}>
+              <StoreLogo store={store} size={27} />
+            </span>
+          ) : (
+            <>
+              <button
+                type="button"
+                className="slstore set static tap"
+                aria-label={`Negozio: ${store.name}`}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (dragged.current) return
+                  setTip(true)
+                  window.clearTimeout(tipTimer.current)
+                  tipTimer.current = window.setTimeout(() => setTip(false), 2500)
+                }}
+              >
+                <StoreLogo store={store} size={27} />
+              </button>
+              <span className={'slstore-tip' + (tip ? ' on' : '')} aria-hidden="true">
+                {store.name}
+              </span>
+            </>
+          )
         )}
         {need && item.recurrence === 'one_off' && (
           <WhoDot userId={item.created_by} className={(!pickStore && store) || pickStore ? 'beside' : ''} />
