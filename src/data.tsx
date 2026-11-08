@@ -386,8 +386,10 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         }
       }
     }
-    return [...m.values()]
-  }, [snap.needs, settled, outbox, groupId, userId])
+    // un prodotto eliminato (archiviato) dall'Elencone sparisce anche da Cosa manca
+    const live = new Set(snap.items.map((i) => i.id))
+    return [...m.values()].filter((n) => live.has(n.item_id))
+  }, [snap.needs, snap.items, settled, outbox, groupId, userId])
 
   const [cleared, setCleared] = useState<Set<string>>(new Set())
   const boughtNeeds = useMemo(() => {
@@ -398,8 +400,9 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         if (n) m.set(op.id, { ...n, status: 'bought' })
       } else if (op.k === 'unbought') m.delete(op.id)
     }
-    return [...m.values()].filter((n) => !cleared.has(n.id))
-  }, [snap.bought, settled, outbox, cleared])
+    const live = new Set(snap.items.map((i) => i.id))
+    return [...m.values()].filter((n) => !cleared.has(n.id) && live.has(n.item_id))
+  }, [snap.bought, snap.items, settled, outbox, cleared])
 
   const needByItem = useMemo(() => new Map(needs.map((n) => [n.item_id, n])), [needs])
 
