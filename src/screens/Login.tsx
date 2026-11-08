@@ -4,7 +4,7 @@ import { supabase } from '../supabase'
 function explain(message: string): string {
   if (/rate limit|security purposes|too many/i.test(message)) return 'Troppi tentativi: riprova tra qualche minuto.'
   if (/not authorized|not allowed|signups? not allowed/i.test(message)) return 'Questa email non è autorizzata.'
-  return 'Non sono riuscito a inviare il codice. Controlla l\'email e riprova.'
+  return "Non sono riuscito a inviare il codice. Controlla l'email e riprova."
 }
 
 export default function Login() {
@@ -50,7 +50,7 @@ export default function Login() {
       type: 'email',
     })
     setBusy(false)
-    if (error) setErr('Codice non valido o scaduto. Controlla l\'email o richiedine uno nuovo.')
+    if (error) setErr("Codice non valido o scaduto. Controlla l'email o richiedine uno nuovo.")
   }
 
   return (
@@ -116,7 +116,6 @@ export default function Login() {
           </div>
         </form>
       )}
-
     </main>
   )
 }

@@ -529,3 +529,20 @@ end $$;
 drop trigger if exists group_items_sort on public.group_items;
 create trigger group_items_sort before insert on public.group_items
   for each row execute function public.group_items_set_sort();
+
+-- Notifiche push per gli amministratori (riepilogo). push_config: chiavi VAPID, solo service role (RLS senza policy).
+create table if not exists public.push_config (id int primary key default 1 check (id = 1), public_key text not null, private_key text not null);
+alter table public.push_config enable row level security;
+create table if not exists public.push_subscriptions (
+  endpoint text primary key,
+  user_id uuid not null references auth.users on delete cascade,
+  p256dh text not null,
+  auth text not null,
+  created_at timestamptz not null default now()
+);
+alter table public.push_subscriptions enable row level security;
+create policy push_sub_select on public.push_subscriptions for select to authenticated using (user_id = auth.uid());
+create policy push_sub_insert on public.push_subscriptions for insert to authenticated with check (user_id = auth.uid());
+create policy push_sub_update on public.push_subscriptions for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy push_sub_delete on public.push_subscriptions for delete to authenticated using (user_id = auth.uid());
+alter table public.groups add column if not exists notify_admins boolean not null default true;

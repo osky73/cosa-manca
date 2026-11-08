@@ -57,7 +57,9 @@ export default function ShareCard() {
   return (
     <section className="card sharecard">
       <strong>Fai conoscere Cosa manca</strong>
-      <p className="hint">Conosci qualcuno a cui servirebbe creare un suo gruppo? Mandagli il link, o scrivi qui la sua email.</p>
+      <p className="hint">
+        Conosci qualcuno a cui servirebbe creare un suo gruppo? Mandagli il link, o scrivi qui la sua email.
+      </p>
       <button type="button" className="btn primary wide" onClick={() => void share()}>
         Condividi
       </button>

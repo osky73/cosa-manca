@@ -10,7 +10,6 @@ export const CATEGORY_ORDER = [
   'Altro',
 ]
 
-
 export const STORE_COLORS = ['#2f7d4f', '#d9480f', '#1c7ed6', '#ae3ec9', '#e8a600', '#0b7285', '#c2255c', '#495057']
 
 export function norm(s: string): string {
@@ -40,7 +39,8 @@ export function initials(name: string): string {
 export function friendly(message: string): string {
   if (/group_items_unique_name/.test(message)) return 'Esiste già un prodotto con questo nome.'
   if (/needs_one_open_per_item/.test(message)) return 'Questo prodotto è già in lista.'
-  if (/ultimo amministratore|senza amministratore/i.test(message)) return 'Il gruppo deve avere almeno un amministratore.'
+  if (/ultimo amministratore|senza amministratore/i.test(message))
+    return 'Il gruppo deve avere almeno un amministratore.'
   if (/row-level security/i.test(message)) return 'Non hai il permesso per farlo.'
   if (/invitations_group_id_email_key/.test(message)) return 'Questa email è già stata invitata.'
   return message
@@ -107,7 +107,17 @@ export function articleFor(name: string): string {
   const pl = { m: vowel || special ? 'gli ' : 'i ', f: 'le ' }
 
   const FEM_PL = new Set(['uova', 'noci', 'olive', 'arance'])
-  const MASC_SING_E = new Set(['latte', 'pane', 'sale', 'caffè', 'sapone', 'ammorbidente', 'limone', 'melone', 'formaggio'])
+  const MASC_SING_E = new Set([
+    'latte',
+    'pane',
+    'sale',
+    'caffè',
+    'sapone',
+    'ammorbidente',
+    'limone',
+    'melone',
+    'formaggio',
+  ])
   const FEM_SING_E = new Set(['carne', 'pelle', 'chiave', 'crema'])
 
   if (FEM_PL.has(w)) return pl.f

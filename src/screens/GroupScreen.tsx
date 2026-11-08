@@ -31,6 +31,18 @@ export default function GroupScreen({
   const [email, setEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<Role>('member')
   const [catalogOpen, setCatalogOpen] = useState(false)
+  const [notifyOn, setNotifyOn] = useState(groups.find((g) => g.id === groupId)?.notify_admins ?? true)
+  async function setNotify(v: boolean) {
+    setNotifyOn(v)
+    const { error } = await supabase.from('groups').update({ notify_admins: v }).eq('id', groupId)
+    if (error) {
+      setNotifyOn(!v)
+      toast.show('Non sono riuscito a salvare la scelta')
+    } else {
+      toast.show(v ? 'Gli admin riceveranno gli avvisi' : 'Avvisi spenti per tutto il gruppo')
+      onNameChanged()
+    }
+  }
   const [catQuery, setCatQuery] = useState('')
   const [name, setName] = useState(displayName)
 
@@ -296,6 +308,12 @@ export default function GroupScreen({
           <span>Il tuo nome</span>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} onBlur={() => void saveName()} />
         </label>
+        {d.isAdmin && (
+          <label className="check">
+            <input type="checkbox" checked={notifyOn} onChange={(e) => void setNotify(e.target.checked)} />
+            <span>Avvisa gli amministratori quando manca qualcosa</span>
+          </label>
+        )}
         <label className="check">
           <input type="checkbox" checked={marketingOptIn} onChange={(e) => void setOptIn(e.target.checked)} />
           <span>Ricevi aggiornamenti sull'app via email</span>

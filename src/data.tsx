@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { supabase } from './supabase'
 import { useToast } from './toast'
+import { notifyAdmins, pushSupported, subscribePush } from './push'
 import { friendly, isNetworkError, readLS, writeLS } from './lib'
 import type { Invitation, Item, Member, Need, Profile, Recurrence, Role, Store, Suggestion } from './types'
 
@@ -95,6 +96,19 @@ interface Props {
 export function DataProvider({ groupId, userId, role, onLeft, children }: Props) {
   const toast = useToast()
   const snapKey = `cm.snap.${groupId}`
+
+  // Admin: notifiche attive senza chiedere nulla in app. Il telefono mostra comunque il suo permesso:
+  // se è già concesso ci si iscrive subito, altrimenti lo si chiede al primo tocco (su iPhone serve un tocco).
+  useEffect(() => {
+    if (role !== 'admin' || !pushSupported() || Notification.permission === 'denied') return
+    if (Notification.permission === 'granted') {
+      void subscribePush(userId)
+      return
+    }
+    const go = () => void subscribePush(userId)
+    window.addEventListener('pointerup', go, { once: true })
+    return () => window.removeEventListener('pointerup', go)
+  }, [role, userId])
   const outKey = `cm.outbox.${groupId}`
 
   const [snap, setSnap] = useState<Snapshot>(() => readLS(snapKey, EMPTY))
@@ -125,7 +139,13 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     try {
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
       const [it, st, nd, sg, mb, bt] = await Promise.all([
-        supabase.from('group_items').select('*').eq('group_id', groupId).eq('archived', false).order('sort').order('name'),
+        supabase
+          .from('group_items')
+          .select('*')
+          .eq('group_id', groupId)
+          .eq('archived', false)
+          .order('sort')
+          .order('name'),
         supabase.from('stores').select('*').eq('group_id', groupId).order('sort').order('created_at'),
         supabase.from('needs').select('*').eq('group_id', groupId).eq('status', 'missing'),
         supabase
@@ -186,6 +206,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
             .from('needs')
             .insert({ id: op.id, item_id: op.item_id, group_id: groupId, store_id: op.store_id })
           error = r.error
+          if (!r.error) void notifyAdmins(groupId)
         } else if (op.k === 'cancel') {
           const r = await supabase.from('needs').delete().eq('id', op.id).eq('status', 'missing')
           error = r.error

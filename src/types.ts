@@ -76,4 +76,5 @@ export interface GroupRef {
   id: string
   name: string
   role: Role
+  notify_admins?: boolean
 }

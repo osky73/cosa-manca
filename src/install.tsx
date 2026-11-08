@@ -40,8 +40,7 @@ export function useInstall() {
     window.matchMedia('(display-mode: standalone)').matches ||
     (navigator as Navigator & { standalone?: boolean }).standalone === true
   const isIOS =
-    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 
   return {
     standalone,
@@ -102,7 +101,9 @@ export function InstallCard({ onDismiss, loginHint }: { onDismiss?: () => void; 
         Sì, l'ho già fatto
       </button>
       {loginHint && inst.isIOS && (
-        <p className="hint">Su iPhone conviene installare l'app prima di accedere: l'accesso fatto in Safari non passa all'app.</p>
+        <p className="hint">
+          Su iPhone conviene installare l'app prima di accedere: l'accesso fatto in Safari non passa all'app.
+        </p>
       )}
     </section>
   )
@@ -131,7 +132,17 @@ function isIOSInApp() {
 
 function IconShare() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <path d="M12 15V3M8 7l4-4 4 4" />
       <path d="M6 11H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1" />
     </svg>
@@ -140,7 +151,17 @@ function IconShare() {
 
 function IconAddHome() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
       <rect x="3" y="3" width="18" height="18" rx="4" />
       <path d="M12 8v8M8 12h8" />
     </svg>
@@ -176,17 +197,19 @@ export function InstallPopup() {
   return (
     <div className="sheet-wrap" role="dialog" aria-modal="true" aria-labelledby="ip-title">
       <div className="backdrop" />
-      <div className={"sheet ipop" + (inst.isIOS ? " ios" : "")}>
+      <div className={'sheet ipop' + (inst.isIOS ? ' ios' : '')}>
         <img src="/pwa-192.png" width="64" height="64" alt="" className="ipop-icon" />
         <h2 id="ip-title">Per usare Cosa manca la cosa migliore è salvarla sul tuo smartphone</h2>
-        <p className="hint">Così la apri con un tocco dalla Home, a schermo intero, come un'app vera. Ci vuole mezzo minuto.</p>
+        <p className="hint">
+          Così la apri con un tocco dalla Home, a schermo intero, come un'app vera. Ci vuole mezzo minuto.
+        </p>
 
         {inst.isIOS ? (
           <>
             {isIOSInApp() && (
               <p className="ipop-warn">
-                Stai usando un'altra app (WhatsApp, Mail…). Tocca <b>⋯</b> o l'icona della bussola e scegli <b>Apri in Safari</b>: poi
-                torna qui.
+                Stai usando un'altra app (WhatsApp, Mail…). Tocca <b>⋯</b> o l'icona della bussola e scegli{' '}
+                <b>Apri in Safari</b>: poi torna qui.
               </p>
             )}
             <ol className="ipop-steps">
@@ -222,9 +245,7 @@ export function InstallPopup() {
           <ol className="ipop-steps">
             <li>
               <span className="ipop-ico">⋮</span>
-              <span>
-                Apri il menu del browser (i tre puntini in alto a destra)
-              </span>
+              <span>Apri il menu del browser (i tre puntini in alto a destra)</span>
             </li>
             <li>
               <span className="ipop-ico">

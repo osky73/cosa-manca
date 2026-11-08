@@ -79,14 +79,15 @@ function Authed({ userId }: { userId: string }) {
       await supabase.rpc('accept_my_invitations')
       const [pr, ms] = await Promise.all([
         supabase.from('profiles').select('id, email, display_name, marketing_opt_in').eq('id', userId).maybeSingle(),
-        supabase.from('memberships').select('role, groups(id, name)').eq('user_id', userId),
+        supabase.from('memberships').select('role, groups(id, name, notify_admins)').eq('user_id', userId),
       ])
       if (pr.error) throw pr.error
       if (ms.error) throw ms.error
-      type Row = { role: Role; groups: { id: string; name: string } | { id: string; name: string }[] | null }
+      type G = { id: string; name: string; notify_admins: boolean }
+      type Row = { role: Role; groups: G | G[] | null }
       const groups: GroupRef[] = ((ms.data ?? []) as unknown as Row[]).flatMap((r) => {
         const g = Array.isArray(r.groups) ? r.groups[0] : r.groups
-        return g ? [{ id: g.id, name: g.name, role: r.role }] : []
+        return g ? [{ id: g.id, name: g.name, role: r.role, notify_admins: g.notify_admins }] : []
       })
       const next: Boot = { profile: (pr.data as Profile | null) ?? null, groups }
       setBoot(next)

@@ -39,7 +39,7 @@ export default function Onboarding({
       }
       onDone()
     } catch (e) {
-      const msg = e instanceof Error ? e.message : (e as { message?: string }).message ?? 'Errore'
+      const msg = e instanceof Error ? e.message : ((e as { message?: string }).message ?? 'Errore')
       setErr(friendly(msg))
     } finally {
       setBusy(false)
@@ -56,7 +56,13 @@ export default function Onboarding({
         {needName && (
           <label className="field">
             <span>Il tuo nome (lo vedono gli altri)</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} autoComplete="given-name" required />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={40}
+              autoComplete="given-name"
+              required
+            />
           </label>
         )}
         {needName && (
@@ -72,13 +78,16 @@ export default function Onboarding({
               <input value={groupName} onChange={(e) => setGroupName(e.target.value)} maxLength={80} required />
             </label>
             <p className="hint">
-              Se stai aspettando un invito, chiedi all'amministratore di invitare questa email e poi riapri l'app. Se invece
-              crei un gruppo, ne diventi l'amministratore e potrai invitare gli altri.
+              Se stai aspettando un invito, chiedi all'amministratore di invitare questa email e poi riapri l'app. Se
+              invece crei un gruppo, ne diventi l'amministratore e potrai invitare gli altri.
             </p>
           </>
         )}
         {err && <p className="error">{err}</p>}
-        <button className="btn primary big" disabled={busy || (needName && !name.trim()) || (!hasGroup && !groupName.trim())}>
+        <button
+          className="btn primary big"
+          disabled={busy || (needName && !name.trim()) || (!hasGroup && !groupName.trim())}
+        >
           {busy ? 'Un attimo…' : 'Continua'}
         </button>
         <button type="button" className="link" onClick={() => void supabase.auth.signOut()}>
