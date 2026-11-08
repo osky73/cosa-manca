@@ -63,18 +63,18 @@ Deno.serve(async (req) => {
 <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;max-width:480px;margin:0 auto;background:#ffffff;border-radius:16px;padding:28px 24px;color:#1c1c1c;font-size:16px;line-height:1.5">
 <div style="font-size:14px;font-weight:700;color:#2f7d4f;letter-spacing:.4px;margin:0 0 14px">COSA MANCA</div>
 <h1 style="margin:0 0 14px;font-size:22px;line-height:1.3;font-weight:800">${esc(inviter)} ti ha invitato su Cosa manca</h1>
-<p style="margin:0 0 22px">Cosa manca è la lista di ciò che manca in casa, condivisa con i tuoi conviventi. Sei stato aggiunto al gruppo <b>${esc(groupName)}</b>.</p>
-<p style="margin:0 0 26px"><a href="${SITE_URL}" style="display:inline-block;background:#2f7d4f;color:#ffffff;padding:14px 26px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">Apri Cosa manca</a></p>
+<p style="margin:0 0 22px">Cosa manca è l'app per gestire la lista di ciò che manca in casa, condivisa con i tuoi conviventi. Sei stato aggiunto al gruppo <b>${esc(groupName)}</b>.</p>
+<p style="margin:0 0 26px"><a href="${SITE_URL}" style="display:inline-block;background:#2f7d4f;color:#ffffff;padding:14px 26px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">Accedi ora</a></p>
 <p style="margin:0 0 8px;font-weight:700">Come entrare</p>
 <ol style="margin:0;padding-left:22px">
 <li style="margin:0 0 8px">Apri <a href="${SITE_URL}" style="color:#2f7d4f">${site}</a> dal telefono.</li>
-<li style="margin:0 0 8px">Registrati con questa email (<b>${esc(email)}</b>) e tocca "Ricevi il codice".</li>
-<li style="margin:0">Inserisci il codice che ti arriva via email.</li>
+<li style="margin:0 0 8px">Registrati con questa email (<b>${esc(email)}</b>) e clicca su "Ricevi il codice".</li>
+<li style="margin:0">Inserisci il codice che ti arriva via email nella schermata seguente: sei dentro.</li>
 </ol>
 </div>
 </div>`
 
-  const text = `${inviter} ti ha invitato su Cosa manca, nel gruppo "${groupName}".\n\nApri ${SITE_URL}, registrati con ${email} e tocca "Ricevi il codice": ti arriva un codice via email.`
+  const text = `${inviter} ti ha invitato su Cosa manca, nel gruppo "${groupName}".\n\nApri ${SITE_URL}, registrati con ${email} e clicca su "Ricevi il codice": ti arriva un codice via email, lo inserisci nella schermata seguente e sei dentro.`
 
   const r = await fetch('https://api.resend.com/emails', {
     method: 'POST',
