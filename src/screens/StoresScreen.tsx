@@ -130,9 +130,8 @@ export default function StoresScreen() {
               >
                 <span className="cname">{s.name}</span>
                 <span className="switch" aria-hidden="true">
-                  <i>
-                    <IconTrash />
-                  </i>
+                  <i />
+                  <IconTrash />
                 </span>
               </button>
               <button
