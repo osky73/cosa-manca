@@ -225,7 +225,7 @@ export default function GroupScreen({
                 </div>
                 <small className="seg-hint">
                   {inviteRole === 'admin'
-                    ? 'Approva i suggerimenti e gestisce persone, supermercati e catalogo.'
+                    ? 'Approva i prodotti da aggiungere, gestisce persone, negozi e Elencone.'
                     : 'Segna cosa manca e suggerisce nuovi prodotti, che un amministratore approva.'}
                 </small>
               </div>
