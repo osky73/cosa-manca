@@ -2248,3 +2248,11 @@ textarea {
 .cat .sect-label {
   margin-top: 34px;
 }
+
+/* stessa distanza da "Mancano" al primo elemento in Cosa manca ed Elencone (24px) */
+.bar .cols {
+  margin-bottom: 16px;
+}
+.rails.elen .cat:first-child .sect-label {
+  margin-top: 0;
+}
