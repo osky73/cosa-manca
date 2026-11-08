@@ -390,9 +390,17 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
               Aggiungi i supermercati nella scheda Gruppo per indicare dove comprare ogni cosa.
             </p>
           )}
-          <button className="btn ghost wide" data-tour="new-product" onClick={() => setProposeName('')}>
-            {d.isAdmin ? '+ Nuovo prodotto' : '+ Suggerisci un prodotto'}
-          </button>
+          <div className="clear-wrap">
+            <button
+              className="clear-all add-fab"
+              data-tour="new-product"
+              aria-label={d.isAdmin ? 'Nuovo prodotto' : 'Suggerisci un prodotto'}
+              title={d.isAdmin ? 'Nuovo prodotto' : 'Suggerisci un prodotto'}
+              onClick={() => setProposeName('')}
+            >
+              <IconPlus />
+            </button>
+          </div>
         </section>
       )}
 

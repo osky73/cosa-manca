@@ -2483,3 +2483,10 @@ textarea {
 .slider.peek .slstore-tip {
   top: 24.5px;
 }
+
+/* "+" nuovo prodotto: stesso formato del cestino, in verde */
+.clear-all.add-fab {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 4px 14px rgba(47, 125, 79, 0.4);
+}
