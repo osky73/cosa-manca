@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { Sheet, StoreLogo } from '../components'
 import { IconTrash } from '../icons'
+import { useFade } from '../useFade'
 import { SlideRow } from '../SlideRow'
 import { byCategoryThenName } from '../lib'
 import type { Item, Need, Tab } from '../types'
@@ -75,6 +76,11 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     const ids = new Set(boughtRows.map((r) => r.item.id))
     for (const id of [...boughtAt.current.keys()]) if (!ids.has(id)) boughtAt.current.delete(id)
   }, [boughtRows])
+
+  const allBought = rows.length === 0 && boughtRows.length > 0
+  const lastBought = allBought ? Math.max(...boughtRows.map((r) => fadeOf(r) ?? 0)) : undefined
+  const fadeSoft = useFade(lastBought, 0.3)
+  const fadeOff = useFade(lastBought, 0)
 
   const shown = useMemo(
     () => [...rows, ...boughtRows].sort((a, b) => byCategoryThenName(a.item, b.item)),
@@ -154,7 +160,12 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
       </header>
       <div className="top sticky bar">
         {hasList && d.stores.length > 0 && (
-          <div className="filters" role="tablist" aria-label="Filtra per supermercato">
+          <div
+            className="filters"
+            role="tablist"
+            aria-label="Filtra per supermercato"
+            style={{ ...fadeOff, pointerEvents: allBought ? 'none' : undefined }}
+          >
             <button
               role="tab"
               aria-selected={filter === 'none'}
@@ -181,11 +192,11 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         )}
         {hasList && (
           <div className="cols" aria-hidden="true">
-            <span>
+            <span style={fadeSoft}>
               Comprati
               {boughtRows.length > 0 && <span className="count">{boughtRows.length}</span>}
             </span>
-            <span>
+            <span style={fadeOff}>
               Mancano
               {rows.length > 0 && <span className="count">{rows.length}</span>}
             </span>
