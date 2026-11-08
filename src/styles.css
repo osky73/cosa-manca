@@ -890,12 +890,24 @@ input.code {
   -webkit-user-select: none;
   touch-action: pan-y;
   outline-offset: 2px;
-  background: color-mix(in srgb, var(--ok-bg) calc(var(--m) * 100%), var(--card));
-  border: 1.5px solid color-mix(in srgb, var(--accent) calc(var(--m) * 100%), var(--line));
-  color: color-mix(in srgb, var(--accent) calc(var(--m) * 100%), var(--ink));
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--ok-bg) calc(var(--m) * 100%), var(--card)) calc(var(--o) * 100%),
+    var(--bg)
+  );
+  border: 1.5px solid
+    color-mix(
+      in srgb,
+      color-mix(in srgb, var(--accent) calc(var(--m) * 100%), var(--line)) calc(var(--o) * 100%),
+      var(--bg)
+    );
+  color: color-mix(
+    in srgb,
+    color-mix(in srgb, var(--accent) calc(var(--m) * 100%), var(--ink)) calc(var(--o) * 100%),
+    var(--bg)
+  );
   border-radius: 12px;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
-  opacity: var(--o);
 }
 .slider.dragging {
   cursor: grabbing;
@@ -933,7 +945,7 @@ input.code {
   left: 8px;
   top: 50%;
   transform: translateY(-50%);
-  opacity: var(--m);
+  opacity: calc(var(--m) * var(--o));
   width: 35px;
   height: 35px;
   border-radius: 10px;
@@ -2157,4 +2169,8 @@ textarea {
 .rails .sect-label {
   position: relative;
   z-index: 1;
+}
+
+.cat .sect-label::after {
+  display: none;
 }
