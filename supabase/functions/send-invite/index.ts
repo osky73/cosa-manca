@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
 <ol style="margin:0;padding-left:22px">
 <li style="margin:0 0 8px">Apri <a href="${SITE_URL}" style="color:#2f7d4f">${site}</a> dal telefono.</li>
 <li style="margin:0 0 8px">Registrati con questa email (<b>${esc(email)}</b>) e clicca su "Ricevi il codice".</li>
-<li style="margin:0">Inserisci il codice che ti arriva via email nella schermata seguente: sei dentro.</li>
+<li style="margin:0">Inserisci il codice che ti arriva via email nella schermata seguente e sei dentro.</li>
 </ol>
 </div>
 </div>`
