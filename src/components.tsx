@@ -250,3 +250,63 @@ export function ProposeSheet({
     </Sheet>
   )
 }
+
+/** Quantità e nota di un prodotto che manca: si apre toccando la riga. */
+export function NeedDetailSheet({
+  title,
+  quantity,
+  note,
+  onSave,
+  onClose,
+}: {
+  title: string
+  quantity: string | null | undefined
+  note: string | null | undefined
+  onSave: (quantity: string | null, note: string | null) => void
+  onClose: () => void
+}) {
+  const [q, setQ] = useState(quantity ?? '')
+  const [n, setN] = useState(note ?? '')
+  const num = /^\d+$/.test(q.trim()) ? parseInt(q.trim(), 10) : null
+  const step = (by: number) => setQ(String(Math.max(1, (num ?? 1) + by)))
+  function save() {
+    onSave(q.trim() || null, n.trim() || null)
+    onClose()
+  }
+  return (
+    <Sheet title={title} onClose={onClose}>
+      <div className="field">
+        <span>Quantità</span>
+        <div className="qtyrow">
+          <button type="button" className="qbtn" onClick={() => step(-1)} aria-label="Meno">
+            −
+          </button>
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            maxLength={20}
+            inputMode="text"
+            placeholder="es. 2 oppure 1 kg"
+            aria-label="Quantità"
+          />
+          <button type="button" className="qbtn" onClick={() => step(1)} aria-label="Più">
+            +
+          </button>
+        </div>
+      </div>
+      <label className="field">
+        <span>Nota</span>
+        <textarea
+          rows={3}
+          maxLength={300}
+          value={n}
+          onChange={(e) => setN(e.target.value)}
+          placeholder="es. quello senza lattosio, marca preferita…"
+        />
+      </label>
+      <button className="btn primary wide" onClick={save}>
+        Salva
+      </button>
+    </Sheet>
+  )
+}

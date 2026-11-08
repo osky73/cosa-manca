@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useData } from './data'
-import { StoreLogo, StorePickerSheet } from './components'
+import { NeedDetailSheet, StoreLogo, StorePickerSheet } from './components'
+import { IconNote } from './icons'
 import { articleFor } from './lib'
 import { WhoDot } from './Pending'
 import type { Item, Tab } from './types'
@@ -33,6 +34,7 @@ export function SlideRow({
 }) {
   const d = useData()
   const [picking, setPicking] = useState(false)
+  const [detail, setDetail] = useState(false)
   const need = d.needByItem.get(item.id)
   const store = need ? d.storeOf(need.store_id) : undefined
   const rowRef = useRef<HTMLLIElement>(null)
@@ -143,7 +145,10 @@ export function SlideRow({
     const g = drag.current
     if (!g || g.id !== e.pointerId) return
     drag.current = null
-    if (!g.on) return
+    if (!g.on) {
+      if (need && !cancelled) setDetail(true) // un tocco su un prodotto che manca apre quantità e nota
+      return
+    }
     flash()
     setF(null)
     if (g.locked && !cancelled) {
@@ -190,7 +195,17 @@ export function SlideRow({
             : `${item.name}: trascina a destra se manca`
         }
       >
-        <span className="slname">{item.name}</span>
+        <span className="slname">
+          {item.name}
+          {need?.quantity && (
+            <span className="slmeta">{/^\d+$/.test(need.quantity) ? `×${need.quantity}` : need.quantity}</span>
+          )}
+          {need?.note && (
+            <span className="slmeta note" aria-label="Con nota">
+              <IconNote />
+            </span>
+          )}
+        </span>
         {need && !pickStore && store && (
           <span className="slstore set static" aria-label={`Negozio: ${store.name}`}>
             <StoreLogo store={store} size={27} />
@@ -219,6 +234,15 @@ export function SlideRow({
           </button>
         )}
       </div>
+      {detail && need && (
+        <NeedDetailSheet
+          title={item.name}
+          quantity={need.quantity}
+          note={need.note}
+          onSave={(q, n) => d.setNeedDetail(need.id, q, n)}
+          onClose={() => setDetail(false)}
+        />
+      )}
       {picking && need && (
         <StorePickerSheet
           title={`Dove compri ${articleFor(item.name)}${item.name}?`}

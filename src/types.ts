@@ -41,6 +41,7 @@ export interface Need {
   status: 'missing' | 'bought'
   store_id: string | null
   note: string | null
+  quantity?: string | null
   requested_by: string | null
   requested_at: string
   bought_at?: string | null

@@ -602,3 +602,6 @@ begin
     update public.suggestions set status = 'rejected', decided_by = auth.uid(), decided_at = now() where id = p_id;
   end if;
 end $$;
+
+-- quantità sui prodotti che mancano
+alter table public.needs add column if not exists quantity text check (quantity is null or char_length(quantity) <= 20);

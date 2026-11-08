@@ -2269,3 +2269,39 @@ textarea {
   color: var(--muted);
   padding-top: 24px;
 }
+
+/* quantità e nota sui prodotti che mancano */
+.slmeta {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(47, 125, 79, 0.14);
+  font-size: 12px;
+  font-weight: 800;
+  vertical-align: middle;
+}
+.slmeta.note svg {
+  width: 13px;
+  height: 13px;
+}
+.qtyrow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.qtyrow input {
+  flex: 1;
+  text-align: center;
+}
+.qbtn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
+}

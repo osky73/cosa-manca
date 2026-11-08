@@ -10,6 +10,7 @@ type Op =
   | { k: 'add'; id: string; item_id: string; store_id: string | null; at: string }
   | { k: 'cancel'; id: string }
   | { k: 'store'; id: string; store_id: string | null }
+  | { k: 'detail'; id: string; quantity: string | null; note: string | null }
   | { k: 'bought'; id: string }
   | { k: 'unbought'; id: string }
 
@@ -59,6 +60,7 @@ interface DataCtx {
   toggleMissing: (item: Item) => void
   addMissing: (item: Item, storeId?: string | null) => 'added' | 'already'
   setNeedStore: (needId: string, storeId: string | null) => void
+  setNeedDetail: (needId: string, quantity: string | null, note: string | null) => void
   markBought: (need: Need) => void
   propose: (p: ProposeInput) => Promise<'added' | 'pending'>
   decide: (id: string, approve: boolean, recurrence?: Recurrence) => Promise<void>
@@ -215,6 +217,9 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         } else if (op.k === 'store') {
           const r = await supabase.from('needs').update({ store_id: op.store_id }).eq('id', op.id)
           error = r.error
+        } else if (op.k === 'detail') {
+          const r = await supabase.from('needs').update({ quantity: op.quantity, note: op.note }).eq('id', op.id)
+          error = r.error
         } else if (op.k === 'bought') {
           const r = await supabase.from('needs').update({ status: 'bought' }).eq('id', op.id).eq('status', 'missing')
           error = r.error
@@ -274,6 +279,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
           if (add && add.k === 'add') return o.map((x) => (x === add ? { ...add, store_id: op.store_id } : x))
           return [...o.filter((x) => !(x.k === 'store' && x.id === op.id)), op]
         }
+        if (op.k === 'detail') return [...o.filter((x) => !(x.k === 'detail' && x.id === op.id)), op]
         if (op.k === 'unbought' && o.some((x) => x.k === 'bought' && x.id === op.id)) {
           return o.filter((x) => !(x.k === 'bought' && x.id === op.id))
         }
@@ -354,6 +360,15 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         case 'bought':
           m.delete(op.id)
           break
+        case 'detail': {
+          const n = m.get(op.id)
+          if (n) {
+            const upd = { ...n, quantity: op.quantity, note: op.note }
+            needCache.current.set(op.id, upd)
+            m.set(op.id, upd)
+          }
+          break
+        }
         case 'store': {
           const n = m.get(op.id)
           if (n) {
@@ -439,6 +454,12 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
 
   const setNeedStore = useCallback(
     (needId: string, storeId: string | null) => pushOp({ k: 'store', id: needId, store_id: storeId }),
+    [pushOp],
+  )
+
+  const setNeedDetail = useCallback(
+    (needId: string, quantity: string | null, note: string | null) =>
+      pushOp({ k: 'detail', id: needId, quantity, note }),
     [pushOp],
   )
 
@@ -543,6 +564,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     toggleMissing,
     addMissing,
     setNeedStore,
+    setNeedDetail,
     markBought,
     propose,
     decide: async (id, approve, recurrence) => {
