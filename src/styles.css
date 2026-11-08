@@ -2342,3 +2342,41 @@ textarea {
   color: var(--accent);
   border: 2px solid var(--accent);
 }
+
+/* nota che si apre dentro al pulsante (Cosa manca) */
+.slname {
+  transition: top 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.slider.peek .slname {
+  top: 24px;
+}
+.slnote {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 49px;
+  text-align: right;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: pre-wrap;
+}
+.slider.peek .slnote {
+  opacity: 1;
+  transition-delay: 0.15s;
+}
+.slider .slstore,
+.slider .whodot {
+  transition: top 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+}
+.slider.peek .slstore,
+.slider.peek .whodot {
+  top: 24.5px;
+}
+.slnote {
+  left: 56px;
+}

@@ -36,8 +36,20 @@ export function SlideRow({
   const [picking, setPicking] = useState(false)
   const [detail, setDetail] = useState(false)
   const dragged = useRef(false)
+  const [peek, setPeek] = useState(false) // nota aperta dentro del pulsante (Cosa manca)
+  const noteRef = useRef<HTMLDivElement>(null)
+  const [noteH, setNoteH] = useState(0)
+  const peekTimer = useRef<number | undefined>(undefined)
+  const closePeek = () => {
+    window.clearTimeout(peekTimer.current)
+    setPeek(false)
+  }
+  useEffect(() => () => window.clearTimeout(peekTimer.current), [])
   const need = d.needByItem.get(item.id)
   const store = need ? d.storeOf(need.store_id) : undefined
+  useEffect(() => {
+    if (!need?.note) closePeek()
+  }, [need?.note])
   const rowRef = useRef<HTMLLIElement>(null)
   const drag = useRef<{
     id: number
@@ -110,6 +122,7 @@ export function SlideRow({
     if (e.button !== 0 && e.pointerType === 'mouse') return
     const w = rowRef.current?.offsetWidth ?? 300
     setPend(null)
+    closePeek()
     drag.current = {
       id: e.pointerId,
       x: e.clientX,
@@ -172,12 +185,18 @@ export function SlideRow({
       className="slrow"
       data-tour={tour}
       ref={rowRef}
-      style={{ ['--o' as string]: fade.o, transition: fade.ms ? `--o ${fade.ms}ms linear` : 'none' }}
+      style={{
+        ['--o' as string]: fade.o,
+        height: peek ? 49 + noteH : undefined,
+        transition: `${fade.ms ? `--o ${fade.ms}ms linear, ` : ''}height 0.4s cubic-bezier(0.2, 0.8, 0.3, 1)`,
+      }}
     >
       <div
         role="button"
         tabIndex={0}
-        className={'slider' + (f !== null ? ' dragging' : '') + (snapAnim || f === null ? ' glide' : '')}
+        className={
+          'slider' + (peek ? ' peek' : '') + (f !== null ? ' dragging' : '') + (snapAnim || f === null ? ' glide' : '')
+        }
         style={{
           ['--f' as string]: shown,
           ['--m' as string]: mix,
@@ -189,7 +208,16 @@ export function SlideRow({
         onPointerCancel={(e) => end(e, true)}
         onClick={() => {
           // un tocco su un prodotto che manca apre quantità e nota (sul "click", così il tocco non cade nella finestra appena aperta)
-          if (need && !dragged.current && (pickStore || need.note)) setDetail(true)
+          if (!need || dragged.current) return
+          if (pickStore) setDetail(true)
+          else if (need.note) {
+            // in Cosa manca la nota si apre dentro al pulsante e si richiude da sola dopo 7 secondi
+            if (peek) return closePeek()
+            setNoteH((noteRef.current?.scrollHeight ?? 0) + 14)
+            setPeek(true)
+            window.clearTimeout(peekTimer.current)
+            peekTimer.current = window.setTimeout(() => setPeek(false), 7000)
+          }
         }}
         onKeyDown={onKey}
         aria-pressed={Boolean(need)}
@@ -208,6 +236,11 @@ export function SlideRow({
             </span>
           )}
         </span>
+        {need?.note && !pickStore && (
+          <div className="slnote" ref={noteRef} aria-hidden={!peek}>
+            {need.note}
+          </div>
+        )}
         {need && !pickStore && store && (
           <span className="slstore set static" aria-label={`Negozio: ${store.name}`}>
             <StoreLogo store={store} size={27} />
@@ -239,7 +272,6 @@ export function SlideRow({
       {detail && need && (
         <NeedDetailSheet
           title={item.name}
-          readOnly={!pickStore}
           quantity={need.quantity}
           note={need.note}
           onSave={(q, n) => d.setNeedDetail(need.id, q, n)}
