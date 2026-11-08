@@ -35,6 +35,7 @@ export function SlideRow({
   const d = useData()
   const [picking, setPicking] = useState(false)
   const [detail, setDetail] = useState(false)
+  const dragged = useRef(false)
   const need = d.needByItem.get(item.id)
   const store = need ? d.storeOf(need.store_id) : undefined
   const rowRef = useRef<HTMLLIElement>(null)
@@ -145,10 +146,9 @@ export function SlideRow({
     const g = drag.current
     if (!g || g.id !== e.pointerId) return
     drag.current = null
-    if (!g.on) {
-      if (need && !cancelled) setDetail(true) // un tocco su un prodotto che manca apre quantità e nota
-      return
-    }
+    if (!g.on) return
+    dragged.current = true // il "click" che segue un trascinamento non deve aprire i dettagli
+    window.setTimeout(() => (dragged.current = false), 350)
     flash()
     setF(null)
     if (g.locked && !cancelled) {
@@ -187,6 +187,10 @@ export function SlideRow({
         onPointerMove={onMove}
         onPointerUp={(e) => end(e, false)}
         onPointerCancel={(e) => end(e, true)}
+        onClick={() => {
+          // un tocco su un prodotto che manca apre quantità e nota (sul "click", così il tocco non cade nella finestra appena aperta)
+          if (need && !dragged.current) setDetail(true)
+        }}
         onKeyDown={onKey}
         aria-pressed={Boolean(need)}
         aria-label={

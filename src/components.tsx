@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { IconX } from './icons'
 import { useData, type ProposeInput } from './data'
 import { useToast } from './toast'
@@ -268,7 +268,11 @@ export function NeedDetailSheet({
   const [q, setQ] = useState(quantity ?? '')
   const [n, setN] = useState(note ?? '')
   const num = /^\d+$/.test(q.trim()) ? parseInt(q.trim(), 10) : null
-  const step = (by: number) => setQ(String(Math.max(1, (num ?? 1) + by)))
+  const born = useRef(Date.now())
+  const step = (by: number) => {
+    if (Date.now() - born.current < 400) return // ignora i tocchi arrivati insieme all'apertura
+    setQ(String(Math.max(1, (num ?? 1) + by)))
+  }
   function save() {
     onSave(q.trim() || null, n.trim() || null)
     onClose()
