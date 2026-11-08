@@ -110,19 +110,8 @@ export default function StoresScreen() {
           return (
             <div key={s.id} className="shopcell">
               <div className="shopcard custom on" style={{ ['--c' as string]: s.color }}>
-                <span className="cname">{s.name}</span>
-                <div className="crow">
-                  <button
-                    type="button"
-                    className="switch"
-                    onClick={() => void removeCustom(s)}
-                    role="switch"
-                    aria-checked={true}
-                    aria-label={`${s.name}: spegni per eliminare`}
-                  >
-                    <i />
-                    <IconTrash />
-                  </button>
+                <div className="cname">
+                  <span>{s.name}</span>
                   <button
                     type="button"
                     className={'notebtn' + (s.note ? ' has' : '')}
@@ -132,6 +121,17 @@ export default function StoresScreen() {
                     <IconNote />
                   </button>
                 </div>
+                <button
+                  type="button"
+                  className="switch"
+                  onClick={() => void removeCustom(s)}
+                  role="switch"
+                  aria-checked={true}
+                  aria-label={`${s.name}: spegni per eliminare`}
+                >
+                  <i />
+                  <IconTrash />
+                </button>
               </div>
             </div>
           )
