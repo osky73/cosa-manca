@@ -82,8 +82,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const lastBought = allBought ? Math.max(...boughtRows.map((r) => fadeOf(r) ?? 0)) : undefined
   const fadeOff = useFade(lastBought, 0)
 
-  const hintOn = useHintWindow()
-
+  
   const shown = useMemo(
     () => [...rows, ...boughtRows].sort((a, b) => byCategoryThenName(a.item, b.item)),
     [rows, boughtRows],
@@ -150,12 +149,10 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const hintIds = sections
     .flatMap((sec) => sec.rows)
     .filter((r) => r.need.status === 'missing')
-    .slice(0, 3)
+    .slice(0, 1)
     .map((r) => r.item.id)
-  const hintDelay = (id: string) => {
-    const i = hintIds.indexOf(id)
-    return i < 0 ? undefined : 500 + i * 140
-  }
+  const hintOn = useHintWindow('shop', hintIds.length > 0)
+  const hintDelay = (id: string) => (hintIds.includes(id) ? 500 : undefined)
 
   return (
     <div className="screen shopscreen">

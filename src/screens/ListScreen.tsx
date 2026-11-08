@@ -22,15 +22,12 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
     return [...m.entries()].sort((a, b) => catRank(a[0]) - catRank(b[0]) || a[0].localeCompare(b[0], 'it'))
   }, [visible])
   const missingCount = d.needByItem.size
-  const hintOn = useHintWindow()
   const hintIds = blocks
     .flatMap(([, items]) => items)
-    .slice(0, 3)
+    .slice(0, 1)
     .map((i) => i.id)
-  const hintDelay = (id: string) => {
-    const i = hintIds.indexOf(id)
-    return i < 0 ? undefined : 500 + i * 140
-  }
+  const hintOn = useHintWindow('list', hintIds.length > 0)
+  const hintDelay = (id: string) => (hintIds.includes(id) ? 500 : undefined)
 
   const results = qn ? visible.filter((i) => norm(i.name).includes(qn)) : []
   const exact = qn ? visible.some((i) => norm(i.name) === qn) : false
