@@ -126,7 +126,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const countNone = rows.filter((x) => !x.need.store_id || !d.storeOf(x.need.store_id)).length
 
   return (
-    <div className="screen">
+    <div className="screen shopscreen">
       <header className="top">
         <div className="top-row">
           <h1>Cosa manca</h1>
@@ -193,16 +193,17 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         ))
       )}
 
-      {rows.length + boughtRows.length > 0 && <div className="clear-spacer" />}
       {rows.length + boughtRows.length > 0 && (
-        <button
-          className="clear-all"
-          aria-label="Cancella tutto"
-          title="Cancella tutto"
-          onClick={() => setAsking(true)}
-        >
-          <IconTrash />
-        </button>
+        <div className="clear-wrap">
+          <button
+            className="clear-all"
+            aria-label="Cancella tutto"
+            title="Cancella tutto"
+            onClick={() => setAsking(true)}
+          >
+            <IconTrash />
+          </button>
+        </div>
       )}
 
       {asking && (
