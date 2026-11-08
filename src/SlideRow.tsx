@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useData } from './data'
 import { StoreLogo, StorePickerSheet } from './components'
 import { articleFor } from './lib'
+import { WhoDot } from './Pending'
 import type { Item, Tab } from './types'
 
 // Soglia di aggancio (quota del percorso) e quanto "pesa" la resistenza iniziale.
@@ -46,6 +47,8 @@ export function SlideRow({
   const [snapAnim, setSnapAnim] = useState(false)
   const [pend, setPend] = useState<0 | 1 | null>(null) // destinazione dopo il rilascio, finché i dati non si aggiornano
   const side: 0 | 1 = need ? 1 : 0
+  const hasWho = Boolean(need && item.recurrence === 'one_off' && d.whoOf(item.created_by))
+  const hasSlot = Boolean(need && (pickStore || store))
   const [wig, setWig] = useState<number | null>(null)
   const side0 = need ? 1 : 0
   useEffect(() => {
@@ -167,7 +170,11 @@ export function SlideRow({
         role="button"
         tabIndex={0}
         className={'slider' + (f !== null ? ' dragging' : '') + (snapAnim || f === null ? ' glide' : '')}
-        style={{ ['--f' as string]: shown, ['--m' as string]: mix }}
+        style={{
+          ['--f' as string]: shown,
+          ['--m' as string]: mix,
+          ['--x' as string]: hasWho && hasSlot ? '33px' : '0px',
+        }}
         onPointerDown={onDown}
         onPointerMove={onMove}
         onPointerUp={(e) => end(e, false)}
@@ -185,6 +192,9 @@ export function SlideRow({
           <span className="slstore set static" aria-label={`Negozio: ${store.name}`}>
             <StoreLogo store={store} size={27} />
           </span>
+        )}
+        {need && item.recurrence === 'one_off' && (
+          <WhoDot userId={item.created_by} className={(!pickStore && store) || pickStore ? 'beside' : ''} />
         )}
         {need && pickStore && (
           <button

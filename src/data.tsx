@@ -54,6 +54,7 @@ interface DataCtx {
   itemOf: (id: string) => Item | undefined
   storeOf: (id: string | null) => Store | undefined
   nameOf: (userId: string | null) => string
+  whoOf: (userId: string | null | undefined) => string | null
   toggleMissing: (item: Item) => void
   setNeedStore: (needId: string, storeId: string | null) => void
   markBought: (need: Need) => void
@@ -371,6 +372,14 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     (id: string | null) => (id ? snap.stores.find((s) => s.id === id && s.active !== false) : undefined),
     [snap.stores],
   )
+  const whoOf = useCallback(
+    (uid: string | null | undefined) => {
+      if (!uid) return null
+      const p = snap.members.find((m) => m.user_id === uid)?.profile
+      return p?.display_name || p?.email.split('@')[0] || null
+    },
+    [snap.members],
+  )
   const nameOf = useCallback(
     (uid: string | null) => {
       if (!uid) return 'qualcuno'
@@ -493,6 +502,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     itemOf,
     storeOf,
     nameOf,
+    whoOf,
     toggleMissing,
     setNeedStore,
     markBought,

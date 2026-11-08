@@ -4,6 +4,7 @@ import { Sheet } from '../components'
 import { IconTrash } from '../icons'
 import { useFade } from '../useFade'
 import { useHintWindow } from '../useHint'
+import Pending from '../Pending'
 import { SlideRow } from '../SlideRow'
 import { byCategoryThenName } from '../lib'
 import type { Item, Need, Tab } from '../types'
@@ -82,7 +83,6 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const lastBought = allBought ? Math.max(...boughtRows.map((r) => fadeOf(r) ?? 0)) : undefined
   const fadeOff = useFade(lastBought, 0)
 
-  
   const shown = useMemo(
     () => [...rows, ...boughtRows].sort((a, b) => byCategoryThenName(a.item, b.item)),
     [rows, boughtRows],
@@ -167,6 +167,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
           Sai quando chiami a casa e chiedi «cosa manca?» e nessuno ha voglia di andare a vedere? Ecco fatto.
         </p>
       </header>
+      <Pending />
       <div className="top sticky bar">
         {hasList && d.stores.length > 0 && (
           <div

@@ -79,7 +79,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
       </div>
 
       {d.isAdmin && pendingCount > 0 && !q && (
-        <button className="banner" onClick={() => goto('sugg')}>
+        <button className="banner" onClick={() => goto('shop')}>
           {pendingCount === 1 ? '1 suggerimento da approvare' : `${pendingCount} suggerimenti da approvare`} →
         </button>
       )}
