@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
-import { Sheet, StoreLogo } from '../components'
+import { Sheet } from '../components'
 import { IconTrash } from '../icons'
 import { useFade } from '../useFade'
 import { SlideRow } from '../SlideRow'
@@ -185,7 +185,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
                   style={{ ['--c' as string]: s.color }}
                   onClick={() => setFilter(filter === s.id ? 'all' : s.id)}
                 >
-                  <StoreLogo store={s} size={22} /> {s.name} <span className="count">{countFor(s.id)}</span>
+                  {s.name} <span className="count">{countFor(s.id)}</span>
                 </button>
               ))}
           </div>
