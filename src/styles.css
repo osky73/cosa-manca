@@ -316,7 +316,6 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid v
 
 .shopcard.custom { align-content: start; min-height: 0; gap: 8px; }
 .shopcard.custom .cname { height: 60px; display: grid; place-items: center; padding: 0 4px; }
-.shopcard.custom .switch, .shopcard.custom.on .switch { background: rgba(255, 255, 255, .35); }
 .shopcard.custom .switch svg { position: absolute; left: 3px; top: 2px; width: 18px; height: 18px; color: #fff; opacity: .55; }
 
 /* Copertina d'ingresso */
@@ -374,8 +373,10 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid v
 
 .shopcard.custom .cname { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 4px; font-size: 16px; }
 .shopcard.custom .cname > span { min-width: 0; }
-.shopcard.custom .switch, .shopcard.custom.on .switch { background: var(--accent); padding: 0; border: 0; }
-.shopcard.custom .switch i { transform: translateX(18px); }
+.shopcard.custom .switch { background: var(--line); padding: 0; border: 0; }
+.shopcard.custom.on .switch { background: var(--accent); }
+.shopcard.custom .switch svg { transition: opacity .2s; }
+.shopcard.custom:not(.on) .switch svg { opacity: 0; }
 .shopcard.custom .notebtn { flex: none; }
 
 .received { margin-top: 22px; }

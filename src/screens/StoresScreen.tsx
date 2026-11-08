@@ -16,6 +16,7 @@ export default function StoresScreen() {
   const [color, setColor] = useState(STORE_COLORS[0])
 
   const custom = d.allStores.filter((s) => !logoUrl(s.logo))
+  const [leaving, setLeaving] = useState<string | null>(null)
   const [noteFor, setNoteFor] = useState<string | null>(null)
   const [noteText, setNoteText] = useState('')
   const noteStore = d.allStores.find((s) => s.id === noteFor)
@@ -109,7 +110,10 @@ export default function StoresScreen() {
         {custom.map((s) => {
           return (
             <div key={s.id} className="shopcell">
-              <div className="shopcard custom on" style={{ ['--c' as string]: s.color }}>
+              <div
+                className={'shopcard custom' + (leaving === s.id ? '' : ' on')}
+                style={{ ['--c' as string]: s.color }}
+              >
                 <div className="cname">
                   <span>{s.name}</span>
                   <button
@@ -124,9 +128,16 @@ export default function StoresScreen() {
                 <button
                   type="button"
                   className="switch"
-                  onClick={() => void removeCustom(s)}
+                  onClick={() => {
+                    if (leaving) return
+                    setLeaving(s.id)
+                    window.setTimeout(() => {
+                      void removeCustom(s)
+                      setLeaving(null)
+                    }, 320)
+                  }}
                   role="switch"
-                  aria-checked={true}
+                  aria-checked={leaving !== s.id}
                   aria-label={`${s.name}: spegni per eliminare`}
                 >
                   <i />
