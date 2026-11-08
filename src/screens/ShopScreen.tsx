@@ -197,9 +197,9 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
               Comprati
               {boughtRows.length > 0 && <span className="count">{boughtRows.length}</span>}
             </span>
-            <span style={fadeOff}>
+            <span>
               Mancano
-              {rows.length > 0 && <span className="count">{rows.length}</span>}
+              <span className="count">{rows.length}</span>
             </span>
           </div>
         )}
