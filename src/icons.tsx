@@ -113,3 +113,10 @@ export function IconStore() {
     </Svg>
   )
 }
+
+export const IconMapPin = () => (
+  <Svg size={24}>
+    <path d="M12 21s7-6.2 7-11.5a7 7 0 1 0-14 0C5 14.8 12 21 12 21z" />
+    <circle cx="12" cy="9.5" r="2.5" />
+  </Svg>
+)

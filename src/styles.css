@@ -295,3 +295,5 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .filters button.off { opacity: .45; }
 .slstore.static { pointer-events: none; }
 .filters .where { flex: none; align-self: center; font-size: 16px; font-weight: 500; color: var(--muted); padding-right: 2px; }
+.map-btn { margin-left: auto; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--card); border: 1.5px solid var(--line); color: var(--accent); flex: none; }
+.map-btn:active { background: var(--ok-bg); }

@@ -1,7 +1,7 @@
 import { lazy, Suspense, useState, type FormEvent } from 'react'
 import { useData } from '../data'
 import { StoreLogo } from '../components'
-import { IconTrash } from '../icons'
+import { IconMapPin, IconTrash } from '../icons'
 import { STORE_CATALOG, STORE_COLORS, logoUrl, norm } from '../lib'
 import { useToast } from '../toast'
 
@@ -46,6 +46,14 @@ export default function StoresScreen() {
       <header className="top sticky">
         <div className="top-row">
           <h1>Negozi</h1>
+          <button
+            className="map-btn"
+            onClick={() => setMapOpen(true)}
+            aria-label="Mostra i negozi vicino a te sulla mappa"
+            title="Mappa dei negozi vicini"
+          >
+            <IconMapPin />
+          </button>
           {(!d.online || d.pendingOps > 0) && (
             <span className="pill warn">{d.online ? 'Sincronizzo…' : 'Offline'}</span>
           )}
@@ -78,10 +86,6 @@ export default function StoresScreen() {
           )
         })}
       </div>
-
-      <button className="btn ghost wide" onClick={() => setMapOpen(true)}>
-        Mostra i negozi vicino a te sulla mappa
-      </button>
 
       <section>
         <h2 className="section">Un altro negozio</h2>
