@@ -58,16 +58,20 @@ Deno.serve(async (req) => {
   const groupName = group?.name ?? 'casa'
   const inviter = me?.display_name?.trim() || me?.email || 'Qualcuno'
 
-  const html = `<div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;color:#1c1c1c">
-<h2>${esc(inviter)} ti ha invitato su Cosa manca</h2>
-<p>Cosa manca è la lista di ciò che manca in casa, condivisa con i tuoi conviventi. Sei stato aggiunto al gruppo <b>${esc(groupName)}</b>.</p>
-<p><a href="${SITE_URL}" style="display:inline-block;background:#2f7d4f;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600">Apri Cosa manca</a></p>
-<p>Come entrare:</p>
-<ol>
-<li>Apri <a href="${SITE_URL}">${SITE_URL.replace('https://', '')}</a> dal telefono.</li>
-<li>Registrati con questa email (<b>${esc(email)}</b>) e tocca "Ricevi il codice".</li>
-<li>Inserisci il codice che ti arriva via email.</li>
+  const site = SITE_URL.replace('https://', '')
+  const html = `<div style="background:#f6f3ee;padding:24px 12px">
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;max-width:480px;margin:0 auto;background:#ffffff;border-radius:16px;padding:28px 24px;color:#1c1c1c;font-size:16px;line-height:1.5">
+<div style="font-size:14px;font-weight:700;color:#2f7d4f;letter-spacing:.4px;margin:0 0 14px">COSA MANCA</div>
+<h1 style="margin:0 0 14px;font-size:22px;line-height:1.3;font-weight:800">${esc(inviter)} ti ha invitato su Cosa manca</h1>
+<p style="margin:0 0 22px">Cosa manca è la lista di ciò che manca in casa, condivisa con i tuoi conviventi. Sei stato aggiunto al gruppo <b>${esc(groupName)}</b>.</p>
+<p style="margin:0 0 26px"><a href="${SITE_URL}" style="display:inline-block;background:#2f7d4f;color:#ffffff;padding:14px 26px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">Apri Cosa manca</a></p>
+<p style="margin:0 0 8px;font-weight:700">Come entrare</p>
+<ol style="margin:0;padding-left:22px">
+<li style="margin:0 0 8px">Apri <a href="${SITE_URL}" style="color:#2f7d4f">${site}</a> dal telefono.</li>
+<li style="margin:0 0 8px">Registrati con questa email (<b>${esc(email)}</b>) e tocca "Ricevi il codice".</li>
+<li style="margin:0">Inserisci il codice che ti arriva via email.</li>
 </ol>
+</div>
 </div>`
 
   const text = `${inviter} ti ha invitato su Cosa manca, nel gruppo "${groupName}".\n\nApri ${SITE_URL}, registrati con ${email} e tocca "Ricevi il codice": ti arriva un codice via email.`
