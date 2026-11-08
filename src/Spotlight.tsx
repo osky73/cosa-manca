@@ -8,12 +8,13 @@ interface Box {
   w: number
   h: number
 }
-const PAD = 6
+const PAD = 10
 
 /** Oscura tutto tranne un punto dell'app (lasciato toccabile) e mostra una breve spiegazione. */
 export default function Spotlight({ tour, text, onClose }: { tour: Tour; text: string; onClose: () => void }) {
   const toast = useToast()
   const [box, setBox] = useState<Box | null>(null)
+  const [closing, setClosing] = useState(false)
   const el = useRef<Element | null>(null)
 
   useEffect(() => {
@@ -59,20 +60,35 @@ export default function Spotlight({ tour, text, onClose }: { tour: Tour; text: s
   const y = Math.max(0, box.y - PAD)
   const w = Math.min(vw - x, box.w + PAD * 2)
   const h = box.h + PAD * 2
-  const below = y + h + 150 < vh
+  const below = y + h + 120 < vh
+  const close = () => {
+    if (closing) return
+    setClosing(true)
+    window.setTimeout(onClose, 380)
+  }
   return (
-    <div className="spot" role="dialog" aria-label="Guida">
-      <div className="spot-dim" style={{ left: 0, top: 0, width: '100%', height: y }} onClick={onClose} />
-      <div className="spot-dim" style={{ left: 0, top: y + h, width: '100%', bottom: 0 }} onClick={onClose} />
-      <div className="spot-dim" style={{ left: 0, top: y, width: x, height: h }} onClick={onClose} />
-      <div className="spot-dim" style={{ left: x + w, top: y, right: 0, height: h }} onClick={onClose} />
-      <div className="spot-ring" style={{ left: x, top: y, width: w, height: h }} />
-      <div className="spot-tip" style={below ? { top: y + h + 14 } : { bottom: vh - y + 14 }}>
-        <p>{text}</p>
-        <button className="btn slim" onClick={onClose}>
-          Ho capito
-        </button>
-      </div>
+    <div className={'spot' + (closing ? ' out' : '')} role="dialog" aria-label="Guida">
+      {/* oscuramento verde trasparente con un'apertura sfumata attorno all'elemento */}
+      <svg className="spot-svg" width={vw} height={vh} aria-hidden="true">
+        <defs>
+          <filter id="spot-blur" x="-20%" y="-50%" width="140%" height="200%">
+            <feGaussianBlur stdDeviation="12" />
+          </filter>
+          <mask id="spot-mask">
+            <rect width={vw} height={vh} fill="#fff" />
+            <rect x={x} y={y} width={w} height={h} rx="16" fill="#000" filter="url(#spot-blur)" />
+          </mask>
+        </defs>
+        <rect width={vw} height={vh} fill="rgba(18, 74, 44, 0.8)" mask="url(#spot-mask)" />
+      </svg>
+      {/* zone che catturano il tocco (l'elemento evidenziato resta toccabile) */}
+      <div className="spot-hit" style={{ left: 0, top: 0, width: '100%', height: y }} onClick={close} />
+      <div className="spot-hit" style={{ left: 0, top: y + h, width: '100%', bottom: 0 }} onClick={close} />
+      <div className="spot-hit" style={{ left: 0, top: y, width: x, height: h }} onClick={close} />
+      <div className="spot-hit" style={{ left: x + w, top: y, right: 0, height: h }} onClick={close} />
+      <p className="spot-text" style={below ? { top: y + h + 22 } : { bottom: vh - y + 22 }}>
+        {text}
+      </p>
     </div>
   )
 }
