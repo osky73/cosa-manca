@@ -397,10 +397,11 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
         pushOp({ k: 'cancel', id: open.id })
         toast.show(`«${item.name}» tolto dalla lista`, { label: 'Annulla', run: () => addNeed(item.id, prevStore) })
       } else {
-        addNeed(item.id, item.default_store_id)
+        const was = boughtNeeds.find((n) => n.item_id === item.id)
+        addNeed(item.id, was ? was.store_id : item.default_store_id)
       }
     },
-    [needByItem, pushOp, addNeed, toast],
+    [needByItem, boughtNeeds, pushOp, addNeed, toast],
   )
 
   const setNeedStore = useCallback(
