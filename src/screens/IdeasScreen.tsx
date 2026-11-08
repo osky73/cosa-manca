@@ -75,6 +75,7 @@ export default function IdeasScreen() {
 
       <form
         className="card ideas-form"
+        data-tour="idea-form"
         onSubmit={(e) => {
           e.preventDefault()
           void send('idea')

@@ -42,4 +42,11 @@ export const TOURS: Tour[] = [
         : 'Se il negozio è tra i loghi, accendilo con il suo interruttore. Se non c’è, scrivi qui il nome, scegli un colore e tocca «Suggerisci negozio»: lo approva l’amministratore.',
     doneWhen: 'store-added',
   },
+  {
+    id: 'bug',
+    question: 'Cosa faccio se trovo un bug?',
+    tab: 'ideas',
+    selector: '[data-tour="idea-form"]',
+    text: () => 'Segnalalo qui, in Idee: scrivi che è un bug e racconta cosa è successo.',
+  },
 ]
