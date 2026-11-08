@@ -3,8 +3,9 @@ import { useHintWindow } from '../useHint'
 import { useData } from '../data'
 import { ProposeSheet } from '../components'
 import { SlideRow } from '../SlideRow'
-import { IconGrip, IconPlus, IconSearch, IconTrash, IconX } from '../icons'
+import { IconGrip, IconMic, IconPlus, IconSearch, IconTrash, IconX } from '../icons'
 import { useToast } from '../toast'
+import { dictationSupported, parseVoice, startDictation, type VoiceCmd } from '../voice'
 import { catRank, categoriesOf, norm } from '../lib'
 import type { Item, Tab } from '../types'
 
@@ -21,6 +22,75 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
   const dropRef = useRef<{ cat: string; index: number } | null>(null)
   const yRef = useRef(0)
   const dragId = useRef<string | null>(null)
+
+  // ---------- Comandi vocali ----------
+  const [listening, setListening] = useState(false)
+  const [heard, setHeard] = useState('')
+  const stopRef = useRef<(() => void) | null>(null)
+  const [queue, setQueue] = useState<VoiceCmd[]>([]) // prodotti nuovi da completare (categoria, ecc.)
+  const canVoice = useMemo(() => dictationSupported(), [])
+
+  function listen() {
+    if (listening) {
+      stopRef.current?.()
+      return
+    }
+    setHeard('')
+    setListening(true)
+    try {
+      stopRef.current = startDictation({
+        onText: setHeard,
+        onEnd: (text, error) => {
+          setListening(false)
+          stopRef.current = null
+          if (error && error !== 'no-speech' && error !== 'aborted') {
+            toast.show(
+              error === 'not-allowed' || error === 'service-not-allowed'
+                ? 'Consenti il microfono per usare la voce'
+                : 'Non ho capito, riprova',
+            )
+            return
+          }
+          if (text) runVoice(text)
+          else toast.show('Non ho sentito niente')
+        },
+      })
+    } catch {
+      setListening(false)
+      toast.show('La voce non funziona su questo telefono')
+    }
+  }
+
+  function runVoice(text: string) {
+    const cmds = parseVoice(text, visible, d.allStores)
+    if (cmds.length === 0) {
+      toast.show(`Non ho capito: «${text}»`)
+      return
+    }
+    const added: string[] = []
+    const already: string[] = []
+    const inactive: string[] = []
+    const fresh: VoiceCmd[] = []
+    for (const c of cmds) {
+      const ok = c.store && d.stores.some((s) => s.id === c.store!.id) ? c.store : null
+      if (c.store && !ok) inactive.push(c.store.name)
+      if (!c.item) {
+        fresh.push({ ...c, store: ok })
+        continue
+      }
+      const r = d.addMissing(c.item, ok?.id)
+      const label = c.item.name + (ok ? ` (${ok.name})` : '')
+      if (r === 'added') added.push(label)
+      else already.push(c.item.name)
+    }
+    const msg: string[] = []
+    if (added.length) msg.push(`Aggiunti: ${added.join(', ')}`)
+    if (already.length) msg.push(`Già in lista: ${already.join(', ')}`)
+    if (inactive.length) msg.push(`${[...new Set(inactive)].join(', ')} non è attivo: senza negozio`)
+    if (fresh.length) msg.push(`Nuovi: ${fresh.map((f) => f.name).join(', ')}`)
+    toast.show(msg.join(' · '))
+    if (fresh.length) setQueue(fresh)
+  }
 
   const qn = norm(q)
   const visible = useMemo(() => d.items.filter((i) => !i.hidden), [d.items])
@@ -166,6 +236,16 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
               <IconX />
             </button>
           )}
+          {canVoice && (
+            <button
+              className={'icon-btn mic' + (listening ? ' on' : '')}
+              onClick={listen}
+              aria-label={listening ? 'Smetti di ascoltare' : 'Parla per aggiungere'}
+              aria-pressed={listening}
+            >
+              <IconMic />
+            </button>
+          )}
         </div>
         {!qn && (
           <div className="cols" aria-hidden="true">
@@ -308,10 +388,33 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
         </section>
       )}
 
+      {listening && (
+        <div className="voicebar" role="status">
+          <span className="pulse" />
+          <div className="grow">
+            <b>{heard || 'Sto ascoltando…'}</b>
+            {!heard && <small>Di' ad esempio: «manca il latte» o «prendi il pane all'Esselunga»</small>}
+          </div>
+          <button className="btn slim" onClick={listen}>
+            Fine
+          </button>
+        </div>
+      )}
+
       {drag && (
         <div className="dragghost" style={{ top: drag.y - 24 }}>
           {drag.label}
         </div>
+      )}
+
+      {proposeName === null && queue.length > 0 && (
+        <ProposeSheet
+          key={queue[0].name}
+          initialName={queue[0].name.charAt(0).toUpperCase() + queue[0].name.slice(1)}
+          initialStore={queue[0].store?.id ?? null}
+          onClose={() => setQueue((x) => x.slice(1))}
+          onDone={() => setQueue((x) => x.slice(1))}
+        />
       )}
 
       {proposeName !== null && (

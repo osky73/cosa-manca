@@ -139,3 +139,10 @@ export const IconGrip = () => (
     <circle cx="15" cy="18" r="1.2" fill="currentColor" />
   </Svg>
 )
+
+export const IconMic = () => (
+  <Svg size={20}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </Svg>
+)

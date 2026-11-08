@@ -118,10 +118,12 @@ export function StorePickerSheet({
 
 export function ProposeSheet({
   initialName,
+  initialStore = null,
   onClose,
   onDone,
 }: {
   initialName: string
+  initialStore?: string | null
   onClose: () => void
   onDone: () => void
 }) {
@@ -130,7 +132,7 @@ export function ProposeSheet({
   const [name, setName] = useState(initialName)
   const [rec, setRec] = useState<Recurrence | null>(null)
   const [cat, setCat] = useState('')
-  const [store, setStore] = useState<string | null>(null)
+  const [store, setStore] = useState<string | null>(initialStore)
   const [note, setNote] = useState('')
   const [mark, setMark] = useState(true)
   const [busy, setBusy] = useState(false)

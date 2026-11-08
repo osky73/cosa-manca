@@ -57,6 +57,7 @@ interface DataCtx {
   nameOf: (userId: string | null) => string
   whoOf: (userId: string | null | undefined) => string | null
   toggleMissing: (item: Item) => void
+  addMissing: (item: Item, storeId?: string | null) => 'added' | 'already'
   setNeedStore: (needId: string, storeId: string | null) => void
   markBought: (need: Need) => void
   propose: (p: ProposeInput) => Promise<'added' | 'pending'>
@@ -440,6 +441,20 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     [pushOp],
   )
 
+  const addMissing = useCallback(
+    (item: Item, storeId?: string | null): 'added' | 'already' => {
+      const open = needByItem.get(item.id)
+      if (open) {
+        if (storeId && open.store_id !== storeId) setNeedStore(open.id, storeId)
+        return 'already'
+      }
+      const was = boughtNeeds.find((n) => n.item_id === item.id)
+      addNeed(item.id, storeId ?? (was ? was.store_id : item.default_store_id))
+      return 'added'
+    },
+    [needByItem, boughtNeeds, addNeed, setNeedStore],
+  )
+
   const markBought = useCallback(
     (need: Need) => {
       pushOp({ k: 'bought', id: need.id })
@@ -525,6 +540,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     nameOf,
     whoOf,
     toggleMissing,
+    addMissing,
     setNeedStore,
     markBought,
     propose,
