@@ -133,7 +133,8 @@ export default function StoresScreen() {
                     setLeaving(s.id)
                     window.setTimeout(() => {
                       void removeCustom(s)
-                      setLeaving(null)
+                      // se l'eliminazione non va a buon fine, il negozio torna acceso dopo qualche secondo
+                      window.setTimeout(() => setLeaving(null), 4000)
                     }, 320)
                   }}
                   role="switch"
