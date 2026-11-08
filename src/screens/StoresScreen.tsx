@@ -24,6 +24,7 @@ export default function StoresScreen() {
   const [color, setColor] = useState(STORE_COLORS[0])
 
   const custom = d.allStores.filter((s) => !logoUrl(s.logo))
+  const [leaving, setLeaving] = useState<string | null>(null)
   const [noteFor, setNoteFor] = useState<string | null>(null)
   const [noteText, setNoteText] = useState('')
   const noteStore = d.allStores.find((s) => s.id === noteFor)
@@ -37,6 +38,11 @@ export default function StoresScreen() {
     if (!noteFor) return
     await d.updateStore(noteFor, { note: noteText.trim() || null })
     setNoteFor(null)
+  }
+
+  async function removeCustom(s: (typeof custom)[number]) {
+    await d.deleteStore(s.id)
+    toast.show(`${s.name} eliminato`, { label: 'Annulla', run: () => void d.addStore(s.name, s.color, null, s.note) })
   }
 
   async function toggle(c: (typeof STORE_CATALOG)[number]) {
@@ -110,25 +116,35 @@ export default function StoresScreen() {
           )
         })}
         {custom.map((s) => {
-          const on = s.active !== false
           return (
             <div key={s.id} className="shopcell">
-              <button
-                type="button"
-                className={'shopcard custom' + (on ? ' on' : ' off')}
+              <div
+                className={'shopcard custom' + (leaving === s.id ? '' : ' on')}
                 style={{ ['--c' as string]: s.color }}
-                onClick={() => void d.updateStore(s.id, { active: !on })}
-                role="switch"
-                aria-checked={on}
-                aria-label={s.name}
               >
-                <span className="cname" style={{ fontSize: nameSize(s.name) }}>
-                  {s.name}
-                </span>
-                <span className="switch" aria-hidden="true">
+                <div className="cname">
+                  <span style={{ fontSize: nameSize(s.name) }}>{s.name}</span>
+                </div>
+                <button
+                  type="button"
+                  className="switch"
+                  onClick={() => {
+                    if (leaving) return
+                    setLeaving(s.id)
+                    window.setTimeout(() => {
+                      void removeCustom(s)
+                      // se l'eliminazione non va a buon fine, il negozio torna acceso dopo qualche secondo
+                      window.setTimeout(() => setLeaving(null), 4000)
+                    }, 320)
+                  }}
+                  role="switch"
+                  aria-checked={leaving !== s.id}
+                  aria-label={`${s.name}: spegni per eliminare`}
+                >
                   <i />
-                </span>
-              </button>
+                  <IconTrash />
+                </button>
+              </div>
             </div>
           )
         })}
