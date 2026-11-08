@@ -15,7 +15,15 @@ function pull(q: number, locked: boolean): number {
   return RESIST * Math.pow(Math.min(q, SNAP) / SNAP, 1.7) // prima della soglia: resistenza
 }
 
-export function SlideRow({ item, goto }: { item: Item; goto: (t: Tab) => void }) {
+export function SlideRow({
+  item,
+  goto,
+  pickStore = true,
+}: {
+  item: Item
+  goto: (t: Tab) => void
+  pickStore?: boolean
+}) {
   const d = useData()
   const [picking, setPicking] = useState(false)
   const need = d.needByItem.get(item.id)
@@ -131,7 +139,12 @@ export function SlideRow({ item, goto }: { item: Item; goto: (t: Tab) => void })
         }
       >
         <span className="slname">{item.name}</span>
-        {need && (
+        {need && !pickStore && store && (
+          <span className="slstore set static" aria-label={`Negozio: ${store.name}`}>
+            <StoreLogo store={store} size={27} />
+          </span>
+        )}
+        {need && pickStore && (
           <button
             type="button"
             className={'slstore' + (store ? ' set' : '')}

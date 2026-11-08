@@ -186,7 +186,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
           <section key={sec.key} className="shopsec">
             <ul className="slist">
               {sec.rows.map(({ item }) => (
-                <SlideRow key={item.id} item={item} goto={goto} />
+                <SlideRow key={item.id} item={item} goto={goto} pickStore={false} />
               ))}
             </ul>
           </section>
