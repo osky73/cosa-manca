@@ -123,8 +123,9 @@ export const IconMapPin = () => (
 
 export const IconNote = () => (
   <Svg size={18}>
-    <path d="M5 4h14v12l-4 4H5z" />
-    <path d="M15 20v-4h4M8 9h8M8 13h4" />
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 11v5.5" />
+    <circle cx="12" cy="7.8" r=".6" fill="currentColor" />
   </Svg>
 )
 
