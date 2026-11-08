@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { useData } from '../data'
 import { Sheet } from '../components'
 import { InstallCard } from '../install'
+import ShareCard from '../ShareCard'
 import { supabase } from '../supabase'
 import { IconEye, IconEyeOff, IconMail, IconShare, IconTrash } from '../icons'
 import { byCategoryThenName, norm } from '../lib'
@@ -313,6 +314,8 @@ export default function GroupScreen({
           </button>
         )}
       </section>
+
+      <ShareCard />
 
       <InstallCard />
 

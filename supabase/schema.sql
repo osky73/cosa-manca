@@ -503,3 +503,15 @@ revoke all on function public.list_feedback() from public, anon;
 grant execute on function public.list_feedback() to authenticated;
 revoke all on function public.is_super_admin() from public, anon;
 grant execute on function public.is_super_admin() to authenticated;
+
+-- Consigli "fai conoscere Cosa manca" (limite giornaliero applicato dalla edge function send-referral)
+create table public.referrals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  email text not null check (email = lower(email) and char_length(email) <= 254),
+  created_at timestamptz not null default now()
+);
+create index on public.referrals (user_id, created_at desc);
+alter table public.referrals enable row level security;
+create policy referrals_insert_own on public.referrals for insert to authenticated with check (user_id = auth.uid());
+create policy referrals_select_own on public.referrals for select to authenticated using (user_id = auth.uid());
