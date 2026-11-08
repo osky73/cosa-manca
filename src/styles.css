@@ -2140,7 +2140,6 @@ textarea {
 .rails {
   position: relative;
 }
-.rails::before,
 .rails::after {
   content: '';
   position: absolute;
@@ -2158,9 +2157,6 @@ textarea {
 .rails.shop {
   --rl: 62px;
   --rr: 94px;
-}
-.rails::before {
-  left: var(--rl);
 }
 .rails::after {
   right: var(--rr);
