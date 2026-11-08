@@ -2256,3 +2256,16 @@ textarea {
 .rails.elen .cat:first-child .sect-label {
   margin-top: 0;
 }
+
+/* pagina di accesso: nota in fondo */
+.auth {
+  min-height: 100dvh;
+  grid-template-rows: auto auto 1fr;
+}
+.auth-foot {
+  align-self: end;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  padding-top: 24px;
+}

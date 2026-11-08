@@ -116,6 +116,8 @@ export default function Login() {
           </div>
         </form>
       )}
+
+      <footer className="auth-foot">Questa app non è a fini commerciali ma ad uso privato.</footer>
     </main>
   )
 }
