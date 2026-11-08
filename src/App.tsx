@@ -50,8 +50,40 @@ function ConfigMissing() {
   )
 }
 
+// codice di chi ha condiviso il link (?r=…): si conserva fino al primo accesso
+try {
+  const r = new URLSearchParams(window.location.search).get('r')
+  if (r && /^[0-9a-f-]{36}$/i.test(r)) {
+    localStorage.setItem('cm_ref', r)
+    const u = new URL(window.location.href)
+    u.searchParams.delete('r')
+    window.history.replaceState(null, '', u.pathname + u.search + u.hash)
+  }
+} catch {
+  /* ignora */
+}
+
 function Root() {
   const [session, setSession] = useState<Session | null | undefined>(undefined)
+
+  useEffect(() => {
+    if (!session) return
+    let ref: string | null = null
+    try {
+      ref = localStorage.getItem('cm_ref')
+    } catch {
+      /* ignora */
+    }
+    if (!ref) return
+    void supabase.rpc('claim_referral', { p_ref: ref }).then(({ error }) => {
+      if (error) return
+      try {
+        localStorage.removeItem('cm_ref')
+      } catch {
+        /* ignora */
+      }
+    })
+  }, [session])
 
   useEffect(() => {
     void supabase.auth.getSession().then(({ data }) => setSession(data.session))

@@ -639,3 +639,35 @@ create trigger invitations_allowlist after insert on public.invitations
 drop trigger if exists referrals_allowlist on public.referrals;
 create trigger referrals_allowlist after insert on public.referrals
   for each row execute function public.allowlist_invitee();
+
+-- Solo gli inviti del super admin aprono la creazione di un gruppo (non quelli di chi è stato invitato).
+create or replace function public.allowlist_invitee() returns trigger
+language plpgsql security definer set search_path = public, auth as $$
+declare
+  sender uuid;
+begin
+  if tg_table_name = 'invitations' then sender := new.invited_by; else sender := new.user_id; end if;
+  if sender is not null and exists (
+    select 1 from auth.users where id = sender and lower(email) = 'andrea.valle.1973@gmail.com'
+  ) then
+    insert into public.admin_allowlist (email) values (lower(new.email)) on conflict do nothing;
+  end if;
+  return new;
+end $$;
+
+-- Chi si registra dal link condiviso dal super admin (?r=<id>) può creare un suo gruppo.
+create or replace function public.claim_referral(p_ref uuid) returns void
+language plpgsql security definer set search_path = public, auth as $$
+declare
+  mail text;
+begin
+  if auth.uid() is null then raise exception 'Non autenticato'; end if;
+  if exists (select 1 from auth.users where id = p_ref and lower(email) = 'andrea.valle.1973@gmail.com') then
+    select lower(email) into mail from auth.users where id = auth.uid();
+    if mail is not null then
+      insert into public.admin_allowlist (email) values (mail) on conflict do nothing;
+    end if;
+  end if;
+end $$;
+revoke all on function public.claim_referral(uuid) from public, anon;
+grant execute on function public.claim_referral(uuid) to authenticated;

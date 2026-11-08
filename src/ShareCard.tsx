@@ -43,11 +43,18 @@ export default function ShareCard() {
 
   async function share() {
     try {
+      // il link del super admin porta il suo codice: chi si registra da lì può creare un suo gruppo
+      let url = URL_APP
+      const { data: isSuper } = await supabase.rpc('is_super_admin')
+      if (isSuper === true) {
+        const { data: sess } = await supabase.auth.getSession()
+        if (sess.session) url = `${URL_APP}/?r=${sess.session.user.id}`
+      }
       if (navigator.share) {
-        await navigator.share({ title: 'Cosa manca', text: MSG, url: URL_APP })
+        await navigator.share({ title: 'Cosa manca', text: MSG, url })
         return
       }
-      await navigator.clipboard.writeText(`${MSG} ${URL_APP}`)
+      await navigator.clipboard.writeText(`${MSG} ${url}`)
       toast.show('Link copiato: incollalo dove vuoi')
     } catch {
       /* condivisione annullata */
