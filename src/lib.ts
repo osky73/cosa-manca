@@ -83,7 +83,7 @@ export const STORE_CATALOG: { logo: string; name: string; color: string }[] = [
 ]
 
 export function logoUrl(logo: string | null | undefined): string | null {
-  return logo && STORE_CATALOG.some((c) => c.logo === logo) ? `/stores/${logo}.svg` : null
+  return logo && STORE_CATALOG.some((c) => c.logo === logo) ? `${import.meta.env.BASE_URL}stores/${logo}.svg` : null
 }
 
 // Sigla da mostrare nel badge colorato (al posto del logo): prime lettere delle prime due parole.

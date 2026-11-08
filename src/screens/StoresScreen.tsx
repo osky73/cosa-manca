@@ -107,7 +107,7 @@ export default function StoresScreen() {
                 aria-checked={active}
                 aria-label={c.name}
               >
-                <img src={`/stores/${c.logo}.svg`} width="60" height="60" alt="" loading="lazy" draggable={false} />
+                <img src={`${import.meta.env.BASE_URL}stores/${c.logo}.svg`} width="60" height="60" alt="" loading="lazy" draggable={false} />
                 <span className="switch" aria-hidden="true">
                   <i />
                 </span>

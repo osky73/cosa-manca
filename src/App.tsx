@@ -167,7 +167,7 @@ function Authed({ userId }: { userId: string }) {
   )
 }
 
-function Shell({
+export function Shell({
   groups,
   groupId,
   onSwitch,
