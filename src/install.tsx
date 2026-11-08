@@ -17,6 +17,15 @@ if (typeof window !== 'undefined') {
   })
 }
 
+const DONE_KEY = 'cm.installed'
+function installedFlag(): boolean {
+  try {
+    return localStorage.getItem(DONE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
 export function useInstall() {
   const [, force] = useState(0)
   useEffect(() => {
@@ -50,7 +59,16 @@ export function useInstall() {
 
 export function InstallCard({ onDismiss, loginHint }: { onDismiss?: () => void; loginHint?: boolean }) {
   const inst = useInstall()
-  if (inst.standalone) return null
+  const [done, setDone] = useState(installedFlag)
+  if (inst.standalone || done) return null
+  function markDone() {
+    try {
+      localStorage.setItem(DONE_KEY, '1')
+    } catch {
+      /* ignora */
+    }
+    setDone(true)
+  }
   return (
     <section className="card install">
       <div className="install-head">
@@ -80,6 +98,9 @@ export function InstallCard({ onDismiss, loginHint }: { onDismiss?: () => void; 
           Dal menu del browser scegli <b>Installa app</b> oppure <b>Aggiungi a schermata Home</b>.
         </p>
       )}
+      <button type="button" className="link" onClick={markDone}>
+        Sì, l'ho già fatto
+      </button>
       {loginHint && inst.isIOS && (
         <p className="hint">Su iPhone conviene installare l'app prima di accedere: l'accesso fatto in Safari non passa all'app.</p>
       )}
@@ -138,6 +159,7 @@ export function InstallPopup() {
       if (st.dismissed > 0) st.opens += 1
       writeLS(POP_KEY, st)
     }
+    if (installedFlag()) return setShow(false)
     const due = st.dismissed === 0 || (st.dismissed < MAX_SHOWS && st.opens >= REMIND_AFTER_OPENS)
     setShow(due)
   }, [])
