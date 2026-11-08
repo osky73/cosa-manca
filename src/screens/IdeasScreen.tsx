@@ -14,12 +14,18 @@ export default function IdeasScreen() {
     const body = (kind === 'idea' ? idea : wish).trim()
     if (!body || busy) return
     setBusy(kind)
-    const { error } = await supabase.from('feedback').insert({ group_id: d.groupId, kind, body })
+    const { data, error } = await supabase
+      .from('feedback')
+      .insert({ group_id: d.groupId, kind, body })
+      .select('id')
+      .single()
     setBusy(null)
     if (error) {
       toast.show('Non sono riuscito a inviare. Riprova tra poco.')
       return
     }
+    // l'avviso via email è un di più: se fallisce, il messaggio è comunque salvato
+    void supabase.functions.invoke('send-feedback', { body: { id: data.id } }).catch(() => {})
     if (kind === 'idea') setIdea('')
     else setWish('')
     toast.show('Grazie! Ricevuto.')
