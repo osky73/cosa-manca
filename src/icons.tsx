@@ -127,3 +127,10 @@ export const IconNote = () => (
     <path d="M15 20v-4h4M8 9h8M8 13h4" />
   </Svg>
 )
+
+export const IconIdea = () => (
+  <Svg>
+    <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-8l-5 4v-4H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
+    <path d="M12 8v5M9.5 10.5h5" />
+  </Svg>
+)

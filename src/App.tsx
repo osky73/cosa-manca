@@ -4,13 +4,14 @@ import { configured, supabase } from './supabase'
 import { ToastProvider } from './toast'
 import { DataProvider, useData } from './data'
 import { readLS, writeLS } from './lib'
-import { IconCart, IconInbox, IconList, IconStore, IconUsers } from './icons'
+import { IconCart, IconIdea, IconInbox, IconList, IconStore, IconUsers } from './icons'
 import { InstallPopup } from './install'
 import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
 import ListScreen from './screens/ListScreen'
 import ShopScreen from './screens/ShopScreen'
 import StoresScreen from './screens/StoresScreen'
+import IdeasScreen from './screens/IdeasScreen'
 import SuggestionsScreen from './screens/SuggestionsScreen'
 import GroupScreen from './screens/GroupScreen'
 import type { GroupRef, Profile, Role, Tab } from './types'
@@ -120,7 +121,9 @@ function Authed({ userId }: { userId: string }) {
 
   const needName = !boot.profile?.display_name
   if (needName || boot.groups.length === 0) {
-    return <Onboarding userId={userId} profile={boot.profile} hasGroup={boot.groups.length > 0} onDone={() => void load()} />
+    return (
+      <Onboarding userId={userId} profile={boot.profile} hasGroup={boot.groups.length > 0} onDone={() => void load()} />
+    )
   }
 
   const current = boot.groups.find((g) => g.id === groupId) ?? boot.groups[0]
@@ -189,6 +192,7 @@ function Shell({
         {tab === 'list' && <ListScreen goto={go} />}
         {tab === 'shop' && <ShopScreen goto={go} />}
         {tab === 'stores' && <StoresScreen />}
+        {tab === 'ideas' && <IdeasScreen />}
         {tab === 'sugg' && <SuggestionsScreen />}
         {tab === 'group' && (
           <GroupScreen
@@ -211,11 +215,20 @@ function Shell({
         <TabBtn active={tab === 'stores'} onClick={() => go('stores')} label="Negozi">
           <IconStore />
         </TabBtn>
-        <TabBtn active={tab === 'sugg'} onClick={() => go('sugg')} label="Suggerimenti" badge={d.isAdmin ? pending : 0} alert>
+        <TabBtn
+          active={tab === 'sugg'}
+          onClick={() => go('sugg')}
+          label="Suggerimenti"
+          badge={d.isAdmin ? pending : 0}
+          alert
+        >
           <IconInbox />
         </TabBtn>
         <TabBtn active={tab === 'group'} onClick={() => go('group')} label="Gruppo">
           <IconUsers />
+        </TabBtn>
+        <TabBtn active={tab === 'ideas'} onClick={() => go('ideas')} label="Idee">
+          <IconIdea />
         </TabBtn>
       </nav>
     </div>

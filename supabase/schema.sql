@@ -464,3 +464,18 @@ create trigger group_items_lower_name before insert or update of name on public.
   for each row execute function public.lowercase_product_name();
 create trigger suggestions_lower_name before insert or update of name on public.suggestions
   for each row execute function public.lowercase_product_name();
+
+-- Idee e richieste degli utenti (scheda "Idee")
+create table public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  group_id uuid not null references public.groups(id) on delete cascade,
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  kind text not null check (kind in ('idea','wish')),
+  body text not null check (char_length(body) between 1 and 2000),
+  created_at timestamptz not null default now()
+);
+alter table public.feedback enable row level security;
+create policy feedback_insert on public.feedback for insert to authenticated
+  with check (user_id = auth.uid() and public.is_member(group_id));
+create policy feedback_select_own on public.feedback for select to authenticated
+  using (user_id = auth.uid());
