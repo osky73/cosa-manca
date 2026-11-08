@@ -63,6 +63,7 @@ interface DataCtx {
   propose: (p: ProposeInput) => Promise<'added' | 'pending'>
   decide: (id: string, approve: boolean, recurrence?: Recurrence) => Promise<void>
   addStore: (name: string, color: string, logo?: string | null, note?: string | null) => Promise<void>
+  proposeStore: (name: string, color: string) => Promise<'added' | 'pending'>
   updateStore: (id: string, patch: { note?: string | null; active?: boolean }) => Promise<void>
   deleteStore: (id: string) => Promise<void>
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
@@ -553,6 +554,12 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
           .from('stores')
           .insert({ group_id: groupId, name: name.trim(), color, logo, note, sort: snap.stores.length }),
       )
+    },
+    proposeStore: async (name, color) => {
+      const { data, error } = await supabase.rpc('propose_store', { p_group: groupId, p_name: name, p_color: color })
+      if (error) throw new Error(friendly(error.message))
+      await refetch()
+      return data as 'added' | 'pending'
     },
     updateStore: async (id, patch) => {
       await act(supabase.from('stores').update(patch).eq('id', id))

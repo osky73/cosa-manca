@@ -65,8 +65,13 @@ export default function StoresScreen() {
     e.preventDefault()
     const n = name.trim()
     if (!n || d.stores.some((s) => norm(s.name) === norm(n))) return
-    await d.addStore(n, color, null)
-    setName('')
+    try {
+      const res = await d.proposeStore(n, color)
+      toast.show(res === 'pending' ? 'Suggerimento inviato: lo approva un admin' : `${n} aggiunto`)
+      setName('')
+    } catch (err) {
+      toast.show(err instanceof Error ? err.message : 'Non riuscito')
+    }
   }
 
   return (
@@ -107,7 +112,14 @@ export default function StoresScreen() {
                 aria-checked={active}
                 aria-label={c.name}
               >
-                <img src={`${import.meta.env.BASE_URL}stores/${c.logo}.svg`} width="60" height="60" alt="" loading="lazy" draggable={false} />
+                <img
+                  src={`${import.meta.env.BASE_URL}stores/${c.logo}.svg`}
+                  width="60"
+                  height="60"
+                  alt=""
+                  loading="lazy"
+                  draggable={false}
+                />
                 <span className="switch" aria-hidden="true">
                   <i />
                 </span>
@@ -153,7 +165,7 @@ export default function StoresScreen() {
       <section>
         <form className="card" data-tour="add-store" onSubmit={(e) => void addCustom(e)}>
           <label className="field">
-            <span>Non è nell'elenco? Aggiungilo</span>
+            <span>{d.isAdmin ? "Non è nell'elenco? Aggiungilo" : "Non è nell'elenco? Suggeriscilo"}</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -176,7 +188,7 @@ export default function StoresScreen() {
             ))}
           </div>
           <button className="btn primary" disabled={!name.trim()}>
-            Aggiungi negozio
+            {d.isAdmin ? 'Aggiungi negozio' : 'Suggerisci negozio'}
           </button>
         </form>
       </section>

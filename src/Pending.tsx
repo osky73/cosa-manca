@@ -41,7 +41,7 @@ export default function Pending() {
   }
 
   return (
-    <section className="pend" aria-label="Prodotti suggeriti da approvare">
+    <section className="pend" aria-label="Suggerimenti da approvare">
       <h2 className="section">
         Suggeriti {d.isAdmin ? 'da approvare' : 'in attesa'} <span className="count">{pending.length}</span>
       </h2>
@@ -51,17 +51,28 @@ export default function Pending() {
           return (
             <li key={s.id} className="pend-item">
               <div className="pend-top">
-                {s.recurrence === 'one_off' && <WhoDot userId={s.suggested_by} />}
+                {s.kind === 'store' && <span className="dot big" style={{ ['--c' as string]: s.color ?? '#2f7d4f' }} />}
+                {s.kind !== 'store' && s.recurrence === 'one_off' && <WhoDot userId={s.suggested_by} />}
                 <span className="grow">
                   <span className="name">{s.name}</span>
                   <span className="meta">
-                    {s.recurrence === 'recurring' ? 'Fisso' : 'Temporaneo'} · da {d.nameOf(s.suggested_by)}
+                    {s.kind === 'store' ? 'Nuovo negozio' : s.recurrence === 'recurring' ? 'Fisso' : 'Temporaneo'} · da{' '}
+                    {d.nameOf(s.suggested_by)}
                     {s.note ? ` · «${s.note}»` : ''}
                   </span>
                 </span>
                 {st && <StoreLogo store={st} size={27} />}
               </div>
-              {d.isAdmin ? (
+              {d.isAdmin && s.kind === 'store' ? (
+                <div className="pend-btns">
+                  <button className="btn primary" disabled={busy === s.id} onClick={() => void decide(s.id, true)}>
+                    Approva
+                  </button>
+                  <button className="btn ghost" disabled={busy === s.id} onClick={() => void decide(s.id, false)}>
+                    Rifiuta
+                  </button>
+                </div>
+              ) : d.isAdmin ? (
                 <div className="pend-btns">
                   <button
                     className={'btn ' + (s.recurrence === 'recurring' ? 'primary' : 'ghost')}

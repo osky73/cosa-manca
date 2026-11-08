@@ -549,3 +549,56 @@ alter table public.groups add column if not exists notify_admins boolean not nul
 
 -- Notifiche: ogni admin le spegne per sé.
 alter table public.profiles add column if not exists notify_new boolean not null default true;
+
+-- Suggerimenti di negozi: l'utente propone, l'admin approva.
+alter table public.suggestions add column if not exists kind text not null default 'item' check (kind in ('item', 'store'));
+alter table public.suggestions add column if not exists color text;
+
+create or replace function public.propose_store(p_group uuid, p_name text, p_color text) returns text
+language plpgsql security definer set search_path = public as $$
+declare
+  uid uuid := auth.uid();
+  nm text := trim(p_name);
+begin
+  if not public.is_member(p_group) then raise exception 'Non sei in questo gruppo'; end if;
+  if nm = '' then raise exception 'Nome mancante'; end if;
+  if public.is_admin(p_group) then
+    insert into public.stores (group_id, name, color, sort)
+      values (p_group, nm, p_color, (select count(*) from public.stores where group_id = p_group));
+    return 'added';
+  end if;
+  insert into public.suggestions (group_id, name, category, recurrence, kind, color, suggested_by)
+    values (p_group, nm, 'Negozio', 'recurring', 'store', p_color, uid);
+  return 'pending';
+end $$;
+revoke all on function public.propose_store(uuid, text, text) from public, anon;
+
+create or replace function public.decide_suggestion(p_id uuid, p_approve boolean, p_recurrence text default null) returns void
+language plpgsql security definer set search_path = public as $$
+declare
+  s public.suggestions;
+  item uuid;
+  rec text;
+begin
+  select * into s from public.suggestions where id = p_id for update;
+  if s.id is null then raise exception 'Suggerimento inesistente'; end if;
+  if not public.is_admin(s.group_id) then raise exception 'Solo gli admin possono decidere'; end if;
+  if s.status <> 'pending' then return; end if;
+
+  if p_approve then
+    if s.kind = 'store' then
+      insert into public.stores (group_id, name, color, sort)
+        values (s.group_id, s.name, coalesce(s.color, '#2f7d4f'), (select count(*) from public.stores where group_id = s.group_id));
+      update public.suggestions set status = 'approved', decided_by = auth.uid(), decided_at = now() where id = p_id;
+      return;
+    end if;
+    rec := coalesce(p_recurrence, s.recurrence);
+    if rec not in ('recurring', 'one_off') then raise exception 'Ricorrenza non valida'; end if;
+    insert into public.group_items (group_id, name, category, recurrence, created_by)
+      values (s.group_id, s.name, s.category, rec, s.suggested_by) returning id into item;
+    insert into public.needs (group_id, item_id, store_id, note) values (s.group_id, item, s.store_id, s.note);
+    update public.suggestions set status = 'approved', recurrence = rec, decided_by = auth.uid(), decided_at = now() where id = p_id;
+  else
+    update public.suggestions set status = 'rejected', decided_by = auth.uid(), decided_at = now() where id = p_id;
+  end if;
+end $$;

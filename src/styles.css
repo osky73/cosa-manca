@@ -613,12 +613,12 @@ input.code {
 }
 .swatches {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 .swatches button {
-  width: 40px;
-  height: 40px;
+  width: 27px;
+  height: 27px;
   border-radius: 50%;
   border: 3px solid transparent;
 }
@@ -2110,3 +2110,45 @@ textarea {
 .spot-hit { position: fixed; pointer-events: auto; }
 .spot-text { position: fixed; left: 0; right: 0; width: min(290px, calc(100% - 56px)); margin: 0 auto; text-align: center; color: #fff; font-size: 17px; line-height: 1.28; font-weight: 500; letter-spacing: -0.012em; text-shadow: 0 1px 6px rgba(0, 30, 15, 0.5); pointer-events: none; }
 @keyframes spotin { from { opacity: 0; } to { opacity: 1; } }
+
+/* categorie come bollino verde sempre spento, e due linee verticali sotto Comprati / Mancano */
+.cat .sect-label span {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(47, 125, 79, 0.1);
+  color: var(--muted);
+}
+.rails {
+  position: relative;
+}
+.rails::before,
+.rails::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(47, 125, 79, 0.22);
+  z-index: 0;
+  pointer-events: none;
+}
+.rails.elen {
+  --rl: 24px;
+  --rr: 54px;
+}
+.rails.shop {
+  --rl: 42px;
+  --rr: 54px;
+}
+.rails::before {
+  left: var(--rl);
+}
+.rails::after {
+  right: var(--rr);
+}
+.rails .slrow,
+.rails .sect-label {
+  position: relative;
+  z-index: 1;
+}

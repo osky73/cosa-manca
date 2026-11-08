@@ -218,22 +218,24 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
       {sections.length === 0 ? (
         <p className="empty">{d.loaded ? 'Tutto a posto, per fortuna non manca niente.' : 'Carico la lista…'}</p>
       ) : (
-        sections.map((sec) => (
-          <section key={sec.key} className="shopsec">
-            <ul className="slist">
-              {sec.rows.map((r) => (
-                <SlideRow
-                  key={r.item.id}
-                  item={r.item}
-                  goto={goto}
-                  pickStore={false}
-                  fadeFrom={fadeOf(r)}
-                  hint={hintOn ? hintDelay(r.item.id) : undefined}
-                />
-              ))}
-            </ul>
-          </section>
-        ))
+        <div className="rails shop">
+          {sections.map((sec) => (
+            <section key={sec.key} className="shopsec">
+              <ul className="slist">
+                {sec.rows.map((r) => (
+                  <SlideRow
+                    key={r.item.id}
+                    item={r.item}
+                    goto={goto}
+                    pickStore={false}
+                    fadeFrom={fadeOf(r)}
+                    hint={hintOn ? hintDelay(r.item.id) : undefined}
+                  />
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
       )}
 
       {rows.length + boughtRows.length > 0 && (

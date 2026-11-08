@@ -36,9 +36,10 @@ export const TOURS: Tour[] = [
     question: 'Come faccio ad aggiungere un nuovo negozio per le nostre spese?',
     tab: 'stores',
     selector: '[data-tour="add-store"]',
-    // tutti i membri del gruppo possono aggiungere negozi: il percorso è lo stesso per admin e utenti
-    text: () =>
-      'Se il negozio è tra i loghi, accendilo con il suo interruttore. Se non c’è, scrivi qui il nome, scegli un colore e tocca «Aggiungi negozio».',
+    text: (admin) =>
+      admin
+        ? 'Se il negozio è tra i loghi, accendilo con il suo interruttore. Se non c’è, scrivi qui il nome, scegli un colore e tocca «Aggiungi negozio».'
+        : 'Se il negozio è tra i loghi, accendilo con il suo interruttore. Se non c’è, scrivi qui il nome, scegli un colore e tocca «Suggerisci negozio»: lo approva l’amministratore.',
     doneWhen: 'store-added',
   },
 ]

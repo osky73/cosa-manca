@@ -54,6 +54,8 @@ export interface Suggestion {
   recurrence: Recurrence
   note: string | null
   store_id: string | null
+  kind?: 'item' | 'store'
+  color?: string | null
   suggested_by: string | null
   status: 'pending' | 'approved' | 'rejected'
   created_at: string

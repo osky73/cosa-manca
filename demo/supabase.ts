@@ -92,8 +92,22 @@ const rpc = async (name: string, a: Row = {}) => {
       note: a.p_note ?? null, store_id: a.p_store ?? null, suggested_by: 'u2', status: 'pending', created_at: new Date().toISOString() })
     return { data: 'pending', error: null }
   }
+  if (name === 'propose_store') {
+    if (demo.role === 'admin') {
+      db.stores.push({ id: uid(), group_id: 'g1', name: a.p_name, color: a.p_color, logo: null, note: null, sort: db.stores.length, active: true })
+      return { data: 'added', error: null }
+    }
+    db.suggestions.unshift({ id: uid(), group_id: 'g1', name: a.p_name, category: 'Negozio', recurrence: 'recurring', kind: 'store',
+      color: a.p_color, note: null, store_id: null, suggested_by: 'u2', status: 'pending', created_at: new Date().toISOString() })
+    return { data: 'pending', error: null }
+  }
   if (name === 'decide_suggestion') {
     const s = db.suggestions.find((x) => x.id === a.p_id)
+    if (s && s.status === 'pending' && s.kind === 'store') {
+      if (a.p_approve) db.stores.push({ id: uid(), group_id: 'g1', name: s.name, color: s.color, logo: null, note: null, sort: db.stores.length, active: true })
+      s.status = a.p_approve ? 'approved' : 'rejected'
+      return { data: null, error: null }
+    }
     if (s && s.status === 'pending') {
       if (a.p_approve) {
         const id = uid()

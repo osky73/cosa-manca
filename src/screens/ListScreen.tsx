@@ -306,83 +306,85 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
               {d.loaded ? 'Il catalogo è vuoto. Aggiungi il primo prodotto.' : 'Carico la lista…'}
             </p>
           ) : (
-            blocks.map(([cat, items]) => (
-              <div key={cat} className="cat" data-cat={cat}>
-                <h2
-                  className={
-                    'sect-label' +
-                    (ordering && drop?.cat === cat && items.filter((i) => i.id !== drag?.id).length === 0
-                      ? ' dropto'
-                      : '')
-                  }
-                >
-                  <span>{cat}</span>
-                </h2>
-                <ul className="slist">
-                  {items.map((item) => {
-                    if (ordering) {
-                      const others = items.filter((i) => i.id !== drag?.id)
-                      const pos = others.findIndex((i) => i.id === item.id)
-                      const isDrop = drag && drop?.cat === cat && item.id !== drag.id
-                      const before = isDrop && pos === drop.index
-                      const after = isDrop && pos === others.length - 1 && drop.index >= others.length
-                      return (
-                        <li
-                          key={item.id}
-                          data-rowid={item.id}
-                          className={
-                            'delrow orderrow' +
-                            (drag?.id === item.id ? ' dragging' : '') +
-                            (before ? ' drop-before' : '') +
-                            (after ? ' drop-after' : '')
-                          }
-                        >
+            <div className="rails elen">
+              {blocks.map(([cat, items]) => (
+                <div key={cat} className="cat" data-cat={cat}>
+                  <h2
+                    className={
+                      'sect-label' +
+                      (ordering && drop?.cat === cat && items.filter((i) => i.id !== drag?.id).length === 0
+                        ? ' dropto'
+                        : '')
+                    }
+                  >
+                    <span>{cat}</span>
+                  </h2>
+                  <ul className="slist">
+                    {items.map((item) => {
+                      if (ordering) {
+                        const others = items.filter((i) => i.id !== drag?.id)
+                        const pos = others.findIndex((i) => i.id === item.id)
+                        const isDrop = drag && drop?.cat === cat && item.id !== drag.id
+                        const before = isDrop && pos === drop.index
+                        const after = isDrop && pos === others.length - 1 && drop.index >= others.length
+                        return (
+                          <li
+                            key={item.id}
+                            data-rowid={item.id}
+                            className={
+                              'delrow orderrow' +
+                              (drag?.id === item.id ? ' dragging' : '') +
+                              (before ? ' drop-before' : '') +
+                              (after ? ' drop-after' : '')
+                            }
+                          >
+                            <span className="name">{item.name}</span>
+                            <button
+                              type="button"
+                              className="icon-btn grip"
+                              aria-label={`Sposta ${item.name}`}
+                              onPointerDown={(e) => startDrag(e, item)}
+                              onPointerMove={moveDrag}
+                              onPointerUp={() => endDrag(false)}
+                              onPointerCancel={() => endDrag(true)}
+                            >
+                              <IconGrip />
+                            </button>
+                          </li>
+                        )
+                      }
+                      return deleting ? (
+                        <li key={item.id} className="delrow">
                           <span className="name">{item.name}</span>
                           <button
                             type="button"
-                            className="icon-btn grip"
-                            aria-label={`Sposta ${item.name}`}
-                            onPointerDown={(e) => startDrag(e, item)}
-                            onPointerMove={moveDrag}
-                            onPointerUp={() => endDrag(false)}
-                            onPointerCancel={() => endDrag(true)}
+                            className="icon-btn"
+                            aria-label={`Elimina ${item.name}`}
+                            onClick={async () => {
+                              await d.archiveItem(item.id)
+                              toast.show(`«${item.name}» eliminato`, {
+                                label: 'Annulla',
+                                run: () => void d.restoreItem(item.id),
+                              })
+                            }}
                           >
-                            <IconGrip />
+                            <IconTrash />
                           </button>
                         </li>
+                      ) : (
+                        <SlideRow
+                          key={item.id}
+                          item={item}
+                          goto={goto}
+                          tour={item.id === firstId ? 'first-row' : undefined}
+                          hint={hintOn ? hintDelay(item.id) : undefined}
+                        />
                       )
-                    }
-                    return deleting ? (
-                      <li key={item.id} className="delrow">
-                        <span className="name">{item.name}</span>
-                        <button
-                          type="button"
-                          className="icon-btn"
-                          aria-label={`Elimina ${item.name}`}
-                          onClick={async () => {
-                            await d.archiveItem(item.id)
-                            toast.show(`«${item.name}» eliminato`, {
-                              label: 'Annulla',
-                              run: () => void d.restoreItem(item.id),
-                            })
-                          }}
-                        >
-                          <IconTrash />
-                        </button>
-                      </li>
-                    ) : (
-                      <SlideRow
-                        key={item.id}
-                        item={item}
-                        goto={goto}
-                        tour={item.id === firstId ? 'first-row' : undefined}
-                        hint={hintOn ? hintDelay(item.id) : undefined}
-                      />
-                    )
-                  })}
-                </ul>
-              </div>
-            ))
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           )}
           {d.stores.length === 0 && missingCount > 0 && d.isAdmin && (
             <p className="hint pad">
