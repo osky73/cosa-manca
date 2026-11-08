@@ -2219,3 +2219,11 @@ textarea {
   border-bottom: 1.5px solid rgba(47, 125, 79, 0.6);
   transform: rotate(45deg);
 }
+
+/* freccina un po' staccata dalla parola e dai prodotti */
+.cols .mlbl::after {
+  bottom: -13px;
+}
+.cols {
+  margin-bottom: 8px;
+}
