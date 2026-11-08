@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
-import { StoreLogo } from '../components'
+import { Sheet, StoreLogo } from '../components'
 import { IconTrash } from '../icons'
 import { SlideRow } from '../SlideRow'
 import { byCategoryThenName } from '../lib'
@@ -88,6 +88,17 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   }, [shown, filter, d.stores, d.storeOf])
 
   // Negozi che hanno avuto prodotti: restano come pillole spente a 0 finché non si cancella la lista.
+  const [asking, setAsking] = useState(false)
+  const doClear = () => {
+    d.clearAll()
+    setSeen([])
+    setAsking(false)
+    try {
+      localStorage.removeItem('cm.shopseen')
+    } catch {
+      /* ignora */
+    }
+  }
   const [seen, setSeen] = useState<string[]>(() => {
     try {
       return JSON.parse(localStorage.getItem('cm.shopseen') || '[]') as string[]
@@ -184,20 +195,24 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
           className="clear-all"
           aria-label="Cancella tutto"
           title="Cancella tutto"
-          onClick={() => {
-            if (confirm('Azzerare la lista di cosa manca?')) {
-              d.clearAll()
-              setSeen([])
-              try {
-                localStorage.removeItem('cm.shopseen')
-              } catch {
-                /* ignora */
-              }
-            }
-          }}
+          onClick={() => setAsking(true)}
         >
           <IconTrash />
         </button>
+      )}
+
+      {asking && (
+        <Sheet title="Azzerare la lista?" onClose={() => setAsking(false)}>
+          <p className="hint">Toglie tutti i prodotti che mancano e quelli già comprati.</p>
+          <div className="stack">
+            <button className="btn danger wide" onClick={doClear}>
+              Sì, azzera
+            </button>
+            <button className="btn ghost wide" onClick={() => setAsking(false)}>
+              Annulla
+            </button>
+          </div>
+        </Sheet>
       )}
     </div>
   )
