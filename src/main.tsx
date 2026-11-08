@@ -1,6 +1,7 @@
 import { Component, StrictMode, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import Splash from './Splash'
 import './styles.css'
 
 class Guard extends Component<{ children: ReactNode }, { err: Error | null }> {
@@ -36,6 +37,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Guard>
       <App />
+      <Splash />
     </Guard>
   </StrictMode>,
 )
