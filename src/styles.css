@@ -2330,3 +2330,15 @@ textarea {
   line-height: 1.4;
   white-space: pre-wrap;
 }
+
+.pend-btns.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.pend-btns[role='radiogroup'] .btn[aria-checked='true'] {
+  background: var(--ok-bg);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+}

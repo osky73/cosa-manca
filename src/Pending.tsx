@@ -31,6 +31,8 @@ export function WhoDot({ userId, className = '' }: { userId: string | null | und
 export default function Pending() {
   const d = useData()
   const [busy, setBusy] = useState<string | null>(null)
+  const [choice, setChoice] = useState<Record<string, Recurrence>>({}) // scelta fisso/temporaneo prima di approvare
+  const rec = (s: { id: string; recurrence: Recurrence }): Recurrence => choice[s.id] ?? s.recurrence
   const pending = d.suggestions.filter((s) => s.status === 'pending')
   if (pending.length === 0) return null
 
@@ -73,25 +75,38 @@ export default function Pending() {
                   </button>
                 </div>
               ) : d.isAdmin ? (
-                <div className="pend-btns">
-                  <button
-                    className={'btn ' + (s.recurrence === 'recurring' ? 'primary' : 'ghost')}
-                    disabled={busy === s.id}
-                    onClick={() => void decide(s.id, true, 'recurring')}
-                  >
-                    Fisso
-                  </button>
-                  <button
-                    className={'btn ' + (s.recurrence === 'one_off' ? 'primary' : 'ghost')}
-                    disabled={busy === s.id}
-                    onClick={() => void decide(s.id, true, 'one_off')}
-                  >
-                    Temporaneo
-                  </button>
-                  <button className="btn ghost" disabled={busy === s.id} onClick={() => void decide(s.id, false)}>
-                    Rifiuta
-                  </button>
-                </div>
+                <>
+                  <div className="pend-btns two" role="radiogroup" aria-label="Tipo di prodotto">
+                    <button
+                      className={'btn ' + (rec(s) === 'recurring' ? 'primary' : 'ghost')}
+                      role="radio"
+                      aria-checked={rec(s) === 'recurring'}
+                      onClick={() => setChoice((c) => ({ ...c, [s.id]: 'recurring' }))}
+                    >
+                      Fisso
+                    </button>
+                    <button
+                      className={'btn ' + (rec(s) === 'one_off' ? 'primary' : 'ghost')}
+                      role="radio"
+                      aria-checked={rec(s) === 'one_off'}
+                      onClick={() => setChoice((c) => ({ ...c, [s.id]: 'one_off' }))}
+                    >
+                      Temporaneo
+                    </button>
+                  </div>
+                  <div className="pend-btns two">
+                    <button
+                      className="btn primary"
+                      disabled={busy === s.id}
+                      onClick={() => void decide(s.id, true, rec(s))}
+                    >
+                      Approva
+                    </button>
+                    <button className="btn ghost" disabled={busy === s.id} onClick={() => void decide(s.id, false)}>
+                      Rifiuta
+                    </button>
+                  </div>
+                </>
               ) : null}
             </li>
           )
