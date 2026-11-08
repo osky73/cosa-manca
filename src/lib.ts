@@ -12,6 +12,12 @@ export const CATEGORY_ORDER = [
 
 export const STORE_COLORS = ['#2f7d4f', '#d9480f', '#1c7ed6', '#ae3ec9', '#e8a600', '#0b7285', '#c2255c', '#495057']
 
+/** Prima lettera maiuscola (i nomi dei prodotti non devono essere tutti minuscoli). */
+export function cap(s: string): string {
+  const t = s.trim()
+  return t ? t.charAt(0).toLocaleUpperCase('it') + t.slice(1) : t
+}
+
 export function norm(s: string): string {
   return s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim()
 }

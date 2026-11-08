@@ -2446,3 +2446,7 @@ textarea {
   width: 17px;
   height: 17px;
 }
+.slmeta:not(.note) {
+  display: inline;
+  vertical-align: baseline;
+}

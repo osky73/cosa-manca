@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { supabase } from './supabase'
 import { useToast } from './toast'
 import { notifyAdmins, pushSupported, subscribePush } from './push'
-import { friendly, isNetworkError, readLS, writeLS } from './lib'
+import { cap, friendly, isNetworkError, readLS, writeLS } from './lib'
 import type { Invitation, Item, Member, Need, Profile, Recurrence, Role, Store, Suggestion } from './types'
 
 /** Operazioni sulle richieste "manca": accodate e inviate anche dopo, se manca la rete. */
@@ -180,11 +180,11 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
       }
 
       const next: Snapshot = {
-        items: it.data as Item[],
+        items: (it.data as Item[]).map((i) => ({ ...i, name: cap(i.name) })),
         stores: st.data as Store[],
         needs: nd.data as Need[],
         bought: (bt.data ?? []) as Need[],
-        suggestions: sg.data as Suggestion[],
+        suggestions: (sg.data as Suggestion[]).map((x) => ({ ...x, name: cap(x.name) })),
         members: memberRows.map((m) => ({ ...m, profile: profiles.get(m.user_id) ?? null })),
         invitations,
       }
@@ -525,7 +525,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     async (p: ProposeInput) => {
       const { data, error } = await supabase.rpc('propose_item', {
         p_group: groupId,
-        p_name: p.name,
+        p_name: cap(p.name),
         p_category: p.category,
         p_recurrence: p.recurrence,
         p_note: p.note || null,
