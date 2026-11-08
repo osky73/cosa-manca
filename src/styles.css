@@ -2323,3 +2323,10 @@ textarea {
   width: 17px;
   height: 17px;
 }
+
+.notetext {
+  margin: 0 0 8px;
+  font-size: 17px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

@@ -258,8 +258,10 @@ export function NeedDetailSheet({
   note,
   onSave,
   onClose,
+  readOnly = false,
 }: {
   title: string
+  readOnly?: boolean
   quantity: string | null | undefined
   note: string | null | undefined
   onSave: (quantity: string | null, note: string | null) => void
@@ -276,6 +278,13 @@ export function NeedDetailSheet({
   function save() {
     onSave(q.trim() || null, n.trim() || null)
     onClose()
+  }
+  if (readOnly) {
+    return (
+      <Sheet title={title} onClose={onClose}>
+        <p className="notetext">{note}</p>
+      </Sheet>
+    )
   }
   return (
     <Sheet title={title} onClose={onClose}>

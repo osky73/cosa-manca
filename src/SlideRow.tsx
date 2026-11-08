@@ -189,7 +189,7 @@ export function SlideRow({
         onPointerCancel={(e) => end(e, true)}
         onClick={() => {
           // un tocco su un prodotto che manca apre quantità e nota (sul "click", così il tocco non cade nella finestra appena aperta)
-          if (need && !dragged.current) setDetail(true)
+          if (need && !dragged.current && (pickStore || need.note)) setDetail(true)
         }}
         onKeyDown={onKey}
         aria-pressed={Boolean(need)}
@@ -201,9 +201,7 @@ export function SlideRow({
       >
         <span className="slname">
           {item.name}
-          {need?.quantity && (
-            <span className="slmeta">{need.quantity}</span>
-          )}
+          {need?.quantity && <span className="slmeta">{need.quantity}</span>}
           {need?.note && (
             <span className="slmeta note" aria-label="Con nota">
               <IconNote />
@@ -241,6 +239,7 @@ export function SlideRow({
       {detail && need && (
         <NeedDetailSheet
           title={item.name}
+          readOnly={!pickStore}
           quantity={need.quantity}
           note={need.note}
           onSave={(q, n) => d.setNeedDetail(need.id, q, n)}
