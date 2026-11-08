@@ -98,7 +98,7 @@ export function InstallCard({ onDismiss, loginHint }: { onDismiss?: () => void; 
           Dal menu del browser scegli <b>Installa app</b> oppure <b>Aggiungi a schermata Home</b>.
         </p>
       )}
-      <button type="button" className="link" onClick={markDone}>
+      <button type="button" className="btn ghost wide" onClick={markDone}>
         Sì, l'ho già fatto
       </button>
       {loginHint && inst.isIOS && (
