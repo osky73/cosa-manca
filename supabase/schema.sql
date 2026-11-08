@@ -615,3 +615,27 @@ begin
 end $$;
 revoke all on function public.delete_feedback(uuid) from public, anon;
 grant execute on function public.delete_feedback(uuid) to authenticated;
+
+-- Chi è invitato (invito al gruppo o consiglio "Fai conoscere") da una persona dell'elenco dei consentiti
+-- entra a sua volta nell'elenco e può creare un suo gruppo.
+create or replace function public.allowlist_invitee() returns trigger
+language plpgsql security definer set search_path = public, auth as $$
+declare
+  sender uuid;
+  sender_mail text;
+begin
+  if tg_table_name = 'invitations' then sender := new.invited_by; else sender := new.user_id; end if;
+  if sender is null then return new; end if;
+  select lower(email) into sender_mail from auth.users where id = sender;
+  if sender_mail is not null and exists (select 1 from public.admin_allowlist where email = sender_mail) then
+    insert into public.admin_allowlist (email) values (lower(new.email)) on conflict do nothing;
+  end if;
+  return new;
+end $$;
+
+drop trigger if exists invitations_allowlist on public.invitations;
+create trigger invitations_allowlist after insert on public.invitations
+  for each row execute function public.allowlist_invitee();
+drop trigger if exists referrals_allowlist on public.referrals;
+create trigger referrals_allowlist after insert on public.referrals
+  for each row execute function public.allowlist_invitee();
