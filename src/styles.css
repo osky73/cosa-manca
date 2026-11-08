@@ -313,3 +313,8 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 .tri .sel .dot { border-color: var(--c); }
 .tri .sel .dot.on { background: var(--c); }
 textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); resize: vertical; }
+
+.shopcard.custom .switch { background: rgba(255, 255, 255, .35); }
+.shopcard.custom.on .switch { background: rgba(255, 255, 255, .35); }
+.shopcard.custom .switch i { display: grid; place-items: center; color: var(--c); }
+.shopcard.custom .switch i svg { width: 11px; height: 11px; }

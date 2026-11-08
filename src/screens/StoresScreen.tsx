@@ -117,37 +117,24 @@ export default function StoresScreen() {
           )
         })}
         {custom.map((s) => {
-          const on = s.active !== false
           return (
             <div key={s.id} className="shopcell">
-              <div className={'shopcard custom' + (on ? ' on' : ' off')} style={{ ['--c' as string]: s.color }}>
+              <button
+                type="button"
+                className="shopcard custom on"
+                style={{ ['--c' as string]: s.color }}
+                onClick={() => void removeCustom(s)}
+                role="switch"
+                aria-checked={true}
+                aria-label={`${s.name}: spegni per eliminare`}
+              >
                 <span className="cname">{s.name}</span>
-                <span className="tri" role="radiogroup" aria-label={`Stato di ${s.name}`}>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    aria-label="Acceso"
-                    className={on ? 'sel' : ''}
-                    onClick={() => void d.updateStore(s.id, { active: true })}
-                  >
-                    <i className="dot on" />
-                  </button>
-                  <button
-                    type="button"
-                    role="radio"
-                    aria-checked={!on}
-                    aria-label="Spento"
-                    className={!on ? 'sel' : ''}
-                    onClick={() => void d.updateStore(s.id, { active: false })}
-                  >
-                    <i className="dot" />
-                  </button>
-                  <button type="button" aria-label={`Elimina ${s.name}`} onClick={() => void removeCustom(s)}>
+                <span className="switch" aria-hidden="true">
+                  <i>
                     <IconTrash />
-                  </button>
+                  </i>
                 </span>
-              </div>
+              </button>
               <button
                 type="button"
                 className={'notebtn' + (s.note ? ' has' : '')}
