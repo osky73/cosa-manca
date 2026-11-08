@@ -1,14 +1,35 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../supabase'
 import { useData } from '../data'
 import { useToast } from '../toast'
+
+interface Received {
+  id: string
+  kind: 'idea' | 'wish'
+  body: string
+  created_at: string
+  display_name: string | null
+  email: string | null
+  group_name: string | null
+}
 
 export default function IdeasScreen() {
   const d = useData()
   const toast = useToast()
   const [idea, setIdea] = useState('')
   const [wish, setWish] = useState('')
+  const [received, setReceived] = useState<Received[] | null>(null)
   const [busy, setBusy] = useState<'idea' | 'wish' | null>(null)
+
+  // Solo il super admin riceve la lista dei messaggi degli altri (la funzione risponde con errore a tutti gli altri).
+  useEffect(() => {
+    void (async () => {
+      const { data: ok } = await supabase.rpc('is_super_admin')
+      if (ok !== true) return
+      const { data } = await supabase.rpc('list_feedback')
+      setReceived((data as Received[]) ?? [])
+    })()
+  }, [])
 
   async function send(kind: 'idea' | 'wish') {
     const body = (kind === 'idea' ? idea : wish).trim()
@@ -63,6 +84,34 @@ export default function IdeasScreen() {
           Invia
         </button>
       </form>
+
+      {received && (
+        <section className="received">
+          <h2 className="section">
+            Messaggi ricevuti <span className="count">{received.length}</span>
+          </h2>
+          {received.length === 0 ? (
+            <p className="hint">Ancora nessun messaggio dagli altri.</p>
+          ) : (
+            <ul className="rec-list">
+              {received.map((m) => (
+                <li key={m.id} className="rec-item">
+                  <div className="rec-head">
+                    <strong>{m.display_name?.trim() || 'Senza nome'}</strong>
+                    <span className="pill">{m.kind === 'idea' ? 'Idea' : 'Cosa manca'}</span>
+                  </div>
+                  <div className="rec-meta">
+                    {m.email && <a href={`mailto:${m.email}`}>{m.email}</a>} ·{' '}
+                    {new Date(m.created_at).toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' })}
+                    {m.group_name ? ` · ${m.group_name}` : ''}
+                  </div>
+                  <p className="rec-body">{m.body}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <div className="ideas-bottom">
         <p className="hint ideas-small">

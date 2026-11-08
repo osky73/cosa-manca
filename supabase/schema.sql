@@ -479,3 +479,27 @@ create policy feedback_insert on public.feedback for insert to authenticated
   with check (user_id = auth.uid() and public.is_member(group_id));
 create policy feedback_select_own on public.feedback for select to authenticated
   using (user_id = auth.uid());
+
+-- Super admin (Andrea): legge i messaggi di tutti dalla scheda Idee
+create or replace function public.is_super_admin() returns boolean
+language sql stable security definer set search_path = public as $$
+  select lower(coalesce(auth.jwt() ->> 'email', '')) = 'andrea.valle.1973@gmail.com'
+$$;
+create or replace function public.list_feedback()
+returns table (id uuid, kind text, body text, created_at timestamptz, display_name text, email text, group_name text)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not public.is_super_admin() then raise exception 'Non autorizzato'; end if;
+  return query
+    select f.id, f.kind, f.body, f.created_at, p.display_name, p.email, g.name
+    from public.feedback f
+    left join public.profiles p on p.id = f.user_id
+    left join public.groups g on g.id = f.group_id
+    where f.user_id <> auth.uid()
+    order by f.created_at desc
+    limit 200;
+end $$;
+revoke all on function public.list_feedback() from public, anon;
+grant execute on function public.list_feedback() to authenticated;
+revoke all on function public.is_super_admin() from public, anon;
+grant execute on function public.is_super_admin() to authenticated;
