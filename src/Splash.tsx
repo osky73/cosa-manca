@@ -33,7 +33,7 @@ export default function Splash() {
   return (
     <div className={'splash' + (phase === 'out' ? ' out' : '')} onClick={() => setPhase('gone')} role="presentation">
       <h1 className="splash-t">Cosa manca</h1>
-      <p className="splash-s">Sai quando chiami a casa per chiedere cosa manca? Ecco, non serve più.</p>
+      <p className="splash-s">Sai quando chiami a casa e chiedi «cosa manca?» e nessuno ha voglia di andare a vedere? Ecco fatto.</p>
     </div>
   )
 }
