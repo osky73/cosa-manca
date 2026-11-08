@@ -202,7 +202,7 @@ export function SlideRow({
         <span className="slname">
           {item.name}
           {need?.quantity && (
-            <span className="slmeta">{/^\d+$/.test(need.quantity) ? `×${need.quantity}` : need.quantity}</span>
+            <span className="slmeta">{need.quantity}</span>
           )}
           {need?.note && (
             <span className="slmeta note" aria-label="Con nota">

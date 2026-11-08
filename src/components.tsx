@@ -290,7 +290,7 @@ export function NeedDetailSheet({
             onChange={(e) => setQ(e.target.value)}
             maxLength={20}
             inputMode="text"
-            placeholder="es. 2 oppure 1 kg"
+            placeholder="es. 2 (pezzi) oppure 500 gr"
             aria-label="Quantità"
           />
           <button type="button" className="qbtn" onClick={() => step(1)} aria-label="Più">
