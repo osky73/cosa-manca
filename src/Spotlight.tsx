@@ -52,7 +52,8 @@ export default function Spotlight({
         el.current = found
         if (!scrolled) {
           scrolled = true
-          found.scrollIntoView({ block: tour.scroll === 'end' ? 'center' : 'center', behavior: 'smooth' })
+          const far = Math.abs(found.getBoundingClientRect().top - window.innerHeight / 2) > window.innerHeight * 1.2
+          found.scrollIntoView({ block: 'center', behavior: far ? 'auto' : 'smooth' })
         }
         const r = found.getBoundingClientRect()
         setBox((b) =>
@@ -75,6 +76,8 @@ export default function Spotlight({
   }, [tour.id])
 
   if (!box) return null
+  // finché l'elemento non è in vista (scorrimento in corso) la guida resta ferma, senza testo
+  const offscreen = box.y > window.innerHeight - 4 || box.y + box.h < 4
   const vw = window.innerWidth
   const vh = window.innerHeight
   const x = Math.max(0, box.x - PAD)
@@ -94,12 +97,12 @@ export default function Spotlight({
       {/* oscuramento verde trasparente con un'apertura sfumata attorno all'elemento */}
       <svg className="spot-svg" width={vw} height={vh} aria-hidden="true">
         <defs>
-          <filter id="spot-blur" x="-20%" y="-50%" width="140%" height="200%">
+          <filter id="spot-blur" filterUnits="userSpaceOnUse" x={x - 60} y={y - 60} width={w + 120} height={h + 120}>
             <feGaussianBlur stdDeviation="12" />
           </filter>
           <mask id="spot-mask">
             <rect width={vw} height={vh} fill="#fff" />
-            <rect x={x} y={y} width={w} height={h} rx="16" fill="#000" filter="url(#spot-blur)" />
+            <rect x={x} y={y} width={w} height={h} rx={Math.abs(w - h) < 6 ? Math.min(w, h) / 2 : 16} fill="#000" filter="url(#spot-blur)" />
           </mask>
         </defs>
         <rect width={vw} height={vh} fill="rgba(18, 74, 44, 0.85)" mask="url(#spot-mask)" />
@@ -109,9 +112,11 @@ export default function Spotlight({
       <div className="spot-hit" style={{ left: 0, top: y + h, width: '100%', bottom: 0 }} onClick={close} />
       <div className="spot-hit" style={{ left: 0, top: y, width: x, height: h }} onClick={close} />
       <div className="spot-hit" style={{ left: x + w, top: y, right: 0, height: h }} onClick={close} />
-      <p className="spot-text" style={textStyle}>
-        {text}
-      </p>
+      {!offscreen && (
+        <p className="spot-text" style={textStyle}>
+          {text}
+        </p>
+      )}
     </div>
   )
 }
