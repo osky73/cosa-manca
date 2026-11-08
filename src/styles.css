@@ -2102,7 +2102,7 @@ textarea {
   font-size: 14px;
 }
 /* guida: oscuramento verde con apertura sfumata */
-.spot { position: fixed; inset: 0; z-index: 80; pointer-events: none; animation: spotin 0.35s ease both; transition: opacity 0.38s ease; }
+.spot { position: fixed; inset: 0; z-index: 80; pointer-events: none; animation: spotin 0.7s ease-in-out backwards; transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1); }
 .spot.out { opacity: 0; }
 .spot-svg { position: fixed; left: 0; top: 0; pointer-events: none; }
 .spot-hit { position: fixed; pointer-events: auto; }

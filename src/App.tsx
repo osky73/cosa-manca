@@ -188,10 +188,11 @@ export function Shell({
   const [tab, setTab] = useState<Tab>('shop')
   const [sharing, setSharing] = useState(OPENED_BY_SHARE)
   const [tour, setTour] = useState<Tour | null>(null)
+  const [tourOpen, setTourOpen] = useState(true)
   const needCount = useRef(d.needs.length)
   useEffect(() => {
     // il passaggio "segna ciò che manca" finisce quando un prodotto viene davvero segnato
-    if (tour?.doneWhen === 'need-added' && d.needs.length > needCount.current) setTour(null)
+    if (tour?.doneWhen === 'need-added' && d.needs.length > needCount.current) setTourOpen(false)
     needCount.current = d.needs.length
   }, [d.needs.length, tour])
   useEffect(() => {
@@ -213,7 +214,7 @@ export function Shell({
   return (
     <div className="app">
       <InstallPopup />
-      {tour && <Spotlight tour={tour} text={tour.text(d.isAdmin)} onClose={() => setTour(null)} />}
+      {tour && <Spotlight tour={tour} text={tour.text(d.isAdmin)} open={tourOpen} onClose={() => setTour(null)} />}
       <main>
         {sharing && (
           <ShareScreen
@@ -235,6 +236,7 @@ export function Shell({
               if (!t) return
               needCount.current = d.needs.length
               go(t.tab)
+              setTourOpen(true)
               setTour(t)
             }}
           />

@@ -9,13 +9,34 @@ interface Box {
   h: number
 }
 const PAD = 10
+const FADE = 900 // dissolvenza morbida (ms)
 
 /** Oscura tutto tranne un punto dell'app (lasciato toccabile) e mostra una breve spiegazione. */
-export default function Spotlight({ tour, text, onClose }: { tour: Tour; text: string; onClose: () => void }) {
+export default function Spotlight({
+  tour,
+  text,
+  open = true,
+  onClose,
+}: {
+  tour: Tour
+  text: string
+  open?: boolean // false: si dissolve da sola
+  onClose: () => void
+}) {
   const toast = useToast()
   const [box, setBox] = useState<Box | null>(null)
   const [closing, setClosing] = useState(false)
   const el = useRef<Element | null>(null)
+  const closeRef = useRef<() => void>(() => {})
+  const close = () => {
+    if (closing) return
+    setClosing(true)
+    window.setTimeout(onClose, FADE)
+  }
+  closeRef.current = close
+  useEffect(() => {
+    if (!open) closeRef.current()
+  }, [open])
 
   useEffect(() => {
     let raf = 0
@@ -25,7 +46,7 @@ export default function Spotlight({ tour, text, onClose }: { tour: Tour; text: s
     const tick = () => {
       if (!alive) return
       // una scheda aperta (es. "Nuovo prodotto") chiude la guida
-      if (document.querySelector('.sheet-wrap')) return onClose()
+      if (document.querySelector('.sheet-wrap')) return closeRef.current()
       const found = document.querySelector(tour.selector)
       if (found) {
         el.current = found
@@ -68,11 +89,6 @@ export default function Spotlight({ tour, text, onClose }: { tour: Tour; text: s
     : y + h + 130 < vh
       ? { top: y + h + 24 }
       : { bottom: vh - y + 24 }
-  const close = () => {
-    if (closing) return
-    setClosing(true)
-    window.setTimeout(onClose, 380)
-  }
   return (
     <div className={'spot' + (closing ? ' out' : '')} role="dialog" aria-label="Guida">
       {/* oscuramento verde trasparente con un'apertura sfumata attorno all'elemento */}
