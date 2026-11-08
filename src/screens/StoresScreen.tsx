@@ -7,6 +7,14 @@ import { useToast } from '../toast'
 
 const StoresMap = lazy(() => import('../StoresMap'))
 
+/** Dimensione del nome nel riquadro: più è lungo (o più lunga la parola più lunga), più è piccolo, così sta sempre dentro. */
+function nameSize(name: string): number {
+  const longest = Math.max(...name.split(/\s+/).map((w) => w.length), 1)
+  const byWord = Math.floor(90 / (0.62 * longest))
+  const byLen = name.length <= 8 ? 16 : name.length <= 14 ? 14 : name.length <= 22 ? 12 : 11
+  return Math.max(10, Math.min(16, byWord, byLen))
+}
+
 export default function StoresScreen() {
   const d = useData()
   const toast = useToast()
@@ -114,7 +122,9 @@ export default function StoresScreen() {
                 aria-checked={on}
                 aria-label={s.name}
               >
-                <span className="cname">{s.name}</span>
+                <span className="cname" style={{ fontSize: nameSize(s.name) }}>
+                  {s.name}
+                </span>
                 <span className="switch" aria-hidden="true">
                   <i />
                 </span>
