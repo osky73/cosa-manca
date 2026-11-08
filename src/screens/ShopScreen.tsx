@@ -166,13 +166,14 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
             aria-label="Filtra per supermercato"
             style={{ ...fadeOff, pointerEvents: allBought ? 'none' : undefined }}
           >
+            <span className="where">Dove?</span>
             <button
               role="tab"
               aria-selected={filter === 'none'}
               className={(filter === 'none' ? 'on' : '') + (countNone === 0 ? ' off' : '')}
               onClick={() => setFilter(filter === 'none' ? 'all' : 'none')}
             >
-              Ovunque <span className="count">{countNone}</span>
+              ovunque <span className="count">{countNone}</span>
             </button>
             {d.stores
               .filter((s) => countFor(s.id) > 0 || seen.includes(s.id))
