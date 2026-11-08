@@ -87,6 +87,26 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     return out
   }, [shown, filter, d.stores, d.storeOf])
 
+  // Negozi che hanno avuto prodotti: restano come pillole spente a 0 finché non si cancella la lista.
+  const [seen, setSeen] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cm.shopseen') || '[]') as string[]
+    } catch {
+      return []
+    }
+  })
+  useEffect(() => {
+    const now = d.stores.filter((s) => rows.some((x) => x.need.store_id === s.id)).map((s) => s.id)
+    if (now.some((id) => !seen.includes(id))) {
+      const next = [...new Set([...seen, ...now])]
+      setSeen(next)
+      try {
+        localStorage.setItem('cm.shopseen', JSON.stringify(next))
+      } catch {
+        /* ignora */
+      }
+    }
+  }, [rows, d.stores, seen])
   const countFor = (id: string) => rows.filter((x) => x.need.store_id === id).length
   useEffect(() => {
     if (filter !== 'all' && filter !== 'none' && countFor(filter) === 0) setFilter('all')
@@ -112,19 +132,19 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
             <button
               role="tab"
               aria-selected={filter === 'none'}
-              className={filter === 'none' ? 'on' : ''}
+              className={(filter === 'none' ? 'on' : '') + (countNone === 0 ? ' off' : '')}
               onClick={() => setFilter(filter === 'none' ? 'all' : 'none')}
             >
               Ovunque <span className="count">{countNone}</span>
             </button>
             {d.stores
-              .filter((s) => countFor(s.id) > 0)
+              .filter((s) => countFor(s.id) > 0 || seen.includes(s.id))
               .map((s) => (
                 <button
                   key={s.id}
                   role="tab"
                   aria-selected={filter === s.id}
-                  className={filter === s.id ? 'on' : ''}
+                  className={(filter === s.id ? 'on' : '') + (countFor(s.id) === 0 ? ' off' : '')}
                   style={{ ['--c' as string]: s.color }}
                   onClick={() => setFilter(filter === s.id ? 'all' : s.id)}
                 >
@@ -165,7 +185,15 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
           aria-label="Cancella tutto"
           title="Cancella tutto"
           onClick={() => {
-            if (confirm('Azzerare la lista di cosa manca?')) d.clearAll()
+            if (confirm('Azzerare la lista di cosa manca?')) {
+              d.clearAll()
+              setSeen([])
+              try {
+                localStorage.removeItem('cm.shopseen')
+              } catch {
+                /* ignora */
+              }
+            }
           }}
         >
           <IconTrash />
