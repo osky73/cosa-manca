@@ -60,7 +60,14 @@ export default function Spotlight({ tour, text, onClose }: { tour: Tour; text: s
   const y = Math.max(0, box.y - PAD)
   const w = Math.min(vw - x, box.w + PAD * 2)
   const h = box.h + PAD * 2
-  const below = y + h + 120 < vh
+  // Testo al centro della pagina; se coprirebbe l'elemento evidenziato, si sposta subito sotto (o sopra).
+  const mid = vh / 2
+  const overlaps = y < mid + 55 && y + h > mid - 55
+  const textStyle: React.CSSProperties = !overlaps
+    ? { top: mid, transform: 'translateY(-50%)' }
+    : y + h + 130 < vh
+      ? { top: y + h + 24 }
+      : { bottom: vh - y + 24 }
   const close = () => {
     if (closing) return
     setClosing(true)
@@ -86,7 +93,7 @@ export default function Spotlight({ tour, text, onClose }: { tour: Tour; text: s
       <div className="spot-hit" style={{ left: 0, top: y + h, width: '100%', bottom: 0 }} onClick={close} />
       <div className="spot-hit" style={{ left: 0, top: y, width: x, height: h }} onClick={close} />
       <div className="spot-hit" style={{ left: x + w, top: y, right: 0, height: h }} onClick={close} />
-      <p className="spot-text" style={below ? { top: y + h + 22 } : { bottom: vh - y + 22 }}>
+      <p className="spot-text" style={textStyle}>
         {text}
       </p>
     </div>

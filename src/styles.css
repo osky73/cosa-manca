@@ -2106,5 +2106,5 @@ textarea {
 .spot.out { opacity: 0; }
 .spot-svg { position: fixed; left: 0; top: 0; pointer-events: none; }
 .spot-hit { position: fixed; pointer-events: auto; }
-.spot-text { position: fixed; left: 28px; right: 28px; max-width: 460px; margin: 0 auto; text-align: center; color: #fff; font-size: 19px; line-height: 1.4; font-weight: 700; text-shadow: 0 1px 8px rgba(0, 30, 15, 0.55); pointer-events: none; }
+.spot-text { position: fixed; left: 0; right: 0; width: min(290px, calc(100% - 56px)); margin: 0 auto; text-align: center; color: #fff; font-size: 17px; line-height: 1.28; font-weight: 300; letter-spacing: -0.012em; text-shadow: 0 1px 6px rgba(0, 30, 15, 0.5); pointer-events: none; }
 @keyframes spotin { from { opacity: 0; } to { opacity: 1; } }
