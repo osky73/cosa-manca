@@ -92,7 +92,7 @@ export function pulisciRighe(text: string): string[] {
       if (piece.length < 2 || piece.length > 40) continue
       if (!/[a-zà-ù]{2}/.test(piece)) continue
       if (/\b\d{1,2}[:.]\d{2}\b/.test(piece)) continue // orari
-      if (GREETING.test(piece)) continue
+      if (GREETING.test(piece) || /^(anche|poi|ah|e|per)$/.test(piece)) continue
       if (!out.includes(piece)) out.push(piece)
     }
   }
