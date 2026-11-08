@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { IconX } from './icons'
 import { useData, type ProposeInput } from './data'
 import { useToast } from './toast'
-import { categoriesOf, initials, logoUrl } from './lib'
+import { categoriesOf, initials, logoUrl, spaceUnits } from './lib'
 import type { Recurrence, Store } from './types'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -276,7 +276,7 @@ export function NeedDetailSheet({
     setQ(String(Math.max(1, (num ?? 1) + by)))
   }
   function save() {
-    onSave(q.trim() || null, n.trim() || null)
+    onSave(spaceUnits(q.trim()) || null, n.trim() || null)
     onClose()
   }
   if (readOnly) {
