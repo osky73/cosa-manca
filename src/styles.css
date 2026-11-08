@@ -288,7 +288,7 @@ input.code { font-size: 28px; letter-spacing: 6px; text-align: center; font-vari
 
 .cols.only-right { justify-content: flex-end; }
 .shopsec .slist { padding-top: 0; }
-.shopscreen { display: flex; flex-direction: column; min-height: 100dvh; }
+.shopscreen { display: flex; flex-direction: column; min-height: 100dvh; padding-bottom: calc(128px + var(--safe-b)); }
 .clear-wrap { margin-top: auto; padding-top: 24px; display: flex; justify-content: center; }
 .clear-all { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: #d92d20; color: #fff; border: 0; box-shadow: 0 4px 14px rgba(217, 45, 32, .4); }
 .clear-all svg { width: 26px; height: 26px; }
