@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { configured, supabase } from './supabase'
 import { ToastProvider } from './toast'
@@ -169,6 +169,12 @@ function Shell({
 }) {
   const d = useData()
   const [tab, setTab] = useState<Tab>('shop')
+  const entered = useRef(false)
+  useEffect(() => {
+    if (entered.current || !d.loaded) return
+    entered.current = true
+    if (d.needs.length === 0 && d.boughtNeeds.length === 0) setTab('list')
+  }, [d.loaded, d.needs.length, d.boughtNeeds.length])
   const pending = d.suggestions.filter((s) => s.status === 'pending').length
 
   const go = (t: Tab) => {
