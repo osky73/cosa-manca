@@ -407,15 +407,11 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
 
   const markBought = useCallback(
     (need: Need) => {
-      const item = itemOf(need.item_id)
       pushOp({ k: 'bought', id: need.id })
-      toast.show(`Preso: ${item?.name ?? 'prodotto'}`, {
-        label: 'Annulla',
-        run: () => pushOp({ k: 'unbought', id: need.id }),
-      })
     },
-    [itemOf, pushOp, toast],
+    [pushOp],
   )
+
 
   const clearBought = useCallback(async () => {
     const ids = boughtNeeds.map((n) => n.id)
