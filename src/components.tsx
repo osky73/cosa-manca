@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { IconX } from './icons'
 import { useData, type ProposeInput } from './data'
 import { useToast } from './toast'
-import { NEW_PRODUCT_CATEGORIES, initials, logoUrl } from './lib'
+import { categoriesOf, initials, logoUrl } from './lib'
 import type { Recurrence, Store } from './types'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -188,7 +188,7 @@ export function ProposeSheet({
       <div className="field">
         <span>Categoria</span>
         <div className="catpick" role="radiogroup" aria-label="Categoria">
-          {NEW_PRODUCT_CATEGORIES.map((c) => (
+          {categoriesOf(d.items).map((c) => (
             <button
               key={c}
               type="button"

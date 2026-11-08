@@ -7,13 +7,9 @@ export const CATEGORY_ORDER = [
   'Bevande',
   'Surgelati',
   'Igiene e casa',
-  'Igiene',
-  'Casa',
   'Altro',
 ]
 
-/** Le categorie tra cui si sceglie quando si aggiunge un prodotto. */
-export const NEW_PRODUCT_CATEGORIES = ['Frigo', 'Igiene', 'Casa', 'Altro']
 
 export const STORE_COLORS = ['#2f7d4f', '#d9480f', '#1c7ed6', '#ae3ec9', '#e8a600', '#0b7285', '#c2255c', '#495057']
 
