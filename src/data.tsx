@@ -66,6 +66,7 @@ interface DataCtx {
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
   archiveItem: (id: string) => Promise<void>
   restoreItem: (id: string) => Promise<void>
+  moveItem: (id: string, category: string, orderedIds: string[]) => Promise<void>
   invite: (email: string, role: Role) => Promise<boolean>
   sendInviteEmail: (email: string) => Promise<boolean>
   removeInvitation: (id: string) => Promise<void>
@@ -124,7 +125,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     try {
       const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString()
       const [it, st, nd, sg, mb, bt] = await Promise.all([
-        supabase.from('group_items').select('*').eq('group_id', groupId).eq('archived', false).order('name'),
+        supabase.from('group_items').select('*').eq('group_id', groupId).eq('archived', false).order('sort').order('name'),
         supabase.from('stores').select('*').eq('group_id', groupId).order('sort').order('created_at'),
         supabase.from('needs').select('*').eq('group_id', groupId).eq('status', 'missing'),
         supabase
@@ -530,6 +531,31 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     },
     restoreItem: async (id) => {
       await act(supabase.from('group_items').update({ archived: false }).eq('id', id))
+    },
+    // Sposta un prodotto (anche in un'altra categoria) e salva l'ordine della categoria di arrivo.
+    moveItem: async (id, category, orderedIds) => {
+      const pos = new Map(orderedIds.map((x, i) => [x, i]))
+      setSnap((s) => {
+        const next = {
+          ...s,
+          items: s.items.map((i) =>
+            pos.has(i.id) ? { ...i, sort: pos.get(i.id), category: i.id === id ? category : i.category } : i,
+          ),
+        }
+        writeLS(snapKey, next)
+        return next
+      })
+      const res = await Promise.all(
+        orderedIds.map((x, i) =>
+          supabase
+            .from('group_items')
+            .update(x === id ? { category, sort: i } : { sort: i })
+            .eq('id', x),
+        ),
+      )
+      const bad = res.find((r) => r.error)
+      if (bad?.error) toast.show(friendly(bad.error.message))
+      await refetch()
     },
     invite: async (email, inviteRole) =>
       act(

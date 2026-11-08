@@ -128,3 +128,14 @@ export const IconNote = () => (
     <circle cx="12" cy="7.8" r=".6" fill="currentColor" />
   </Svg>
 )
+
+export const IconGrip = () => (
+  <Svg>
+    <circle cx="9" cy="6" r="1.2" fill="currentColor" />
+    <circle cx="15" cy="6" r="1.2" fill="currentColor" />
+    <circle cx="9" cy="12" r="1.2" fill="currentColor" />
+    <circle cx="15" cy="12" r="1.2" fill="currentColor" />
+    <circle cx="9" cy="18" r="1.2" fill="currentColor" />
+    <circle cx="15" cy="18" r="1.2" fill="currentColor" />
+  </Svg>
+)

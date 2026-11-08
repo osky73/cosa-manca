@@ -29,6 +29,7 @@ export interface Item {
   hidden: boolean
   archived: boolean
   default_store_id: string | null
+  sort?: number
   created_by?: string | null
 }
 

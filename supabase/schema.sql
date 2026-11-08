@@ -515,3 +515,17 @@ create index on public.referrals (user_id, created_at desc);
 alter table public.referrals enable row level security;
 create policy referrals_insert_own on public.referrals for insert to authenticated with check (user_id = auth.uid());
 create policy referrals_select_own on public.referrals for select to authenticated using (user_id = auth.uid());
+
+-- Ordine manuale dei prodotti (trascinamento): colonna sort, i nuovi vanno in fondo alla categoria.
+alter table public.group_items add column if not exists sort int not null default 0;
+create or replace function public.group_items_set_sort() returns trigger language plpgsql as $$
+begin
+  if new.sort = 0 then
+    select coalesce(max(sort), -1) + 1 into new.sort
+      from public.group_items where group_id = new.group_id and category = new.category and not archived;
+  end if;
+  return new;
+end $$;
+drop trigger if exists group_items_sort on public.group_items;
+create trigger group_items_sort before insert on public.group_items
+  for each row execute function public.group_items_set_sort();

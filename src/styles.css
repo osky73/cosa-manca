@@ -408,3 +408,12 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid v
 .delrow .icon-btn { color: var(--warn); }
 .catpick { display: flex; flex-wrap: wrap; }
 .catpick button { padding: 0 14px; }
+
+.admin-modes { display: inline-flex; gap: 6px; }
+.orderrow { position: relative; }
+.orderrow .grip { color: var(--muted); touch-action: none; cursor: grab; }
+.orderrow.dragging { opacity: 0.35; }
+.orderrow.drop-before { box-shadow: 0 -5px 0 -1px var(--accent); }
+.orderrow.drop-after { box-shadow: 0 5px 0 -1px var(--accent); }
+.sect-label.dropto { box-shadow: 0 4px 0 -1px var(--accent); }
+.dragghost { position: fixed; left: 16px; right: 16px; z-index: 60; height: 49px; display: flex; align-items: center; padding: 0 16px; background: var(--card); border: 1.5px solid var(--accent); border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.18); pointer-events: none; }
