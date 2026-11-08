@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-const FADE_MS = 10000
+const FADE_MS = 5000
 
 /** Sfuma l'opacità da 1 a `target` in 10 secondi a partire da `from` (ms). Senza `from` torna a 1. */
 export function useFade(from: number | undefined, target: number): { opacity: number; transition: string } {

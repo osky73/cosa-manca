@@ -24,7 +24,7 @@ export function SlideRow({
   item: Item
   goto: (t: Tab) => void
   pickStore?: boolean
-  fadeFrom?: number // se presente: da quel momento (ms) la riga sfuma fino al 30% in 10 secondi
+  fadeFrom?: number // se presente: da quel momento (ms) la riga sfuma fino al 30% in 5 secondi
 }) {
   const d = useData()
   const [picking, setPicking] = useState(false)
@@ -50,7 +50,7 @@ export function SlideRow({
       setFade({ o: 1, ms: 250 })
       return
     }
-    const FADE_MS = 10000
+    const FADE_MS = 5000
     const left = FADE_MS - (Date.now() - fadeFrom)
     if (left <= 0) {
       setFade({ o: 0.3, ms: 0 })
