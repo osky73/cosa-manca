@@ -26,7 +26,7 @@ export default function IdeasScreen() {
   }
 
   return (
-    <div className="screen">
+    <div className="screen ideasscreen">
       <header className="top sticky">
         <div className="top-row">
           <h1>Cosa manca a Cosa manca</h1>
@@ -58,26 +58,28 @@ export default function IdeasScreen() {
         </button>
       </form>
 
-      <p className="hint ideas-small">Cos'altro ti manca? Tutti abbiamo qualcosa che ci manca in fondo...</p>
-      <form
-        className="ideas-row"
-        onSubmit={(e) => {
-          e.preventDefault()
-          void send('wish')
-        }}
-      >
-        <input
-          type="text"
-          maxLength={300}
-          placeholder="Cosa ti manca?"
-          value={wish}
-          onChange={(e) => setWish(e.target.value)}
-          aria-label="Cos'altro ti manca"
-        />
-        <button className="btn primary" disabled={!wish.trim() || busy === 'wish'}>
-          Invia
-        </button>
-      </form>
+      <div className="ideas-bottom">
+        <p className="hint ideas-small">Cos'altro ti manca? Tutti abbiamo qualcosa che ci manca in fondo...</p>
+        <form
+          className="ideas-row"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void send('wish')
+          }}
+        >
+          <input
+            type="text"
+            maxLength={300}
+            placeholder="Cosa ti manca?"
+            value={wish}
+            onChange={(e) => setWish(e.target.value)}
+            aria-label="Cos'altro ti manca"
+          />
+          <button className="btn primary" disabled={!wish.trim() || busy === 'wish'}>
+            Invia
+          </button>
+        </form>
+      </div>
     </div>
   )
 }
