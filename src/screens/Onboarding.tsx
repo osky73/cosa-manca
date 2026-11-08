@@ -50,7 +50,7 @@ export default function Onboarding({
     <main className="auth">
       <div className="brand">
         <h1>Benvenuto</h1>
-        <p>{hasGroup ? 'Come ti chiami?' : 'Facciamo partire il tuo gruppo.'}</p>
+        <p>{hasGroup ? 'Come ti chiami?' : 'Crea il tuo gruppo di persone a cui «manca qualcosa».'}</p>
       </div>
       <form onSubmit={(e) => void submit(e)} className="card">
         {needName && (
@@ -62,7 +62,7 @@ export default function Onboarding({
         {needName && (
           <label className="check">
             <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} />
-            <span>Voglio ricevere ogni tanto aggiornamenti sull'app via email (facoltativo, puoi disiscriverti quando vuoi)</span>
+            <span>Voglio ricevere gli aggiornamenti sull'app</span>
           </label>
         )}
         {!hasGroup && (
