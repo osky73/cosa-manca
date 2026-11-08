@@ -122,7 +122,6 @@ export function SlideRow({
     if (e.button !== 0 && e.pointerType === 'mouse') return
     const w = rowRef.current?.offsetWidth ?? 300
     setPend(null)
-    closePeek()
     drag.current = {
       id: e.pointerId,
       x: e.clientX,
@@ -142,6 +141,7 @@ export function SlideRow({
     if (!g.on) {
       if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy)) return
       g.on = true
+      closePeek() // se inizia un trascinamento la nota si richiude
       ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
     }
     const q = (g.side === 0 ? dx : -dx) / g.travel
@@ -213,7 +213,7 @@ export function SlideRow({
           else if (need.note) {
             // in Cosa manca la nota si apre dentro al pulsante e si richiude da sola dopo 7 secondi
             if (peek) return closePeek()
-            setNoteH((noteRef.current?.scrollHeight ?? 0) + 14)
+            setNoteH((noteRef.current?.offsetHeight ?? 0) + 14)
             setPeek(true)
             window.clearTimeout(peekTimer.current)
             peekTimer.current = window.setTimeout(() => setPeek(false), 7000)
@@ -237,8 +237,10 @@ export function SlideRow({
           )}
         </span>
         {need?.note && !pickStore && (
-          <div className="slnote" ref={noteRef} aria-hidden={!peek}>
-            {need.note}
+          <div className="slnote" aria-hidden={!peek}>
+            <div className="slnote-in" ref={noteRef}>
+              {need.note}
+            </div>
           </div>
         )}
         {need && !pickStore && store && (

@@ -2380,3 +2380,33 @@ textarea {
 .slnote {
   left: 56px;
 }
+
+/* la nota è ritagliata dal pulsante: mentre si chiude lo copre, il testo non resta fuori */
+.slnote {
+  left: 0;
+  right: 0;
+  top: 49px;
+  bottom: 0;
+  padding: 0 16px 0 56px;
+  overflow: hidden;
+  border-radius: 0 0 12px 12px;
+  opacity: 1;
+  transition: none;
+}
+.slider.peek .slnote {
+  transition-delay: 0s;
+}
+.slnote-in {
+  text-align: right;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ink);
+  white-space: pre-wrap;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.slider.peek .slnote-in {
+  opacity: 1;
+  transition: opacity 0.3s ease 0.15s;
+}
