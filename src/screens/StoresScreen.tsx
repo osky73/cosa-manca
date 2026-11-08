@@ -109,29 +109,30 @@ export default function StoresScreen() {
         {custom.map((s) => {
           return (
             <div key={s.id} className="shopcell">
-              <button
-                type="button"
-                className="shopcard custom on"
-                style={{ ['--c' as string]: s.color }}
-                onClick={() => void removeCustom(s)}
-                role="switch"
-                aria-checked={true}
-                aria-label={`${s.name}: spegni per eliminare`}
-              >
+              <div className="shopcard custom on" style={{ ['--c' as string]: s.color }}>
                 <span className="cname">{s.name}</span>
-                <span className="switch" aria-hidden="true">
-                  <i />
-                  <IconTrash />
-                </span>
-              </button>
-              <button
-                type="button"
-                className={'notebtn' + (s.note ? ' has' : '')}
-                onClick={() => openNote(s.id)}
-                aria-label={`Nota su ${s.name}`}
-              >
-                <IconNote />
-              </button>
+                <div className="crow">
+                  <button
+                    type="button"
+                    className="switch"
+                    onClick={() => void removeCustom(s)}
+                    role="switch"
+                    aria-checked={true}
+                    aria-label={`${s.name}: spegni per eliminare`}
+                  >
+                    <i />
+                    <IconTrash />
+                  </button>
+                  <button
+                    type="button"
+                    className={'notebtn' + (s.note ? ' has' : '')}
+                    onClick={() => openNote(s.id)}
+                    aria-label={`Info su ${s.name}`}
+                  >
+                    <IconNote />
+                  </button>
+                </div>
+              </div>
             </div>
           )
         })}

@@ -348,3 +348,9 @@ textarea { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid v
 .ideas-row { display: flex; gap: 8px; align-items: center; }
 .ideas-row input { flex: 1; min-width: 0; min-height: 40px; padding: 0 12px; font-size: 15px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink); }
 .ideas-row .btn { min-height: 40px; padding: 0 14px; }
+
+.shopcard.custom .crow { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.shopcard.custom .switch { padding: 0; border: 0; }
+.shopcard.custom .notebtn { position: static; width: 24px; height: 24px; border-radius: 50%; color: #fff; background: transparent; }
+.shopcard.custom .notebtn.has { background: rgba(255, 255, 255, .3); }
+.shopcard.custom .notebtn svg { width: 22px; height: 22px; }
