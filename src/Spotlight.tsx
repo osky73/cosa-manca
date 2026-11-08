@@ -102,7 +102,7 @@ export default function Spotlight({
             <rect x={x} y={y} width={w} height={h} rx="16" fill="#000" filter="url(#spot-blur)" />
           </mask>
         </defs>
-        <rect width={vw} height={vh} fill="rgba(18, 74, 44, 0.8)" mask="url(#spot-mask)" />
+        <rect width={vw} height={vh} fill="rgba(18, 74, 44, 0.95)" mask="url(#spot-mask)" />
       </svg>
       {/* zone che catturano il tocco (l'elemento evidenziato resta toccabile) */}
       <div className="spot-hit" style={{ left: 0, top: 0, width: '100%', height: y }} onClick={close} />
