@@ -19,10 +19,12 @@ export function SlideRow({
   item,
   goto,
   pickStore = true,
+  fadeFrom,
 }: {
   item: Item
   goto: (t: Tab) => void
   pickStore?: boolean
+  fadeFrom?: number // se presente: da quel momento (ms) la riga sfuma fino al 30% in 10 secondi
 }) {
   const d = useData()
   const [picking, setPicking] = useState(false)
@@ -42,6 +44,22 @@ export function SlideRow({
   const [snapAnim, setSnapAnim] = useState(false)
   const [pend, setPend] = useState<0 | 1 | null>(null) // destinazione dopo il rilascio, finché i dati non si aggiornano
   const side: 0 | 1 = need ? 1 : 0
+  const [fade, setFade] = useState<{ o: number; ms: number }>({ o: 1, ms: 250 })
+  useEffect(() => {
+    if (fadeFrom === undefined) {
+      setFade({ o: 1, ms: 250 })
+      return
+    }
+    const FADE_MS = 10000
+    const left = FADE_MS - (Date.now() - fadeFrom)
+    if (left <= 0) {
+      setFade({ o: 0.3, ms: 0 })
+      return
+    }
+    setFade({ o: 1 - (0.7 * (FADE_MS - left)) / FADE_MS, ms: 0 })
+    const t = window.setTimeout(() => setFade({ o: 0.3, ms: left }), 30)
+    return () => window.clearTimeout(t)
+  }, [fadeFrom])
 
   // Dopo il rilascio i dati passano per uno stato intermedio (operazione locale -> server -> aggiornamento)
   // che può far rimbalzare "manca" per un attimo: tengo ferma la posizione scelta finché si assesta.
@@ -120,7 +138,11 @@ export function SlideRow({
   }
 
   return (
-    <li className="slrow" ref={rowRef}>
+    <li
+      className="slrow"
+      ref={rowRef}
+      style={{ opacity: fade.o, transition: fade.ms ? `opacity ${fade.ms}ms linear` : 'none' }}
+    >
       <div
         role="button"
         tabIndex={0}

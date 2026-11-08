@@ -62,6 +62,20 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
     return out
   }, [rows, d.boughtNeeds, d.itemOf])
 
+  const boughtAt = useRef(new Map<string, number>())
+  const fadeOf = (r: Row): number | undefined => {
+    if (r.need.status !== 'bought' || !boughtRows.includes(r)) return undefined
+    const known = boughtAt.current.get(r.item.id)
+    if (known) return known
+    const t = r.need.bought_at ? Date.parse(r.need.bought_at) : Date.now()
+    boughtAt.current.set(r.item.id, t)
+    return t
+  }
+  useEffect(() => {
+    const ids = new Set(boughtRows.map((r) => r.item.id))
+    for (const id of [...boughtAt.current.keys()]) if (!ids.has(id)) boughtAt.current.delete(id)
+  }, [boughtRows])
+
   const shown = useMemo(
     () => [...rows, ...boughtRows].sort((a, b) => byCategoryThenName(a.item, b.item)),
     [rows, boughtRows],
@@ -185,8 +199,8 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         sections.map((sec) => (
           <section key={sec.key} className="shopsec">
             <ul className="slist">
-              {sec.rows.map(({ item }) => (
-                <SlideRow key={item.id} item={item} goto={goto} pickStore={false} />
+              {sec.rows.map((r) => (
+                <SlideRow key={r.item.id} item={r.item} goto={goto} pickStore={false} fadeFrom={fadeOf(r)} />
               ))}
             </ul>
           </section>
