@@ -22,12 +22,21 @@ export const TOURS: Tour[] = [
     doneWhen: 'need-added',
   },
   {
-    id: 'note',
-    question: 'Come aggiungo una nota o la quantità a un prodotto?',
+    id: 'quantity',
+    question: 'Come faccio ad aggiungere la quantità di un prodotto?',
     tab: 'list',
     selector: '[data-tour~="missing-row"]',
     text: () =>
-      'In Elencone, tocca un prodotto che manca: si apre la scheda dove scrivi la quantità (es. 500 gr) e una nota. Poi tocca «Salva».',
+      'In Elencone, tocca un prodotto che manca: nella scheda scrivi la quantità (es. 3 pacchi, 500 gr) o usa − e +, poi tocca «Salva». Sul prodotto comparirà davanti al nome, ad esempio «500 gr di burro».',
+    empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
+  },
+  {
+    id: 'note',
+    question: 'Posso aggiungere una nota ad un prodotto?',
+    tab: 'list',
+    selector: '[data-tour~="missing-row"]',
+    text: () =>
+      'Sì. In Elencone, tocca un prodotto che manca e scrivi la nota nella scheda, poi tocca «Salva». Accanto al nome compare una piccola icona: in Cosa manca, toccando il prodotto, la nota si apre sotto il nome per qualche secondo.',
     empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {
