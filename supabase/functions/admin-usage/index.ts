@@ -23,7 +23,8 @@ async function resend() {
   let after = ''
   for (let i = 0; i < 10; i++) {
     const r = await fetch(`https://api.resend.com/emails?limit=100${after}`, { headers: { Authorization: `Bearer ${key}` } })
-    if (!r.ok) return null
+    if (r.status === 401 || r.status === 403) return { error: 'solo_invio' as const }
+    if (!r.ok) return { error: `http_${r.status}` as const }
     const j = await r.json()
     const rows: { created_at: string; id: string }[] = j.data ?? []
     const monthStart = new Date(); monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0)

@@ -14,7 +14,7 @@ interface Stats {
   map_details: number
 }
 interface External {
-  resend: { month: number; today: number } | null
+  resend: { month?: number; today?: number; error?: string } | null
   vercel: { deploys_month: number; deploys_today: number } | null
   supabase: { rest: number; auth: number; storage: number } | null
 }
@@ -120,8 +120,16 @@ export default function AdminScreen() {
       )}
 
       <h2>Resend <small>email, piano gratuito</small></h2>
-      <Meter label="Email questo mese" value={ext ? (ext.resend?.month ?? null) : null} max={FREE.resendMonth} />
-      <Meter label="Email oggi" value={ext ? (ext.resend?.today ?? null) : null} max={FREE.resendDay} />
+      <Meter label="Email questo mese" value={ext?.resend && !ext.resend.error ? (ext.resend.month ?? null) : null} max={FREE.resendMonth} />
+      <Meter label="Email oggi" value={ext?.resend && !ext.resend.error ? (ext.resend.today ?? null) : null} max={FREE.resendDay} />
+
+      {ext?.resend?.error && (
+        <p className="muted small">
+          {ext.resend.error === 'solo_invio'
+            ? 'La chiave Resend dell\'app può solo inviare email: per leggere i consumi serve una chiave con accesso completo (Full access).'
+            : `Resend non risponde (${ext.resend.error}).`}
+        </p>
+      )}
 
       <h2>Vercel <small>piano Hobby</small></h2>
       <Meter label="Pubblicazioni oggi" value={ext ? (ext.vercel?.deploys_today ?? null) : null} max={FREE.vercelDay} />
