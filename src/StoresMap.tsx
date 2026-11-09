@@ -58,14 +58,15 @@ function overpassQuery(lat: number, lon: number, radius: number, stores: Store[]
   const around = `(around:${radius},${lat},${lon})`
   if (!onlyMine) {
     const kind = '^(supermarket|convenience|discount|department_store|variety_store)$'
-    return `[out:json][timeout:25];(
+    return `[out:json][timeout:15];(
 nwr["shop"~"${kind}"]${around};
 );out center tags 400;`
   }
   const names = stores.map((st) => (st.name.length <= 3 ? `^${reEsc(st.name)}([ ,]|$)` : reEsc(st.name))).join('|')
-  return `[out:json][timeout:25];(
-nwr["shop"]["name"~"${names}",i]${around};
-nwr["shop"]["brand"~"${names}",i]${around};
+  return `[out:json][timeout:15];(
+nwr["name"~"${names}",i]["shop"]${around};
+nwr["brand"~"${names}",i]["shop"]${around};
+nwr["name"~"${names}",i]["amenity"~"^(pharmacy|marketplace|cafe|bar)$"]${around};
 );out center tags 400;`
 }
 
@@ -83,7 +84,7 @@ async function fetchShops(
     const ac = new AbortController()
     const onAbort = () => ac.abort()
     signal.addEventListener('abort', onAbort)
-    const timer = window.setTimeout(() => ac.abort(), 25000)
+    const timer = window.setTimeout(() => ac.abort(), 14000)
     try {
       const res = await fetch(url, {
         method: 'POST',
