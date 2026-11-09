@@ -426,7 +426,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
         </button>
         <label className="maptoggle">
           <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
-          <span>I tuoi negozi</span>
+          <span>I miei negozi</span>
         </label>
         {status === 'ready' && !note && (
           <div className="mapcount" aria-label={`${shops.length} ${onlyMine ? 'tuoi negozi' : 'supermercati'} in zona`}>
