@@ -177,18 +177,25 @@ async function searchAll(lat: number, lng: number, radius: number, stores: Store
 async function hoursInfo(p: google.maps.places.Place): Promise<{ text: string; open: boolean | null }> {
   try {
     logMap('details')
-    await p.fetchFields({ fields: ['regularOpeningHours'] })
-    const h = p.regularOpeningHours
-    if (!h) return { text: 'Orario non disponibile', open: null }
-    const open = await p.isOpen()
-    const today = h.weekdayDescriptions?.[(new Date().getDay() + 6) % 7] ?? ''
-    const hours = today.replace(/^[^:]+:\s*/, '')
-    const state = open === undefined ? '' : open ? 'Aperto' : 'Chiuso'
-    const text = [state, hours ? `oggi ${hours}` : ''].filter(Boolean).join(' · ')
-    return { text: text || 'Orario non disponibile', open: open ?? null }
-  } catch {
+    // isOpen() ha bisogno anche del fuso orario del negozio
+    await p.fetchFields({ fields: ['regularOpeningHours', 'utcOffsetMinutes'] })
+  } catch (e) {
+    console.warn('orari non letti', e)
     return { text: 'Orario non disponibile', open: null }
   }
+  const h = p.regularOpeningHours
+  if (!h) return { text: 'Orario non disponibile', open: null }
+  let open: boolean | null = null
+  try {
+    open = (await p.isOpen()) ?? null
+  } catch {
+    open = null
+  }
+  const today = h.weekdayDescriptions?.[(new Date().getDay() + 6) % 7] ?? ''
+  const hours = today.replace(/^[^:]+:\s*/, '')
+  const state = open === null ? '' : open ? 'Aperto' : 'Chiuso'
+  const text = [state, hours ? `oggi ${hours}` : ''].filter(Boolean).join(' · ')
+  return { text: text || 'Orario non disponibile', open }
 }
 
 const esc = (s: string) =>
@@ -305,7 +312,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
           clickableIcons: false,
         })
         map.current = m
-        info.current = new InfoWindow()
+        info.current = new InfoWindow({ maxWidth: 260 })
         m.addListener('idle', later)
         m.addListener('click', () => info.current?.close())
 
