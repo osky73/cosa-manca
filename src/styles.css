@@ -2831,3 +2831,10 @@ textarea {
 .zonehead .count {
   margin-left: 6px;
 }
+
+/* mentre si sposta un prodotto lo sfondo diventa verde scuro */
+.slider.dragging {
+  background: #1f5c3a;
+  border-color: #1f5c3a;
+  color: #fff;
+}
