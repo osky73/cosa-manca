@@ -9,14 +9,49 @@ import { dictationSupported, parseVoice, startDictation, type VoiceCmd } from '.
 import { catRank, categoriesOf, norm } from '../lib'
 import type { Item, Tab } from '../types'
 
+/** Nome modificabile: il cursore parte a fine parola; si salva uscendo dal campo o con Invio. */
+function EditName({ name, onSave, onDone }: { name: string; onSave: (n: string) => Promise<boolean>; onDone: () => void }) {
+  const [v, setV] = useState(name)
+  const ref = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    el.focus()
+    el.setSelectionRange(el.value.length, el.value.length)
+  }, [])
+  async function commit() {
+    const t = v.trim()
+    if (t && t !== name) {
+      if (!(await onSave(t))) setV(name)
+    } else setV(name)
+  }
+  return (
+    <input
+      ref={ref}
+      className="editname"
+      value={v}
+      onChange={(e) => setV(e.target.value)}
+      onBlur={() => void commit()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          void commit().then(onDone)
+        }
+      }}
+      aria-label="Nome del prodotto"
+      autoCapitalize="none"
+      enterKeyHint="done"
+    />
+  )
+}
+
 export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
   const d = useData()
   const [q, setQ] = useState('')
   const [proposeName, setProposeName] = useState<string | null>(null)
   const toast = useToast()
-  const [mode, setMode] = useState<null | 'delete' | 'order'>(null) // solo admin: elimina o riordina i prodotti
-  const deleting = mode === 'delete'
-  const ordering = mode === 'order'
+  const [editId, setEditId] = useState<string | null>(null) // solo admin: prodotto in modifica (sposta, elimina, rinomina)
+  const ordering = editId !== null
   const [drag, setDrag] = useState<{ id: string; label: string; x: number; y: number } | null>(null)
   const [drop, setDrop] = useState<{ cat: string; index: number } | null>(null)
   const dropRef = useRef<{ cat: string; index: number } | null>(null)
@@ -186,29 +221,10 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
       <header className="top">
         <div className="top-row">
           <h1>Elencone</h1>
-          {d.isAdmin && (
-            <span className="admin-modes">
-              {mode === null || ordering ? (
-                <button
-                  type="button"
-                  className={'btn ghost slim' + (ordering ? ' on' : '')}
-                  onClick={() => setMode(ordering ? null : 'order')}
-                  aria-pressed={ordering}
-                >
-                  {ordering ? 'Fine' : 'Riordina'}
-                </button>
-              ) : null}
-              {mode === null || deleting ? (
-                <button
-                  type="button"
-                  className={'btn ghost slim' + (deleting ? ' on' : '')}
-                  onClick={() => setMode(deleting ? null : 'delete')}
-                  aria-pressed={deleting}
-                >
-                  {deleting ? 'Fine' : 'Elimina'}
-                </button>
-              ) : null}
-            </span>
+          {d.isAdmin && editId !== null && (
+            <button type="button" className="btn ghost slim on" onClick={() => setEditId(null)}>
+              Fine
+            </button>
           )}
           {(!d.online || d.pendingOps > 0) && (
             <span className="pill warn">
@@ -327,57 +343,71 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                         const isDrop = drag && drop?.cat === cat && item.id !== drag.id
                         const before = isDrop && pos === drop.index
                         const after = isDrop && pos === others.length - 1 && drop.index >= others.length
+                        const editing = editId === item.id
                         return (
                           <li
                             key={item.id}
                             data-rowid={item.id}
                             className={
                               'delrow orderrow' +
+                              (editing ? ' editing' : '') +
                               (drag?.id === item.id ? ' dragging' : '') +
                               (before ? ' drop-before' : '') +
                               (after ? ' drop-after' : '')
                             }
+                            onClick={() => !editing && setEditId(item.id)}
                           >
-                            <span className="name">{item.name}</span>
-                            <button
-                              type="button"
-                              className="icon-btn grip"
-                              aria-label={`Sposta ${item.name}`}
-                              onPointerDown={(e) => startDrag(e, item)}
-                              onPointerMove={moveDrag}
-                              onPointerUp={() => endDrag(false)}
-                              onPointerCancel={() => endDrag(true)}
-                            >
-                              <IconGrip />
-                            </button>
+                            {editing ? (
+                              <EditName
+                                name={item.name}
+                                onSave={(n) => d.renameItem(item.id, n)}
+                                onDone={() => setEditId(null)}
+                              />
+                            ) : (
+                              <span className="name">{item.name}</span>
+                            )}
+                            {editing && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="icon-btn"
+                                  aria-label={`Elimina ${item.name}`}
+                                  onPointerDown={(e) => e.preventDefault()}
+                                  onClick={async () => {
+                                    setEditId(null)
+                                    await d.archiveItem(item.id)
+                                    toast.show(`«${item.name}» eliminato`, {
+                                      label: 'Annulla',
+                                      run: () => void d.restoreItem(item.id),
+                                    })
+                                  }}
+                                >
+                                  <IconTrash />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="icon-btn grip"
+                                  aria-label={`Sposta ${item.name}`}
+                                  onPointerDown={(e) => startDrag(e, item)}
+                                  onPointerMove={moveDrag}
+                                  onPointerUp={() => endDrag(false)}
+                                  onPointerCancel={() => endDrag(true)}
+                                >
+                                  <IconGrip />
+                                </button>
+                              </>
+                            )}
                           </li>
                         )
                       }
-                      return deleting ? (
-                        <li key={item.id} className="delrow">
-                          <span className="name">{item.name}</span>
-                          <button
-                            type="button"
-                            className="icon-btn"
-                            aria-label={`Elimina ${item.name}`}
-                            onClick={async () => {
-                              await d.archiveItem(item.id)
-                              toast.show(`«${item.name}» eliminato`, {
-                                label: 'Annulla',
-                                run: () => void d.restoreItem(item.id),
-                              })
-                            }}
-                          >
-                            <IconTrash />
-                          </button>
-                        </li>
-                      ) : (
+                      return (
                         <SlideRow
                           key={item.id}
                           item={item}
                           goto={goto}
                           tour={[item.id === firstId && 'first-row', item.id === firstMissingId && 'missing-row'].filter(Boolean).join(' ') || undefined}
                           hint={hintOn ? hintDelay(item.id) : undefined}
+                          onEdit={d.isAdmin ? () => setEditId(item.id) : undefined}
                         />
                       )
                     })}

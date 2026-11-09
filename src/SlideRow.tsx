@@ -24,11 +24,13 @@ export function SlideRow({
   fadeFrom,
   hint,
   tour,
+  onEdit,
 }: {
   item: Item
   goto: (t: Tab) => void
   pickStore?: boolean
   tour?: string // punto evidenziabile dalla Guida
+  onEdit?: () => void // tocco su un prodotto che non manca (solo admin, in Elencone): modifica
   hint?: number // ritardo (ms) con cui la riga fa una piccola oscillazione per suggerire che si trascina
   fadeFrom?: number // se presente: da quel momento (ms) la riga sfuma fino al 30% in 5 secondi
 }) {
@@ -211,7 +213,8 @@ export function SlideRow({
         onPointerCancel={(e) => end(e, true)}
         onClick={() => {
           // un tocco su un prodotto che manca apre quantità e nota (sul "click", così il tocco non cade nella finestra appena aperta)
-          if (!need || dragged.current) return
+          if (dragged.current) return
+          if (!need) return onEdit?.()
           if (pickStore) setDetail(true)
           else if (need.note) {
             // in Cosa manca la nota si apre dentro al pulsante e si richiude da sola dopo 7 secondi

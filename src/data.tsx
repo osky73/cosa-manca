@@ -70,6 +70,7 @@ interface DataCtx {
   deleteStore: (id: string) => Promise<void>
   setItemHidden: (id: string, hidden: boolean) => Promise<void>
   archiveItem: (id: string) => Promise<void>
+  renameItem: (id: string, name: string) => Promise<boolean>
   restoreItem: (id: string) => Promise<void>
   moveItem: (id: string, category: string, orderedIds: string[]) => Promise<void>
   invite: (email: string, role: Role) => Promise<boolean>
@@ -598,6 +599,22 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     },
     archiveItem: async (id) => {
       await act(supabase.from('group_items').update({ archived: true }).eq('id', id))
+    },
+    renameItem: async (id, name) => {
+      const clean = tidyName(name)
+      if (!clean) return false
+      const { error } = await supabase.from('group_items').update({ name: clean }).eq('id', id)
+      if (error) {
+        toast.show(/duplicate|unique/i.test(error.message) ? 'Esiste già un prodotto con questo nome' : friendly(error.message))
+        return false
+      }
+      setSnap((s) => {
+        const next = { ...s, items: s.items.map((i) => (i.id === id ? { ...i, name: clean } : i)) }
+        writeLS(snapKey, next)
+        return next
+      })
+      await refetch()
+      return true
     },
     restoreItem: async (id) => {
       await act(supabase.from('group_items').update({ archived: false }).eq('id', id))

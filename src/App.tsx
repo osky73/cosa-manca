@@ -237,8 +237,13 @@ export function Shell({
   useEffect(() => {
     if (entered.current || !d.loaded || sharing) return
     entered.current = true
-    if (d.needs.length === 0 && d.boughtNeeds.length === 0 && !d.suggestions.some((x) => x.status === 'pending'))
-      setTab('list')
+    const fresh = d.needs.length === 0 && d.boughtNeeds.length === 0 && !d.suggestions.some((x) => x.status === 'pending')
+    // la prima volta in assoluto si apre la Guida; poi, con la lista vuota, l'Elencone
+    const seenKey = `cm_seen_guide_${d.userId}`
+    if (fresh && !localStorage.getItem(seenKey)) {
+      localStorage.setItem(seenKey, '1')
+      setTab('guide')
+    } else if (fresh) setTab('list')
   }, [d.loaded, d.needs.length, d.boughtNeeds.length])
 
   const go = (t: Tab) => {
@@ -266,6 +271,7 @@ export function Shell({
         {!sharing && tab === 'ideas' && <IdeasScreen />}
         {!sharing && tab === 'guide' && (
           <GuideScreen
+            goto={go}
             onTour={(id) => {
               const t = TOURS.find((x) => x.id === id)
               if (!t) return

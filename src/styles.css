@@ -2547,3 +2547,72 @@ textarea {
   flex: none;
   margin: -6px -8px -6px 0;
 }
+
+.orderrow.editing {
+  border-color: var(--accent);
+  padding-right: 4px;
+}
+.orderrow .editname {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  font-size: 16px;
+  color: inherit;
+  caret-color: var(--accent);
+}
+.orderrow:not(.editing) {
+  cursor: pointer;
+}
+
+.start {
+  margin: 0 0 14px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 4px 16px;
+}
+.start-head {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: 0;
+  padding: 12px 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+}
+.start-head h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.start .chev {
+  transition: transform 0.2s;
+  transform: rotate(-90deg);
+  color: var(--muted);
+}
+.start .chev.open {
+  transform: none;
+}
+.start-steps {
+  margin: 0 0 12px;
+  padding-left: 22px;
+  display: grid;
+  gap: 8px;
+  font-size: 15px;
+}
+.start-link {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: var(--accent);
+  text-decoration: underline;
+}
