@@ -1,7 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-import OpeningHours from 'opening_hours'
 import { useData } from './data'
 import { IconX } from './icons'
 import { logoUrl, norm } from './lib'
@@ -15,16 +12,38 @@ interface Shop {
   logo: string | null // chiave del catalogo, se è una catena che conosciamo
   mine: boolean // è uno dei negozi attivati nel Gruppo
   address: string
-  hours: string | null
+  place: google.maps.places.Place
 }
 
-const MILAN: [number, number] = [45.4642, 9.19]
+const MILAN = { lat: 45.4642, lng: 9.19 }
 
-// ---------- riconoscimento della catena dai dati di OpenStreetMap ----------
+// ---------- caricamento di Google Maps ----------
 
-function chainOf(tags: Record<string, string>): string | null {
-  const t = `${tags.brand ?? ''} ${tags.name ?? ''} ${tags.operator ?? ''}`.toLowerCase()
-  const name = (tags.name ?? tags.brand ?? '').toLowerCase().trim()
+let loader: Promise<void> | null = null
+
+function loadGoogle(): Promise<void> {
+  if (typeof (window as { google?: typeof google }).google?.maps?.importLibrary === 'function') return Promise.resolve()
+  if (loader) return loader
+  const key = import.meta.env.VITE_GOOGLE_MAPS_KEY as string | undefined
+  if (!key) return Promise.reject(new Error('chiave Google Maps mancante'))
+  loader = new Promise<void>((resolve, reject) => {
+    const s = document.createElement('script')
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&loading=async&language=it&region=IT`
+    s.async = true
+    s.onload = () => resolve()
+    s.onerror = () => {
+      loader = null
+      reject(new Error('Google Maps non raggiungibile'))
+    }
+    document.head.appendChild(s)
+  })
+  return loader
+}
+
+// ---------- riconoscimento della catena dal nome ----------
+
+function chainOf(name: string): string | null {
+  const t = name.toLowerCase().trim()
   if (/esselunga/.test(t)) return 'esselunga'
   if (/\bcoop\b/.test(t)) return 'coop'
   if (/conad/.test(t)) return 'conad'
@@ -34,97 +53,14 @@ function chainOf(tags: Record<string, string>): string | null {
   if (/\bpenny\b/.test(t)) return 'penny'
   if (/\baldi\b/.test(t)) return 'aldi'
   if (/\bpam\b|panorama/.test(t)) return 'pam'
-  if (/^md\b/.test(name) || /^md$/.test((tags.brand ?? '').toLowerCase().trim())) return 'md'
-  if (/^iper\b/.test(name) && !/iperal/.test(name)) return 'iper'
+  if (/^md\b/.test(t)) return 'md'
+  if (/^iper\b/.test(t) && !/iperal/.test(t)) return 'iper'
   return null
 }
 
-function addressOf(tags: Record<string, string>): string {
-  const street = [tags['addr:street'], tags['addr:housenumber']].filter(Boolean).join(' ')
-  return [street, tags['addr:city']].filter(Boolean).join(', ')
-}
-
-// Server pubblici di Overpass: si prova il successivo se uno non risponde o è sovraccarico.
-const OVERPASS = [
-  'https://overpass-api.de/api/interpreter',
-  'https://overpass.private.coffee/api/interpreter',
-  'https://overpass.kumi.systems/api/interpreter',
-]
-
-const reEsc = (n: string) => n.replace(/[.^$*+?()[\]{}|\\"]/g, '\\$&')
-
-/** Solo i negozi attivati (per nome o marchio) oppure tutti i supermercati della zona. */
-function overpassQuery(lat: number, lon: number, radius: number, stores: Store[], onlyMine: boolean): string {
-  const around = `(around:${radius},${lat},${lon})`
-  if (!onlyMine) {
-    const kind = '^(supermarket|convenience|discount|department_store|variety_store)$'
-    return `[out:json][timeout:15];(
-nwr["shop"~"${kind}"]${around};
-);out center tags 400;`
-  }
-  const names = stores.map((st) => (st.name.length <= 3 ? `^${reEsc(st.name)}([ ,]|$)` : reEsc(st.name))).join('|')
-  return `[out:json][timeout:15];(
-nwr["name"~"${names}",i]["shop"]${around};
-nwr["brand"~"${names}",i]["shop"]${around};
-nwr["name"~"${names}",i]["amenity"~"^(pharmacy|marketplace|cafe|bar)$"]${around};
-);out center tags 400;`
-}
-
-async function fetchShops(
-  lat: number,
-  lon: number,
-  radius: number,
-  stores: Store[],
-  onlyMine: boolean,
-  signal: AbortSignal,
-): Promise<Shop[]> {
-  const body = 'data=' + encodeURIComponent(overpassQuery(lat, lon, radius, stores, onlyMine))
-  let last = 'nessuna risposta'
-  for (const url of OVERPASS) {
-    const ac = new AbortController()
-    const onAbort = () => ac.abort()
-    signal.addEventListener('abort', onAbort)
-    const timer = window.setTimeout(() => ac.abort(), 14000)
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        body,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        signal: ac.signal,
-      })
-      if (!res.ok) {
-        last = `errore ${res.status}`
-        continue
-      }
-      const json = (await res.json()) as { elements?: OverpassElement[]; remark?: string }
-      if (!json.elements) {
-        last = json.remark ?? 'risposta vuota'
-        continue
-      }
-      return toShops(json.elements, stores, onlyMine)
-    } catch (e) {
-      if (signal.aborted) throw e
-      last = (e as Error).name === 'AbortError' ? 'tempo scaduto' : 'connessione assente'
-    } finally {
-      window.clearTimeout(timer)
-      signal.removeEventListener('abort', onAbort)
-    }
-  }
-  throw new Error(last)
-}
-
-interface OverpassElement {
-  type: string
-  id: number
-  lat?: number
-  lon?: number
-  center?: { lat: number; lon: number }
-  tags?: Record<string, string>
-}
-
-/** A quale negozio attivato corrisponde il punto? Per nome intero (così «Iper» non prende «Iperal»). */
-function matchStore(tags: Record<string, string>, stores: Store[]): Store | null {
-  const text = norm(`${tags.name ?? ''} | ${tags.brand ?? ''}`)
+/** A quale negozio attivato corrisponde il nome? Per nome intero (così «Iper» non prende «Iperal»). */
+function matchStore(name: string, stores: Store[]): Store | null {
+  const text = norm(name)
   for (const st of stores) {
     const n = norm(st.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     if (n && new RegExp(`(^|[^a-z0-9])${n}([^a-z0-9]|$)`).test(text)) return st
@@ -132,84 +68,148 @@ function matchStore(tags: Record<string, string>, stores: Store[]): Store | null
   return null
 }
 
-function toShops(elements: OverpassElement[], stores: Store[], onlyMine: boolean): Shop[] {
-  const out: Shop[] = []
-  for (const e of elements) {
-    const tags = e.tags ?? {}
-    const la = e.lat ?? e.center?.lat
-    const lo = e.lon ?? e.center?.lon
-    if (la === undefined || lo === undefined) continue
-    const st = matchStore(tags, stores)
-    if (!st && onlyMine) continue
-    if (!st && !tags.name && !tags.brand) continue
-    out.push({
-      id: `${e.type}${e.id}`,
-      lat: la,
-      lon: lo,
-      name: tags.name ?? tags.brand ?? st?.name ?? 'Negozio',
-      logo: st ? (st.logo ?? chainOf(tags)) : chainOf(tags),
-      mine: st !== null,
-      address: addressOf(tags),
-      hours: tags.opening_hours ?? null,
-    })
+// ---------- ricerca dei negozi (Places API) ----------
+
+const FIELDS = ['id', 'displayName', 'location', 'formattedAddress']
+
+function distance(aLat: number, aLng: number, bLat: number, bLng: number): number {
+  const R = 6371000
+  const r = (x: number) => (x * Math.PI) / 180
+  const h =
+    Math.sin(r(bLat - aLat) / 2) ** 2 + Math.cos(r(aLat)) * Math.cos(r(bLat)) * Math.sin(r(bLng - aLng) / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
+
+function toShop(p: google.maps.places.Place, stores: Store[], mine: Store | null): Shop | null {
+  const loc = p.location
+  const name = p.displayName
+  if (!loc || !name || !p.id) return null
+  const st = mine ?? matchStore(name, stores)
+  return {
+    id: p.id,
+    lat: loc.lat(),
+    lon: loc.lng(),
+    name,
+    logo: st ? (st.logo ?? chainOf(name)) : chainOf(name),
+    mine: st !== null,
+    address: p.formattedAddress ?? '',
+    place: p,
   }
-  return out
 }
 
-// ---------- orari ----------
+const cache = new Map<string, Shop[]>()
 
-const fmtTime = new Intl.DateTimeFormat('it-IT', { hour: '2-digit', minute: '2-digit' })
-const fmtDay = new Intl.DateTimeFormat('it-IT', { weekday: 'long' })
-
-function when(d: Date, now: Date): string {
-  const t = fmtTime.format(d)
-  const startOf = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime()
-  const days = Math.round((startOf(d) - startOf(now)) / 86400000)
-  if (days <= 0) return `alle ${t}`
-  if (days === 1) return `domani alle ${t}`
-  return `${fmtDay.format(d)} alle ${t}`
+async function searchMine(lat: number, lng: number, radius: number, stores: Store[], signal: AbortSignal): Promise<Shop[]> {
+  const { Place } = (await google.maps.importLibrary('places')) as google.maps.PlacesLibrary
+  const bucket = (x: number) => x.toFixed(2)
+  const rb = Math.round(radius / 1000)
+  const perStore = await Promise.all(
+    stores.slice(0, 10).map(async (st) => {
+      const key = `m|${norm(st.name)}|${bucket(lat)}|${bucket(lng)}|${rb}`
+      const hit = cache.get(key)
+      if (hit) return hit
+      try {
+        const { places } = await Place.searchByText({
+          textQuery: st.name,
+          fields: FIELDS,
+          locationBias: { center: { lat, lng }, radius: Math.min(50000, radius) },
+          maxResultCount: 12,
+          language: 'it',
+          region: 'it',
+        })
+        const out: Shop[] = []
+        for (const p of places) {
+          const s = toShop(p, stores, null)
+          if (!s) continue
+          // il risultato deve davvero chiamarsi come il negozio cercato e stare in zona
+          if (!matchStore(s.name, [st])) continue
+          if (distance(lat, lng, s.lat, s.lon) > radius * 1.1) continue
+          s.mine = true
+          s.logo = st.logo ?? chainOf(s.name)
+          out.push(s)
+        }
+        cache.set(key, out)
+        return out
+      } catch {
+        return []
+      }
+    }),
+  )
+  if (signal.aborted) throw new DOMException('abort', 'AbortError')
+  const seen = new Set<string>()
+  return perStore.flat().filter((s) => (seen.has(s.id) ? false : (seen.add(s.id), true)))
 }
 
-/** Frase sull'orario: «Aperto · chiude alle 20:30». Se non si può sapere, lo dice. */
-export function hoursText(raw: string | null, now = new Date()): { text: string; open: boolean | null } {
-  if (!raw) return { text: 'Orario non disponibile su OpenStreetMap', open: null }
+async function searchAll(lat: number, lng: number, radius: number, stores: Store[], signal: AbortSignal): Promise<Shop[]> {
+  const { Place } = (await google.maps.importLibrary('places')) as google.maps.PlacesLibrary
+  const key = `a|${lat.toFixed(2)}|${lng.toFixed(2)}|${Math.round(radius / 500)}`
+  let found = cache.get(key)
+  if (!found) {
+    const { places } = await Place.searchNearby({
+      fields: FIELDS,
+      locationRestriction: { center: { lat, lng }, radius: Math.min(50000, radius) },
+      includedPrimaryTypes: ['supermarket', 'grocery_store'],
+      maxResultCount: 20,
+      language: 'it',
+      region: 'it',
+    })
+    found = places.map((p) => toShop(p, stores, null)).filter((s): s is Shop => s !== null)
+    cache.set(key, found)
+  }
+  if (signal.aborted) throw new DOMException('abort', 'AbortError')
+  // il segno «mio» va ricalcolato: i negozi attivati possono essere cambiati
+  return found.map((s) => {
+    const st = matchStore(s.name, stores)
+    return { ...s, mine: st !== null, logo: st ? (st.logo ?? chainOf(s.name)) : chainOf(s.name) }
+  })
+}
+
+// ---------- orari (solo quando si tocca un negozio) ----------
+
+async function hoursInfo(p: google.maps.places.Place): Promise<{ text: string; open: boolean | null }> {
   try {
-    const oh = new OpeningHours(raw, { address: { country_code: 'it' } } as never)
-    const open = oh.getState(now)
-    const next = oh.getNextChange(now)
-    if (open) {
-      return { text: next ? `Aperto · chiude ${when(next, now)}` : 'Aperto sempre', open: true }
-    }
-    return { text: next ? `Chiuso · apre ${when(next, now)}` : 'Chiuso', open: false }
+    await p.fetchFields({ fields: ['regularOpeningHours'] })
+    const h = p.regularOpeningHours
+    if (!h) return { text: 'Orario non disponibile', open: null }
+    const open = await p.isOpen()
+    const today = h.weekdayDescriptions?.[(new Date().getDay() + 6) % 7] ?? ''
+    const hours = today.replace(/^[^:]+:\s*/, '')
+    const state = open === undefined ? '' : open ? 'Aperto' : 'Chiuso'
+    const text = [state, hours ? `oggi ${hours}` : ''].filter(Boolean).join(' · ')
+    return { text: text || 'Orario non disponibile', open: open ?? null }
   } catch {
-    return { text: `Orari: ${raw}`, open: null }
+    return { text: 'Orario non disponibile', open: null }
   }
 }
 
 const esc = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string)
 
-function popupHtml(s: Shop): string {
-  const h = hoursText(s.hours)
+function popupHtml(s: Shop, h: { text: string; open: boolean | null } | null): string {
   const url = logoUrl(s.logo)
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent)
   const dir = isIOS
     ? `https://maps.apple.com/?daddr=${s.lat},${s.lon}`
-    : `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}&destination_place_id=${encodeURIComponent(s.id)}`
   return `<div class="mp">
     <div class="mp-head">${url ? `<img src="${url}" width="40" height="40" alt="">` : ''}<strong>${esc(s.name)}</strong></div>
-    <div class="mp-hours ${h.open === true ? 'ok' : h.open === false ? 'no' : ''}">${esc(h.text)}</div>
+    <div class="mp-hours ${h?.open === true ? 'ok' : h?.open === false ? 'no' : ''}">${esc(h ? h.text : 'Cerco gli orari…')}</div>
     ${s.address ? `<div class="mp-addr">${esc(s.address)}</div>` : ''}
     <a class="mp-dir" href="${dir}" target="_blank" rel="noopener">Indicazioni</a>
   </div>`
 }
 
-function markerIcon(s: Shop, mine: boolean): L.DivIcon {
+function pinElement(s: Shop): HTMLElement {
   const url = logoUrl(s.logo)
-  const html = url
-    ? `<span class="pin ${mine ? 'mine' : ''}"><img src="${url}" alt=""></span>`
-    : `<span class="pin generic"></span>`
-  return L.divIcon({ className: 'pin-wrap', html, iconSize: [44, 44], iconAnchor: [22, 22], popupAnchor: [0, -22] })
+  const el = document.createElement('span')
+  el.className = url ? `pin ${s.mine ? 'mine' : ''}` : `pin generic ${s.mine ? 'mine' : ''}`
+  if (url) {
+    const img = document.createElement('img')
+    img.src = url
+    img.alt = ''
+    el.appendChild(img)
+  }
+  return el
 }
 
 // ---------- componente ----------
@@ -217,8 +217,9 @@ function markerIcon(s: Shop, mine: boolean): L.DivIcon {
 export default function StoresMap({ onClose }: { onClose: () => void }) {
   const d = useData()
   const el = useRef<HTMLDivElement>(null)
-  const map = useRef<L.Map | null>(null)
-  const layer = useRef<L.LayerGroup | null>(null)
+  const map = useRef<google.maps.Map | null>(null)
+  const markers = useRef<google.maps.marker.AdvancedMarkerElement[]>([])
+  const info = useRef<google.maps.InfoWindow | null>(null)
   const abort = useRef<AbortController | null>(null)
   const timer = useRef<number | undefined>(undefined)
   const [shops, setShops] = useState<Shop[]>([])
@@ -248,12 +249,18 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
       return
     }
     const c = m.getCenter()
-    const radius = Math.max(1500, Math.min(mineOnly ? 30000 : 6000, Math.round(m.distance(c, m.getBounds().getNorthEast()))))
+    const b = m.getBounds()
+    if (!c || !b) return
+    const ne = b.getNorthEast()
+    const radius = Math.max(1500, Math.min(mineOnly ? 30000 : 6000, Math.round(distance(c.lat(), c.lng(), ne.lat(), ne.lng()))))
     const ac = new AbortController()
     abort.current = ac
     setStatus('loading')
     try {
-      const found = await fetchShops(c.lat, c.lng, radius, list, mineOnly, ac.signal)
+      const found = mineOnly
+        ? await searchMine(c.lat(), c.lng(), radius, list, ac.signal)
+        : await searchAll(c.lat(), c.lng(), radius, list, ac.signal)
+      if (ac.signal.aborted) return
       setShops(found)
       setStatus('ready')
       setNote(found.length === 0 ? (mineOnly ? 'Nessuno dei tuoi negozi in questa zona. Sposta o riduci la mappa.' : 'Nessun supermercato in questa zona.') : '')
@@ -266,49 +273,63 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
   // dopo ogni spostamento della mappa i negozi si aggiornano da soli
   const later = () => {
     window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(() => void load(), 600)
+    timer.current = window.setTimeout(() => void load(), 700)
   }
 
   // crea la mappa e chiede la posizione
   useEffect(() => {
-    if (!el.current || map.current) return
-    const m = L.map(el.current, { zoomControl: false, attributionControl: true }).setView(MILAN, 14)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(m)
-    L.control.zoom({ position: 'bottomright' }).addTo(m)
-    layer.current = L.layerGroup().addTo(m)
-    map.current = m
-    m.on('moveend', later)
+    let dead = false
+    ;(async () => {
+      try {
+        await loadGoogle()
+        const { Map, InfoWindow } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary
+        await google.maps.importLibrary('marker')
+        if (dead || !el.current) return
+        const m = new Map(el.current, {
+          center: MILAN,
+          zoom: 14,
+          mapId: 'DEMO_MAP_ID',
+          disableDefaultUI: true,
+          zoomControl: true,
+          gestureHandling: 'greedy',
+          clickableIcons: false,
+        })
+        map.current = m
+        info.current = new InfoWindow()
+        m.addListener('idle', later)
+        m.addListener('click', () => info.current?.close())
 
-    const fallback = () => {
-      setLocNote('Non ho la tua posizione: sto mostrando Milano. Sposta la mappa per cambiare zona.')
-      later()
-    }
-    if (!navigator.geolocation) fallback()
-    else
-      navigator.geolocation.getCurrentPosition(
-        (p) => {
-          const { latitude, longitude } = p.coords
-          m.setView([latitude, longitude], 13)
-          L.circleMarker([latitude, longitude], {
-            radius: 8,
-            color: '#fff',
-            weight: 3,
-            fillColor: '#1c7ed6',
-            fillOpacity: 1,
-          }).addTo(m)
+        const fallback = () => {
+          setLocNote('Non ho la tua posizione: sto mostrando Milano. Sposta la mappa per cambiare zona.')
           later()
-        },
-        fallback,
-        { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 },
-      )
-
+        }
+        if (!navigator.geolocation) fallback()
+        else
+          navigator.geolocation.getCurrentPosition(
+            (p) => {
+              const pos = { lat: p.coords.latitude, lng: p.coords.longitude }
+              m.setCenter(pos)
+              m.setZoom(13)
+              const dot = document.createElement('span')
+              dot.className = 'me-dot'
+              new google.maps.marker.AdvancedMarkerElement({ map: m, position: pos, content: dot, title: 'Tu sei qui' })
+              later()
+            },
+            fallback,
+            { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 },
+          )
+      } catch (e) {
+        if (dead) return
+        setStatus('error')
+        setNote(`Non riesco a caricare la mappa (${(e as Error).message}).`)
+      }
+    })()
     return () => {
+      dead = true
       window.clearTimeout(timer.current)
       abort.current?.abort()
-      m.remove()
+      for (const mk of markers.current) mk.map = null
+      markers.current = []
       map.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -322,14 +343,26 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
 
   // ridisegna i segnaposto
   useEffect(() => {
-    const g = layer.current
-    if (!g) return
-    g.clearLayers()
-    for (const s of shops) {
-      L.marker([s.lat, s.lon], { icon: markerIcon(s, s.mine), title: s.name })
-        .bindPopup(() => popupHtml(s), { closeButton: true, minWidth: 190 })
-        .addTo(g)
-    }
+    const m = map.current
+    if (!m) return
+    for (const mk of markers.current) mk.map = null
+    markers.current = shops.map((s) => {
+      const mk = new google.maps.marker.AdvancedMarkerElement({
+        map: m,
+        position: { lat: s.lat, lng: s.lon },
+        content: pinElement(s),
+        title: s.name,
+        zIndex: s.mine ? 2 : 1,
+      })
+      mk.addListener('click', () => {
+        const w = info.current
+        if (!w) return
+        w.setContent(popupHtml(s, null))
+        w.open({ map: m, anchor: mk })
+        void hoursInfo(s.place).then((h) => w.setContent(popupHtml(s, h)))
+      })
+      return mk
+    })
   }, [shops])
 
   useEffect(() => {

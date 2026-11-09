@@ -1270,12 +1270,14 @@ input.code {
   min-height: 44px;
   flex: none;
 }
-.leaflet-bottom.leaflet-right {
-  bottom: 84px;
-}
-.pin-wrap {
-  background: none;
-  border: 0;
+.me-dot {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #1c7ed6;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px rgba(28, 126, 214, 0.35);
 }
 .pin {
   display: grid;
@@ -1304,8 +1306,8 @@ input.code {
   background: #868e96;
   border-color: #fff;
 }
-.leaflet-popup-content {
-  margin: 12px 14px;
+.mp {
+  min-width: 190px;
   font:
     15px/1.35 system-ui,
     sans-serif;
