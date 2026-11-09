@@ -302,11 +302,11 @@ export function Shell({
         <TabBtn active={tab === 'group'} onClick={() => go('group')} label="Gruppo">
           <IconUsers />
         </TabBtn>
-        <TabBtn active={tab === 'ideas'} onClick={() => go('ideas')} label="Idee">
-          <IconInbox />
-        </TabBtn>
         <TabBtn active={tab === 'guide'} onClick={() => go('guide')} label="Guida">
           <IconBook />
+        </TabBtn>
+        <TabBtn active={tab === 'ideas'} onClick={() => go('ideas')} label="Idee">
+          <IconInbox />
         </TabBtn>
       </nav>
     </div>
