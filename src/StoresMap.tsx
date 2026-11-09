@@ -4,7 +4,8 @@ import 'leaflet/dist/leaflet.css'
 import OpeningHours from 'opening_hours'
 import { useData } from './data'
 import { IconX } from './icons'
-import { logoUrl } from './lib'
+import { logoUrl, norm } from './lib'
+import type { Store } from './types'
 
 interface Shop {
   id: string
@@ -17,7 +18,6 @@ interface Shop {
 }
 
 const MILAN: [number, number] = [45.4642, 9.19]
-const RADIUS = 3000
 
 // ---------- riconoscimento della catena dai dati di OpenStreetMap ----------
 
@@ -50,28 +50,32 @@ const OVERPASS = [
   'https://overpass.kumi.systems/api/interpreter',
 ]
 
-function overpassQuery(lat: number, lon: number): string {
-  const around = `(around:${RADIUS},${lat},${lon})`
-  const kind = '["shop"~"^(supermarket|convenience|discount|department_store|variety_store)$"]'
-  const names = 'Esselunga|Coop|Conad|Carrefour|Lidl|Eurospin|Penny|Aldi|Pam|Panorama'
-  const short = '^(MD|Iper)([ ,]|$)'
-  // Si cercano solo le catene dell'elenco: così in una grande città non si perdono per il limite dei risultati.
-  return `[out:json][timeout:20];(
-nwr${kind}["name"~"${names}",i]${around};
-nwr${kind}["brand"~"${names}",i]${around};
-nwr${kind}["name"~"${short}"]${around};
-nwr${kind}["brand"~"${short}"]${around};
-);out center tags 300;`
+const reEsc = (n: string) => n.replace(/[.^$*+?()[\]{}|\\"]/g, '\\$&')
+
+/** Cerca solo i negozi attivati nel Gruppo, per nome o marchio. */
+function overpassQuery(lat: number, lon: number, radius: number, stores: Store[]): string {
+  const around = `(around:${radius},${lat},${lon})`
+  const names = stores.map((st) => (st.name.length <= 3 ? `^${reEsc(st.name)}([ ,]|$)` : reEsc(st.name))).join('|')
+  return `[out:json][timeout:25];(
+nwr["shop"]["name"~"${names}",i]${around};
+nwr["shop"]["brand"~"${names}",i]${around};
+);out center tags 400;`
 }
 
-async function fetchShops(lat: number, lon: number, signal: AbortSignal): Promise<Shop[]> {
-  const body = 'data=' + encodeURIComponent(overpassQuery(lat, lon))
+async function fetchShops(
+  lat: number,
+  lon: number,
+  radius: number,
+  stores: Store[],
+  signal: AbortSignal,
+): Promise<Shop[]> {
+  const body = 'data=' + encodeURIComponent(overpassQuery(lat, lon, radius, stores))
   let last = 'nessuna risposta'
   for (const url of OVERPASS) {
     const ac = new AbortController()
     const onAbort = () => ac.abort()
     signal.addEventListener('abort', onAbort)
-    const timer = window.setTimeout(() => ac.abort(), 22000)
+    const timer = window.setTimeout(() => ac.abort(), 25000)
     try {
       const res = await fetch(url, {
         method: 'POST',
@@ -88,7 +92,7 @@ async function fetchShops(lat: number, lon: number, signal: AbortSignal): Promis
         last = json.remark ?? 'risposta vuota'
         continue
       }
-      return toShops(json.elements)
+      return toShops(json.elements, stores)
     } catch (e) {
       if (signal.aborted) throw e
       last = (e as Error).name === 'AbortError' ? 'tempo scaduto' : 'connessione assente'
@@ -109,21 +113,31 @@ interface OverpassElement {
   tags?: Record<string, string>
 }
 
-function toShops(elements: OverpassElement[]): Shop[] {
+/** A quale negozio attivato corrisponde il punto? Per nome intero (così «Iper» non prende «Iperal»). */
+function matchStore(tags: Record<string, string>, stores: Store[]): Store | null {
+  const text = norm(`${tags.name ?? ''} | ${tags.brand ?? ''}`)
+  for (const st of stores) {
+    const n = norm(st.name).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    if (n && new RegExp(`(^|[^a-z0-9])${n}([^a-z0-9]|$)`).test(text)) return st
+  }
+  return null
+}
+
+function toShops(elements: OverpassElement[], stores: Store[]): Shop[] {
   const out: Shop[] = []
   for (const e of elements) {
     const tags = e.tags ?? {}
     const la = e.lat ?? e.center?.lat
     const lo = e.lon ?? e.center?.lon
     if (la === undefined || lo === undefined) continue
-    const logo = chainOf(tags)
-    if (!logo) continue
+    const st = matchStore(tags, stores)
+    if (!st) continue
     out.push({
       id: `${e.type}${e.id}`,
       lat: la,
       lon: lo,
-      name: tags.name ?? tags.brand ?? 'Negozio',
-      logo,
+      name: tags.name ?? st.name,
+      logo: st.logo ?? chainOf(tags),
       address: addressOf(tags),
       hours: tags.opening_hours ?? null,
     })
@@ -195,29 +209,49 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
   const map = useRef<L.Map | null>(null)
   const layer = useRef<L.LayerGroup | null>(null)
   const abort = useRef<AbortController | null>(null)
+  const timer = useRef<number | undefined>(undefined)
   const [shops, setShops] = useState<Shop[]>([])
-  const [onlyMine, setOnlyMine] = useState(true)
   const [status, setStatus] = useState<'locating' | 'loading' | 'ready' | 'error'>('locating')
   const [note, setNote] = useState('')
   const [locNote, setLocNote] = useState('')
 
-  const mine = new Set(d.stores.map((s) => s.logo).filter(Boolean) as string[])
+  // i negozi attivati nella scheda Negozi (anche senza prodotti associati)
+  const stores = d.stores
+  const storesRef = useRef(stores)
+  storesRef.current = stores
+  const storesKey = stores.map((x) => x.id + x.name).join('|')
 
-  async function load(lat: number, lon: number) {
+  async function load() {
+    const m = map.current
+    if (!m) return
+    const list = storesRef.current
     abort.current?.abort()
+    if (list.length === 0) {
+      setShops([])
+      setStatus('ready')
+      setNote('Non hai attivato nessun negozio: attivali nella scheda Negozi.')
+      return
+    }
+    const c = m.getCenter()
+    const radius = Math.max(1500, Math.min(30000, Math.round(m.distance(c, m.getBounds().getNorthEast()))))
     const ac = new AbortController()
     abort.current = ac
     setStatus('loading')
     try {
-      const list = await fetchShops(lat, lon, ac.signal)
-      setShops(list)
+      const found = await fetchShops(c.lat, c.lng, radius, list, ac.signal)
+      setShops(found)
       setStatus('ready')
-      setNote(list.length === 0 ? 'Nessun negozio trovato in questa zona.' : '')
+      setNote(found.length === 0 ? 'Nessuno dei tuoi negozi in questa zona. Sposta o riduci la mappa.' : '')
     } catch (e) {
       if ((e as Error).name === 'AbortError') return
       setStatus('error')
-      setNote(`Non riesco a caricare i negozi (${(e as Error).message}). Tocca «Cerca qui» per riprovare.`)
+      setNote(`Non riesco a caricare i negozi (${(e as Error).message}). Sposta la mappa per riprovare.`)
     }
+  }
+  // dopo ogni spostamento della mappa i negozi si aggiornano da soli
+  const later = () => {
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => void load(), 600)
   }
 
   // crea la mappa e chiede la posizione
@@ -231,17 +265,18 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
     L.control.zoom({ position: 'bottomright' }).addTo(m)
     layer.current = L.layerGroup().addTo(m)
     map.current = m
+    m.on('moveend', later)
 
     const fallback = () => {
-      setLocNote('Non ho la tua posizione: sto mostrando Milano. Sposta la mappa e tocca «Cerca qui».')
-      void load(MILAN[0], MILAN[1])
+      setLocNote('Non ho la tua posizione: sto mostrando Milano. Sposta la mappa per cambiare zona.')
+      later()
     }
     if (!navigator.geolocation) fallback()
     else
       navigator.geolocation.getCurrentPosition(
         (p) => {
           const { latitude, longitude } = p.coords
-          m.setView([latitude, longitude], 15)
+          m.setView([latitude, longitude], 13)
           L.circleMarker([latitude, longitude], {
             radius: 8,
             color: '#fff',
@@ -249,13 +284,14 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
             fillColor: '#1c7ed6',
             fillOpacity: 1,
           }).addTo(m)
-          void load(latitude, longitude)
+          later()
         },
         fallback,
         { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 },
       )
 
     return () => {
+      window.clearTimeout(timer.current)
       abort.current?.abort()
       m.remove()
       map.current = null
@@ -263,20 +299,23 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // se cambiano i negozi attivi si rifà la ricerca
+  useEffect(() => {
+    if (map.current) later()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storesKey])
+
   // ridisegna i segnaposto
   useEffect(() => {
     const g = layer.current
     if (!g) return
     g.clearLayers()
     for (const s of shops) {
-      const isMine = s.logo !== null && mine.has(s.logo)
-      if (onlyMine && !isMine) continue
-      L.marker([s.lat, s.lon], { icon: markerIcon(s, isMine), title: s.name })
+      L.marker([s.lat, s.lon], { icon: markerIcon(s, true), title: s.name })
         .bindPopup(() => popupHtml(s), { closeButton: true, minWidth: 190 })
         .addTo(g)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shops, onlyMine, d.stores])
+  }, [shops])
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
@@ -288,8 +327,6 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
     }
   }, [onClose])
 
-  const visibleCount = shops.filter((s) => !onlyMine || (s.logo !== null && mine.has(s.logo))).length
-
   return (
     <div className="mapwrap" role="dialog" aria-modal="true" aria-label="Mappa dei negozi">
       <div ref={el} className="mapbox" />
@@ -297,31 +334,17 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
         <button className="icon-btn mapclose" onClick={onClose} aria-label="Chiudi la mappa">
           <IconX />
         </button>
-        <label className="maptoggle">
-          <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
-          <span>Solo i miei negozi</span>
-        </label>
       </div>
       <div className="mapbottom">
         {status === 'locating' && <span>Cerco la tua posizione…</span>}
-        {status === 'loading' && <span>Cerco i negozi…</span>}
+        {status === 'loading' && <span>Cerco i tuoi negozi…</span>}
         {status === 'ready' && !note && (
           <span>
-            {visibleCount} {visibleCount === 1 ? 'negozio' : 'negozi'} in zona
-            {onlyMine && shops.length > visibleCount ? ` · ${shops.length - visibleCount} altri nascosti` : ''}
+            {shops.length} {shops.length === 1 ? 'tuo negozio' : 'tuoi negozi'} in zona
+            {locNote ? ` · ${locNote}` : ''}
           </span>
         )}
-        {note ? <span>{note}</span> : status === 'ready' && locNote ? <span>{locNote}</span> : null}
-        <button
-          className="btn primary mapsearch"
-          onClick={() => {
-            const c = map.current?.getCenter()
-            if (c) void load(c.lat, c.lng)
-          }}
-          disabled={status === 'loading' || status === 'locating'}
-        >
-          Cerca qui
-        </button>
+        {note && <span>{note}</span>}
       </div>
     </div>
   )
