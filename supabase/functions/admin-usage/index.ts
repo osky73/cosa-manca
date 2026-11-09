@@ -1,6 +1,6 @@
 // Edge Function: consumi dei servizi esterni per la schermata "Stato servizi" (solo super admin).
 // Secrets (tutti facoltativi: se manca uno, quel riquadro mostra "non collegato"):
-//   RESEND_API_KEY      invii email del mese (si legge dalle intestazioni dell'API)
+//   RESEND_READ_KEY     chiave Resend con accesso completo, per leggere le email inviate (altrimenti RESEND_API_KEY)
 //   VERCEL_TOKEN        token Vercel (sola lettura) + VERCEL_TEAM_ID se il progetto è in un team
 //   SUPABASE_ACCESS_TOKEN  token personale Supabase per leggere l'uso (egress, storage)
 // verify_jwt è spento: identità con auth.getUser e ruolo con is_super_admin(), come le altre funzioni.
@@ -14,7 +14,7 @@ const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
 
 async function resend() {
-  const key = Deno.env.get('RESEND_API_KEY')
+  const key = Deno.env.get('RESEND_READ_KEY') ?? Deno.env.get('RESEND_API_KEY')
   if (!key) return null
   const since = new Date(Date.now() - 30 * 86400000)
   let sent = 0
