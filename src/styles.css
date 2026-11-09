@@ -2847,17 +2847,17 @@ textarea {
 .rails.shop .slider {
   background: color-mix(
     in srgb,
-    color-mix(in srgb, #1f5c3a calc(var(--m) * 100%), var(--card)) calc(var(--o) * 100%),
+    color-mix(in srgb, #1f5c3a calc(var(--m) * 100%), var(--card)) calc((0.5 + var(--o) * 0.5) * 100%),
     transparent
   );
   border-color: color-mix(
     in srgb,
-    color-mix(in srgb, #1f5c3a calc(var(--m) * 100%), var(--line)) calc(var(--o) * 100%),
+    color-mix(in srgb, #1f5c3a calc(var(--m) * 100%), var(--line)) calc((0.5 + var(--o) * 0.5) * 100%),
     transparent
   );
   color: color-mix(
     in srgb,
-    color-mix(in srgb, #fff calc(var(--m) * 100%), var(--ink)) calc(var(--o) * 100%),
+    color-mix(in srgb, #fff calc(var(--m) * 100%), var(--ink)) calc((0.5 + var(--o) * 0.5) * 100%),
     transparent
   );
 }
