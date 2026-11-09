@@ -4,7 +4,7 @@ import { configured, supabase } from './supabase'
 import { ToastProvider } from './toast'
 import { DataProvider, useData } from './data'
 import { readLS, writeLS } from './lib'
-import { IconBook, IconCart, IconInbox, IconList, IconStore, IconUsers } from './icons'
+import { IconBook, IconCart, IconGear, IconInbox, IconList, IconStore, IconUsers } from './icons'
 import { InstallPopup } from './install'
 import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
@@ -12,6 +12,7 @@ import ListScreen from './screens/ListScreen'
 import ShopScreen from './screens/ShopScreen'
 import StoresScreen from './screens/StoresScreen'
 import IdeasScreen from './screens/IdeasScreen'
+import AdminScreen from './screens/AdminScreen'
 import GroupScreen from './screens/GroupScreen'
 import ShareScreen from './screens/ShareScreen'
 import GuideScreen from './screens/GuideScreen'
@@ -219,6 +220,10 @@ export function Shell({
   const d = useData()
   const [tab, setTab] = useState<Tab>('shop')
   const [sharing, setSharing] = useState(OPENED_BY_SHARE)
+  const [superAdmin, setSuperAdmin] = useState(false)
+  useEffect(() => {
+    supabase.rpc('is_super_admin').then(({ data }) => setSuperAdmin(data === true))
+  }, [])
   const [tour, setTour] = useState<Tour | null>(null)
   const [tourOpen, setTourOpen] = useState(true)
   const needCount = useRef(d.needs.length)
@@ -252,8 +257,13 @@ export function Shell({
   }
 
   return (
-    <div className="app">
+    <div className={`app${superAdmin ? ' su' : ''}`}>
       <InstallPopup />
+      {superAdmin && !sharing && (
+        <button className={`gear${tab === 'admin' ? ' on' : ''}`} aria-label="Stato servizi" onClick={() => go(tab === 'admin' ? 'shop' : 'admin')}>
+          <IconGear />
+        </button>
+      )}
       {tour && <Spotlight tour={tour} text={tour.text(d.isAdmin)} open={tourOpen} onClose={() => setTour(null)} />}
       <main>
         {sharing && (
@@ -269,6 +279,7 @@ export function Shell({
         {!sharing && tab === 'shop' && <ShopScreen goto={go} />}
         {!sharing && tab === 'stores' && <StoresScreen />}
         {!sharing && tab === 'ideas' && <IdeasScreen />}
+        {!sharing && tab === 'admin' && superAdmin && <AdminScreen />}
         {!sharing && tab === 'guide' && (
           <GuideScreen
             goto={go}

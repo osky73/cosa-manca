@@ -122,6 +122,12 @@ const rpc = async (name: string, a: Row = {}) => {
     }
     return { data: null, error: null }
   }
+  if (name === 'log_map') return { data: null, error: null }
+  if (name === 'admin_stats')
+    return {
+      data: { users_total: 38, users_30d: 24, users_7d_new: 5, groups_total: 17, groups_active_30d: 12, needs_total: 842, db_bytes: 31457280, map_load: 312, map_search: 1240, map_details: 860 },
+      error: null,
+    }
   if (name === 'is_super_admin') return { data: true, error: null }
   if (name === 'list_feedback')
     return {
@@ -147,5 +153,10 @@ export const supabase = {
     signOut: async () => ({ error: null }),
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
   },
-  functions: { invoke: async () => ({ data: { ok: true }, error: null }) },
+  functions: {
+    invoke: async (n: string) =>
+      n === 'admin-usage'
+        ? { data: { resend: { month: 214, today: 3 }, vercel: { deploys_month: 41 }, supabase: null }, error: null }
+        : { data: { ok: true }, error: null },
+  },
 }

@@ -2689,3 +2689,102 @@ textarea {
   top: -4px;
   right: -9px;
 }
+
+/* ingranaggio e schermata "Stato servizi" (solo super admin) */
+.gear {
+  position: fixed;
+  top: calc(10px + var(--safe-t));
+  right: 12px;
+  z-index: 30;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--line, #ddd);
+  background: var(--bg);
+  color: inherit;
+  padding: 0;
+  margin: 0;
+}
+.gear.on {
+  background: var(--accent, #1f7a4d);
+  color: #fff;
+}
+.gear svg {
+  width: 22px;
+  height: 22px;
+}
+.app.su .top-row {
+  padding-right: 48px;
+}
+.admin h2 {
+  font-size: 17px;
+  margin: 22px 0 8px;
+}
+.admin h2 small {
+  font-weight: 400;
+  opacity: 0.6;
+  font-size: 13px;
+  margin-left: 6px;
+}
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.stat {
+  border: 1px solid var(--line, #e3e3e3);
+  border-radius: 14px;
+  padding: 12px;
+  display: grid;
+  gap: 2px;
+}
+.stat b {
+  font-size: 26px;
+  letter-spacing: -0.5px;
+}
+.stat span {
+  font-size: 13px;
+  opacity: 0.7;
+}
+.meter {
+  margin: 0 0 12px;
+}
+.meter-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+.meter-off {
+  opacity: 0.5;
+}
+.meter .bar {
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(127, 127, 127, 0.18);
+  overflow: hidden;
+}
+.meter .bar i {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent, #1f7a4d);
+}
+.meter .bar i.warm {
+  background: #e0a100;
+}
+.meter .bar i.hot {
+  background: #d23b3b;
+}
+.meter small {
+  display: block;
+  margin-top: 4px;
+  opacity: 0.6;
+  font-size: 12px;
+}
+.admin .small {
+  font-size: 12px;
+}

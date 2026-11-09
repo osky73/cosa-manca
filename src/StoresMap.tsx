@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useData } from './data'
+import { supabase } from './supabase'
 import { IconX } from './icons'
 import { logoUrl, norm } from './lib'
 import type { Store } from './types'
+
+// contatore anonimo delle chiamate a Google (serve solo al super admin per tenere d'occhio la quota)
+const logMap = (kind: 'load' | 'search' | 'details') => {
+  void supabase.rpc('log_map', { p_kind: kind })
+}
 
 interface Shop {
   id: string
@@ -109,6 +115,7 @@ async function searchMine(lat: number, lng: number, radius: number, stores: Stor
       const hit = cache.get(key)
       if (hit) return hit
       try {
+        logMap('search')
         const { places } = await Place.searchByText({
           textQuery: st.name,
           fields: FIELDS,
@@ -145,6 +152,7 @@ async function searchAll(lat: number, lng: number, radius: number, stores: Store
   const key = `a|${lat.toFixed(2)}|${lng.toFixed(2)}|${Math.round(radius / 500)}`
   let found = cache.get(key)
   if (!found) {
+    logMap('search')
     const { places } = await Place.searchNearby({
       fields: FIELDS,
       locationRestriction: { center: { lat, lng }, radius: Math.min(50000, radius) },
@@ -168,6 +176,7 @@ async function searchAll(lat: number, lng: number, radius: number, stores: Store
 
 async function hoursInfo(p: google.maps.places.Place): Promise<{ text: string; open: boolean | null }> {
   try {
+    logMap('details')
     await p.fetchFields({ fields: ['regularOpeningHours'] })
     const h = p.regularOpeningHours
     if (!h) return { text: 'Orario non disponibile', open: null }
@@ -284,6 +293,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
         await loadGoogle()
         const { Map, InfoWindow } = (await google.maps.importLibrary('maps')) as google.maps.MapsLibrary
         await google.maps.importLibrary('marker')
+        logMap('load')
         if (dead || !el.current) return
         const m = new Map(el.current, {
           center: MILAN,
