@@ -156,7 +156,7 @@ export const supabase = {
   functions: {
     invoke: async (n: string) =>
       n === 'admin-usage'
-        ? { data: { resend: { month: 214, today: 3 }, vercel: { deploys_month: 41 }, supabase: null }, error: null }
+        ? { data: { resend: { month: 214, today: 3 }, vercel: { deploys_month: 41, deploys_today: 6 }, supabase: null }, error: null }
         : { data: { ok: true }, error: null },
   },
 }

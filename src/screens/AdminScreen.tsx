@@ -15,7 +15,7 @@ interface Stats {
 }
 interface External {
   resend: { month: number; today: number } | null
-  vercel: { deploys_month: number } | null
+  vercel: { deploys_month: number; deploys_today: number } | null
   supabase: { rest: number; auth: number; storage: number } | null
 }
 
@@ -28,7 +28,7 @@ const FREE = {
   mau: 50000, // utenti attivi al mese Supabase
   resendMonth: 3000,
   resendDay: 100,
-  vercelDeploys: 100, // distribuzioni al giorno, Hobby
+  vercelDay: 100, // distribuzioni al giorno, Hobby
   mapLoad: 10000,
   mapSearch: 5000,
   mapDetails: 1000,
@@ -124,7 +124,8 @@ export default function AdminScreen() {
       <Meter label="Email oggi" value={ext ? (ext.resend?.today ?? null) : null} max={FREE.resendDay} />
 
       <h2>Vercel <small>piano Hobby</small></h2>
-      <Meter label="Pubblicazioni questo mese" value={ext ? (ext.vercel?.deploys_month ?? null) : null} max={FREE.vercelDeploys * 30} note="Il limite vero è di 100 al giorno." />
+      <Meter label="Pubblicazioni oggi" value={ext ? (ext.vercel?.deploys_today ?? null) : null} max={FREE.vercelDay} />
+      {ext?.vercel && <p className="muted small">Pubblicazioni questo mese: {nf.format(ext.vercel.deploys_month)}</p>}
 
       <h2>Google Maps <small>quote gratuite mensili</small></h2>
       <Meter label="Caricamenti della mappa" value={s?.map_load ?? null} max={FREE.mapLoad} />

@@ -48,8 +48,12 @@ async function vercel() {
   if (!r.ok) return null
   const j = await r.json()
   const monthStart = new Date(); monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0)
-  const n = (j.deployments ?? []).filter((d: { created: number }) => d.created >= monthStart.getTime()).length
-  return { deploys_month: n }
+  const dayStart = new Date(); dayStart.setUTCHours(0, 0, 0, 0)
+  const list: { created: number }[] = j.deployments ?? []
+  return {
+    deploys_month: list.filter((d) => d.created >= monthStart.getTime()).length,
+    deploys_today: list.filter((d) => d.created >= dayStart.getTime()).length,
+  }
 }
 
 async function supabaseUsage() {
