@@ -2861,3 +2861,10 @@ textarea {
     transparent
   );
 }
+
+/* intestazioni delle categorie: niente pillola, solo scritta arancio */
+.cat .sect-label span {
+  padding: 0;
+  background: none;
+  color: #c75b00;
+}
