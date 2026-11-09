@@ -396,20 +396,20 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
           <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
           <span>Solo i miei negozi</span>
         </label>
-      </div>
-      <div className="mapbottom">
-        {status === 'locating' && <span>Cerco la tua posizione…</span>}
-        {status === 'loading' && <span>Cerco i negozi…</span>}
         {status === 'ready' && !note && (
-          <span>
-            {onlyMine
-              ? `${shops.length} ${shops.length === 1 ? 'tuo negozio' : 'tuoi negozi'} in zona`
-              : `${shops.length} ${shops.length === 1 ? 'supermercato' : 'supermercati'} in zona · i tuoi sono evidenziati`}
-            {locNote ? ` · ${locNote}` : ''}
-          </span>
+          <div className="mapcount" aria-label={`${shops.length} ${onlyMine ? 'tuoi negozi' : 'supermercati'} in zona`}>
+            {shops.length}
+          </div>
         )}
-        {note && <span>{note}</span>}
       </div>
+      {(status !== 'ready' || note || locNote) && (
+        <div className="mapbottom">
+          {status === 'locating' && <span>Cerco la tua posizione…</span>}
+          {status === 'loading' && <span>Cerco i negozi…</span>}
+          {status === 'ready' && !note && locNote && <span>{locNote}</span>}
+          {note && <span>{note}</span>}
+        </div>
+      )}
     </div>
   )
 }
