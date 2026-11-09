@@ -2838,3 +2838,22 @@ textarea {
   border-color: #1f5c3a;
   color: #fff;
 }
+
+/* Elencone: i prodotti che mancano restano verde scuro dentro l'area, con testo bianco */
+.rails.elen .slider {
+  background: color-mix(
+    in srgb,
+    color-mix(in srgb, #1f5c3a calc(var(--m) * 100%), var(--card)) calc(var(--o) * 100%),
+    var(--bg)
+  );
+  border-color: color-mix(
+    in srgb,
+    color-mix(in srgb, #1f5c3a calc(var(--m) * 100%), var(--line)) calc(var(--o) * 100%),
+    var(--bg)
+  );
+  color: color-mix(
+    in srgb,
+    color-mix(in srgb, #fff calc(var(--m) * 100%), var(--ink)) calc(var(--o) * 100%),
+    var(--bg)
+  );
+}
