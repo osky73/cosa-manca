@@ -2674,3 +2674,16 @@ textarea {
   padding-top: 16px;
   border-radius: 16px 16px 0 0;
 }
+/* "Cosa manca" ha più spazio, così la scritta ha un margine minimo intorno */
+.tabbar {
+  grid-template-columns: 1.3fr repeat(5, 1fr);
+}
+.tabbar button {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+/* bollino dei prodotti che mancano: più in alto e a sinistra, sul bordo del carrello */
+.ico .badge {
+  top: -4px;
+  right: -9px;
+}
