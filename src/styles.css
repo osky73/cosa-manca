@@ -2816,11 +2816,9 @@ textarea {
 }
 .rails.elen > .cat {
   position: relative;
-  z-index: 1;
 }
 .zonehead {
   position: relative;
-  z-index: 1;
   margin-left: calc(21% - 14px);
   padding: 13px 10px 4px 0;
   text-align: right;
