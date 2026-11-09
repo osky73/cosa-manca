@@ -391,6 +391,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                             ) : (
                               <span className="name">{item.name}</span>
                             )}
+                            {editing && !drag && <span key={bump} className="editbar" aria-hidden="true" />}
                             {editing && (
                               <>
                                 <button

@@ -2622,3 +2622,25 @@ textarea {
   color: #fff;
   text-decoration: underline;
 }
+
+.orderrow.editing {
+  overflow: hidden;
+}
+.orderrow .editbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--accent);
+  transform-origin: left;
+  animation: editbar 5s linear forwards;
+}
+@keyframes editbar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
