@@ -18,7 +18,7 @@ export const TOURS: Tour[] = [
     question: 'Come si segnalano i prodotti che mancano?',
     tab: 'list',
     selector: '[data-tour~="first-row"]',
-    text: () => 'Sposta il prodotto a destra: manca.',
+    text: () => 'Sposta il prodotto mancante a destra',
     doneWhen: 'need-added',
   },
   {
@@ -27,7 +27,7 @@ export const TOURS: Tour[] = [
     tab: 'list',
     selector: '[data-tour~="missing-row"]',
     text: () =>
-      'Tocca un prodotto che manca e scrivi la quantità (es. 500 gr). Chiudi: si salva.',
+      'Tocca un prodotto che manca, scrivi la quantità (es. 500 gr) e chiudi',
     empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {
@@ -36,7 +36,7 @@ export const TOURS: Tour[] = [
     tab: 'list',
     selector: '[data-tour~="missing-row"]',
     text: () =>
-      'Sì: tocca un prodotto che manca e scrivi la nota. Chiudi: si salva.',
+      'Sì: tocca un prodotto che manca, scrivi la nota e chiudi',
     empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {
@@ -57,7 +57,7 @@ export const TOURS: Tour[] = [
     selector: '[data-tour~="free-row"]',
     text: (admin) =>
       admin
-        ? 'Tocca il prodotto: scrivi per rinominarlo, cestino per eliminarlo, maniglia per spostarlo.'
+        ? 'Tocca il prodotto: scrivi per rinominarlo, cestino per eliminarlo, grip per spostarlo.'
         : 'Lo fa l’amministratore del Gruppo.',
   },
   {
