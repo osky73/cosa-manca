@@ -18,7 +18,7 @@ export const TOURS: Tour[] = [
     question: 'Come si segnalano i prodotti che mancano?',
     tab: 'list',
     selector: '[data-tour~="first-row"]',
-    text: () => 'Sposta il prodotto mancante a destra',
+    text: () => 'In Elencone, sposta il prodotto mancante da sinistra a destra',
     doneWhen: 'need-added',
   },
   {
