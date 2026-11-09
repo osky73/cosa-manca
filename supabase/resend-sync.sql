@@ -39,32 +39,23 @@ begin
   hdr := jsonb_build_object('Authorization', 'Bearer ' || api_key, 'Content-Type', 'application/json');
   mail_path := replace(new.email, '+', '%2B');
 
-  if new.marketing_opt_in then
-    -- Contatto nuovo: lo crea già dentro il segmento.
-    perform net.http_post(
-      url := 'https://api.resend.com/contacts',
-      headers := hdr,
-      body := jsonb_build_object(
-        'email', new.email,
-        'first_name', new.display_name,
-        'unsubscribed', false,
-        'segments', jsonb_build_array(jsonb_build_object('id', seg))
-      )
-    );
-    -- Contatto già presente in Resend (es. iscritto ad altri segmenti): lo aggiunge al segmento.
-    -- Le due chiamate sono indipendenti: quella che non serve fallisce senza danni.
-    perform net.http_post(
-      url := 'https://api.resend.com/contacts/' || mail_path || '/segments/' || seg,
-      headers := hdr,
-      body := '{}'::jsonb
-    );
-  elsif tg_op = 'UPDATE' and old.marketing_opt_in then
-    -- Toglie solo dal segmento Cosa-manca; il contatto resta negli altri segmenti.
-    perform net.http_delete(
-      url := 'https://api.resend.com/contacts/' || mail_path || '/segments/' || seg,
-      headers := hdr
-    );
-  end if;
+  -- Tutti finiscono in Resend e nel segmento; chi non ha acconsentito è "unsubscribed"
+  -- (non riceve aggiornamenti). POST /contacts aggiorna anche i contatti già presenti.
+  perform net.http_post(
+    url := 'https://api.resend.com/contacts',
+    headers := hdr,
+    body := jsonb_build_object(
+      'email', new.email,
+      'first_name', new.display_name,
+      'unsubscribed', not coalesce(new.marketing_opt_in, false),
+      'segments', jsonb_build_array(jsonb_build_object('id', seg))
+    )
+  );
+  perform net.http_post(
+    url := 'https://api.resend.com/contacts/' || mail_path || '/segments/' || seg,
+    headers := hdr,
+    body := '{}'::jsonb
+  );
 
   return new;
 end $$;
