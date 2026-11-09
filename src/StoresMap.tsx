@@ -27,21 +27,46 @@ const MILAN = { lat: 45.4642, lng: 9.19 }
 
 let loader: Promise<void> | null = null
 
+const mapsReady = () =>
+  typeof (window as { google?: typeof google }).google?.maps?.importLibrary === 'function'
+
 function loadGoogle(): Promise<void> {
-  if (typeof (window as { google?: typeof google }).google?.maps?.importLibrary === 'function') return Promise.resolve()
+  if (mapsReady()) return Promise.resolve()
   if (loader) return loader
   const key = import.meta.env.VITE_GOOGLE_MAPS_KEY as string | undefined
   if (!key) return Promise.reject(new Error('chiave Google Maps mancante'))
   loader = new Promise<void>((resolve, reject) => {
-    const s = document.createElement('script')
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&loading=async&language=it&region=IT`
-    s.async = true
-    s.onload = () => resolve()
-    s.onerror = () => {
+    let done = false
+    let script: HTMLScriptElement | null = null
+    const fail = (msg: string) => {
+      if (done) return
+      done = true
       loader = null
-      reject(new Error('Google Maps non raggiungibile'))
+      script?.remove()
+      reject(new Error(msg))
     }
-    document.head.appendChild(s)
+    const ok = () => {
+      if (done) return
+      done = true
+      resolve()
+    }
+    // Google chiama questa funzione quando l'API è davvero pronta; in più controllo a intervalli.
+    ;(window as unknown as Record<string, unknown>).__cmMapsReady = () => {
+      if (mapsReady()) ok()
+    }
+    const started = Date.now()
+    const tick = () => {
+      if (done) return
+      if (mapsReady()) return ok()
+      if (Date.now() - started > 10000) return fail('Google Maps non risponde')
+      setTimeout(tick, 150)
+    }
+    script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&v=weekly&loading=async&callback=__cmMapsReady&language=it&region=IT`
+    script.async = true
+    script.onerror = () => fail('Google Maps non raggiungibile')
+    document.head.appendChild(script)
+    tick()
   })
   return loader
 }
