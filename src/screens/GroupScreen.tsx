@@ -1,11 +1,10 @@
-import { useMemo, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useData } from '../data'
 import { Sheet } from '../components'
 import { InstallCard } from '../install'
 import ShareCard from '../ShareCard'
 import { supabase } from '../supabase'
-import { IconEye, IconEyeOff, IconMail, IconShare, IconTrash } from '../icons'
-import { byCategoryThenName, norm } from '../lib'
+import { IconMail, IconShare, IconTrash } from '../icons'
 import { useToast } from '../toast'
 import type { GroupRef, Member, Role } from '../types'
 
@@ -32,7 +31,6 @@ export default function GroupScreen({
   const [selected, setSelected] = useState<Member | null>(null)
   const [email, setEmail] = useState('')
   const [inviteRole, setInviteRole] = useState<Role>('member')
-  const [catalogOpen, setCatalogOpen] = useState(false)
   const [notifyOn, setNotifyOn] = useState(notifyNew)
   async function setNotify(v: boolean) {
     setNotifyOn(v)
@@ -45,13 +43,7 @@ export default function GroupScreen({
       onNameChanged()
     }
   }
-  const [catQuery, setCatQuery] = useState('')
   const [name, setName] = useState(displayName)
-
-  const catalog = useMemo(() => {
-    const qn = norm(catQuery)
-    return [...d.items].filter((i) => !qn || norm(i.name).includes(qn)).sort(byCategoryThenName)
-  }, [d.items, catQuery])
 
   async function share(to: string) {
     const url = location.origin
@@ -248,62 +240,6 @@ export default function GroupScreen({
           </>
         )}
       </section>
-
-      {d.isAdmin && (
-        <section>
-          <button className="cat-head" onClick={() => setCatalogOpen(!catalogOpen)} aria-expanded={catalogOpen}>
-            <span className="grow">Catalogo del gruppo</span>
-            <span className="count">{d.items.length}</span>
-          </button>
-          {catalogOpen && (
-            <>
-              <div className="searchbar slim">
-                <input
-                  type="search"
-                  value={catQuery}
-                  onChange={(e) => setCatQuery(e.target.value)}
-                  placeholder="Cerca nel catalogo"
-                />
-              </div>
-              <ul className="rows">
-                {catalog.map((i) => (
-                  <li key={i.id} className={'static' + (i.hidden ? ' dim' : '')}>
-                    <span className="grow">
-                      <span className="name">{i.name}</span>
-                      <span className="meta">
-                        {i.category} · {i.recurrence === 'recurring' ? 'fisso' : 'temporaneo'}
-                        {i.hidden ? ' · nascosto' : ''}
-                      </span>
-                    </span>
-                    <button
-                      className="icon-btn"
-                      onClick={() => void d.setItemHidden(i.id, !i.hidden)}
-                      aria-label={i.hidden ? `Mostra ${i.name}` : `Nascondi ${i.name}`}
-                    >
-                      {i.hidden ? <IconEyeOff /> : <IconEye />}
-                    </button>
-                    <button
-                      className="icon-btn"
-                      onClick={async () => {
-                        if (!confirm(`Eliminare «${i.name}» dal catalogo? Sparisce per tutti e non si propone più.`))
-                          return
-                        await d.archiveItem(i.id)
-                        toast.show(`«${i.name}» eliminato dal catalogo`, {
-                          label: 'Annulla',
-                          run: () => void d.restoreItem(i.id),
-                        })
-                      }}
-                      aria-label={`Elimina ${i.name}`}
-                    >
-                      <IconTrash />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </section>
-      )}
 
       <section className="card">
         <label className="field">
