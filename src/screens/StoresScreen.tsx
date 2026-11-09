@@ -87,9 +87,7 @@ export default function StoresScreen() {
           >
             <IconMapPin />
           </button>
-          {(!d.online || d.pendingOps > 0) && (
-            <span className="pill warn">{d.online ? 'Sincronizzo…' : 'Offline'}</span>
-          )}
+          {!d.online && <span className="pill warn">Offline</span>}
         </div>
       </header>
 

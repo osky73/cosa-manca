@@ -264,12 +264,8 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
       <header className="top">
         <div className="top-row">
           <h1>Elencone</h1>
-          {(!d.online || d.pendingOps > 0) && (
-            <span className="pill warn">
-              {d.online
-                ? `${d.pendingOps} da inviare`
-                : `Offline${d.pendingOps ? ` · ${d.pendingOps} da inviare` : ''}`}
-            </span>
+          {!d.online && (
+            <span className="pill warn">{`Offline${d.pendingOps ? ` · ${d.pendingOps} da inviare` : ''}`}</span>
           )}
         </div>
         <p className="tagline">

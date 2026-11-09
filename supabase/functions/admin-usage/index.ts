@@ -44,17 +44,26 @@ async function vercel() {
   const token = Deno.env.get('VERCEL_TOKEN')
   if (!token) return null
   const team = Deno.env.get('VERCEL_TEAM_ID')
-  const q = team ? `?teamId=${team}&limit=100` : '?limit=100'
-  const r = await fetch(`https://api.vercel.com/v6/deployments${q}`, { headers: { Authorization: `Bearer ${token}` } })
-  if (!r.ok) return null
-  const j = await r.json()
   const monthStart = new Date(); monthStart.setUTCDate(1); monthStart.setUTCHours(0, 0, 0, 0)
   const dayStart = new Date(); dayStart.setUTCHours(0, 0, 0, 0)
-  const list: { created: number }[] = j.deployments ?? []
-  return {
-    deploys_month: list.filter((d) => d.created >= monthStart.getTime()).length,
-    deploys_today: list.filter((d) => d.created >= dayStart.getTime()).length,
+  let month = 0
+  let today = 0
+  let until = ''
+  for (let i = 0; i < 10; i++) {
+    const q = `?limit=100${team ? `&teamId=${team}` : ''}${until}`
+    const r = await fetch(`https://api.vercel.com/v6/deployments${q}`, { headers: { Authorization: `Bearer ${token}` } })
+    if (!r.ok) return i === 0 ? null : { deploys_month: month, deploys_today: today }
+    const j = await r.json()
+    const list: { created: number }[] = j.deployments ?? []
+    for (const d of list) {
+      if (d.created >= monthStart.getTime()) month++
+      if (d.created >= dayStart.getTime()) today++
+    }
+    const last = list[list.length - 1]
+    if (list.length < 100 || !last || last.created < monthStart.getTime()) break
+    until = `&until=${last.created - 1}`
   }
+  return { deploys_month: month, deploys_today: today }
 }
 
 async function supabaseUsage() {

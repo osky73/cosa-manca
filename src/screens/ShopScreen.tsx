@@ -159,9 +159,7 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
       <header className="top">
         <div className="top-row">
           <h1>Cosa manca</h1>
-          {(!d.online || d.pendingOps > 0) && (
-            <span className="pill warn">{d.online ? 'Sincronizzo…' : 'Offline'}</span>
-          )}
+          {!d.online && <span className="pill warn">Offline</span>}
         </div>
         <p className="tagline">
           Sai quando chiami a casa e chiedi «cosa manca?» e nessuno ha voglia di andare a vedere? Ecco fatto.
