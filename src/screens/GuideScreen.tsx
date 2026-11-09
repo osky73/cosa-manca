@@ -28,7 +28,7 @@ export default function GuideScreen({ onTour, goto }: { onTour: (id: string) => 
       <section className="start">
         <button className="start-head" onClick={toggle} aria-expanded={open}>
           <h2>Come iniziare</h2>
-          <span className={'chev' + (open ? ' open' : '')} aria-hidden="true">▾</span>
+          <span className={'chev' + (open ? ' open' : '')} aria-hidden="true" />
         </button>
         {open && (
           <ol className="start-steps">

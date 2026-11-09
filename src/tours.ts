@@ -51,6 +51,16 @@ export const TOURS: Tour[] = [
     scroll: 'end',
   },
   {
+    id: 'edit-product',
+    question: "Come elimino o modifico un prodotto nell'Elencone?",
+    tab: 'list',
+    selector: '[data-tour~="free-row"]',
+    text: (admin) =>
+      admin
+        ? 'In Elencone tocca un prodotto che non manca (a sinistra): il nome diventa modificabile, il cestino lo elimina e la maniglia lo sposta, anche in un altro settore. Dopo 5 secondi senza toccare nulla si salva e si chiude da solo.'
+        : "Eliminare, rinominare e spostare i prodotti dell'Elencone spetta all'amministratore del Gruppo. Tu puoi suggerire un nuovo prodotto con il bottone +.",
+  },
+  {
     id: 'add-store',
     question: 'Come faccio ad aggiungere un nuovo negozio per le nostre spese?',
     tab: 'stores',

@@ -171,6 +171,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
     .slice(0, 1)
     .map((i) => i.id)
   const firstId = blocks.flatMap(([, items]) => items)[0]?.id
+  const firstFreeId = blocks.flatMap(([, items]) => items).find((i) => !d.needByItem.has(i.id))?.id
   const firstMissingId = blocks.flatMap(([, items]) => items).find((i) => d.needByItem.has(i.id))?.id
   const hintOn = useHintWindow('list', hintIds.length > 0)
   const hintDelay = (id: string) => (hintIds.includes(id) ? 500 : undefined)
@@ -429,7 +430,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                           key={item.id}
                           item={item}
                           goto={goto}
-                          tour={[item.id === firstId && 'first-row', item.id === firstMissingId && 'missing-row'].filter(Boolean).join(' ') || undefined}
+                          tour={[item.id === firstId && 'first-row', item.id === firstMissingId && 'missing-row', item.id === firstFreeId && 'free-row'].filter(Boolean).join(' ') || undefined}
                           hint={hintOn ? hintDelay(item.id) : undefined}
                           onEdit={d.isAdmin ? () => setEditId(item.id) : undefined}
                         />
