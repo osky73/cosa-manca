@@ -30,6 +30,21 @@ function EditName({
     if (!el) return
     el.focus()
     el.setSelectionRange(el.value.length, el.value.length)
+    // la tastiera copre la parte bassa: porto il prodotto nella zona ancora visibile
+    const vv = window.visualViewport
+    const show = () => {
+      const row = el.closest('li') ?? el
+      const r = row.getBoundingClientRect()
+      const h = vv?.height ?? window.innerHeight
+      const target = Math.max(90, h / 2 - r.height / 2)
+      if (r.top > target + 4 || r.top < 90) window.scrollBy({ top: r.top - target, behavior: 'smooth' })
+    }
+    const t = window.setTimeout(show, 120)
+    vv?.addEventListener('resize', show)
+    return () => {
+      window.clearTimeout(t)
+      vv?.removeEventListener('resize', show)
+    }
   }, [])
   async function commit() {
     const t = v.trim()
@@ -245,7 +260,7 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
   }
 
   return (
-    <div className="screen">
+    <div className={'screen' + (editId !== null ? ' editing-list' : '')}>
       <header className="top">
         <div className="top-row">
           <h1>Elencone</h1>

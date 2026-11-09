@@ -2644,3 +2644,8 @@ textarea {
     transform: scaleX(0);
   }
 }
+
+/* con la tastiera aperta si può scorrere abbastanza da portare in alto anche l'ultimo prodotto */
+.screen.editing-list {
+  padding-bottom: 55vh;
+}
