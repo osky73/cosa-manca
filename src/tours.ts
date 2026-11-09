@@ -18,7 +18,7 @@ export const TOURS: Tour[] = [
     question: 'Come si segnalano i prodotti che mancano?',
     tab: 'list',
     selector: '[data-tour~="first-row"]',
-    text: () => 'In Elencone, sposta un prodotto a destra e viene segnalato come mancante.',
+    text: () => 'Sposta il prodotto a destra: manca.',
     doneWhen: 'need-added',
   },
   {
@@ -27,7 +27,7 @@ export const TOURS: Tour[] = [
     tab: 'list',
     selector: '[data-tour~="missing-row"]',
     text: () =>
-      'In Elencone, tocca un prodotto che manca: nella scheda scrivi la quantità (es. 3 pacchi, 500 gr) o usa − e +, poi chiudi la scheda: si salva da sola. Sul prodotto comparirà davanti al nome, ad esempio «500 gr di burro».',
+      'Tocca un prodotto che manca e scrivi la quantità (es. 500 gr). Chiudi: si salva.',
     empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {
@@ -36,7 +36,7 @@ export const TOURS: Tour[] = [
     tab: 'list',
     selector: '[data-tour~="missing-row"]',
     text: () =>
-      'Sì. In Elencone, tocca un prodotto che manca e scrivi la nota nella scheda, poi chiudi la scheda: si salva da sola. Accanto al nome compare una piccola icona: in Cosa manca, toccando il prodotto, la nota si apre sotto il nome per qualche secondo.',
+      'Sì: tocca un prodotto che manca e scrivi la nota. Chiudi: si salva.',
     empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {
@@ -46,8 +46,8 @@ export const TOURS: Tour[] = [
     selector: '[data-tour="new-product"]',
     text: (admin) =>
       admin
-        ? 'Aggiungi un nuovo prodotto: finisce subito in Elencone.'
-        : "Suggerisci un nuovo prodotto e l'amministratore del Gruppo lo mette in Elencone.",
+        ? 'Tocca + e aggiungilo.'
+        : 'Tocca + e suggeriscilo: lo approva l’amministratore.',
     scroll: 'end',
   },
   {
@@ -57,8 +57,8 @@ export const TOURS: Tour[] = [
     selector: '[data-tour~="free-row"]',
     text: (admin) =>
       admin
-        ? 'In Elencone tocca un prodotto che non manca (a sinistra): il nome diventa modificabile, il cestino lo elimina e la maniglia lo sposta, anche in un altro settore. Dopo 5 secondi senza toccare nulla si salva e si chiude da solo.'
-        : "Eliminare, rinominare e spostare i prodotti dell'Elencone spetta all'amministratore del Gruppo. Tu puoi suggerire un nuovo prodotto con il bottone +.",
+        ? 'Tocca il prodotto: scrivi per rinominarlo, cestino per eliminarlo, maniglia per spostarlo.'
+        : 'Lo fa l’amministratore del Gruppo.',
   },
   {
     id: 'add-store',
@@ -67,8 +67,8 @@ export const TOURS: Tour[] = [
     selector: '[data-tour="add-store"]',
     text: (admin) =>
       admin
-        ? 'Se il negozio è tra i loghi, accendilo con il suo interruttore. Se non c’è, scrivi qui il nome, scegli un colore e tocca «Aggiungi negozio».'
-        : 'Se il negozio è tra i loghi, accendilo con il suo interruttore. Se non c’è, scrivi qui il nome, scegli un colore e tocca «Suggerisci negozio»: lo approva l’amministratore.',
+        ? 'Accendi il suo logo. Se manca, scrivi il nome e tocca «Aggiungi negozio».'
+        : 'Accendi il suo logo. Se manca, scrivi il nome e tocca «Suggerisci negozio».',
     doneWhen: 'store-added',
   },
   {
@@ -76,6 +76,6 @@ export const TOURS: Tour[] = [
     question: 'Cosa faccio se trovo un bug?',
     tab: 'ideas',
     selector: '[data-tour="idea-form"]',
-    text: () => 'Segnalalo qui, in Idee: scrivi che è un bug e racconta cosa è successo.',
+    text: () => 'Scrivilo qui, in Idee: indica che è un bug.',
   },
 ]
