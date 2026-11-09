@@ -13,6 +13,7 @@ interface Shop {
   lon: number
   name: string
   logo: string | null // chiave del catalogo, se è una catena che conosciamo
+  mine: boolean // è uno dei negozi attivati nel Gruppo
   address: string
   hours: string | null
 }
@@ -52,9 +53,15 @@ const OVERPASS = [
 
 const reEsc = (n: string) => n.replace(/[.^$*+?()[\]{}|\\"]/g, '\\$&')
 
-/** Cerca solo i negozi attivati nel Gruppo, per nome o marchio. */
-function overpassQuery(lat: number, lon: number, radius: number, stores: Store[]): string {
+/** Solo i negozi attivati (per nome o marchio) oppure tutti i supermercati della zona. */
+function overpassQuery(lat: number, lon: number, radius: number, stores: Store[], onlyMine: boolean): string {
   const around = `(around:${radius},${lat},${lon})`
+  if (!onlyMine) {
+    const kind = '^(supermarket|convenience|discount|department_store|variety_store)$'
+    return `[out:json][timeout:25];(
+nwr["shop"~"${kind}"]${around};
+);out center tags 400;`
+  }
   const names = stores.map((st) => (st.name.length <= 3 ? `^${reEsc(st.name)}([ ,]|$)` : reEsc(st.name))).join('|')
   return `[out:json][timeout:25];(
 nwr["shop"]["name"~"${names}",i]${around};
@@ -67,9 +74,10 @@ async function fetchShops(
   lon: number,
   radius: number,
   stores: Store[],
+  onlyMine: boolean,
   signal: AbortSignal,
 ): Promise<Shop[]> {
-  const body = 'data=' + encodeURIComponent(overpassQuery(lat, lon, radius, stores))
+  const body = 'data=' + encodeURIComponent(overpassQuery(lat, lon, radius, stores, onlyMine))
   let last = 'nessuna risposta'
   for (const url of OVERPASS) {
     const ac = new AbortController()
@@ -92,7 +100,7 @@ async function fetchShops(
         last = json.remark ?? 'risposta vuota'
         continue
       }
-      return toShops(json.elements, stores)
+      return toShops(json.elements, stores, onlyMine)
     } catch (e) {
       if (signal.aborted) throw e
       last = (e as Error).name === 'AbortError' ? 'tempo scaduto' : 'connessione assente'
@@ -123,7 +131,7 @@ function matchStore(tags: Record<string, string>, stores: Store[]): Store | null
   return null
 }
 
-function toShops(elements: OverpassElement[], stores: Store[]): Shop[] {
+function toShops(elements: OverpassElement[], stores: Store[], onlyMine: boolean): Shop[] {
   const out: Shop[] = []
   for (const e of elements) {
     const tags = e.tags ?? {}
@@ -131,13 +139,15 @@ function toShops(elements: OverpassElement[], stores: Store[]): Shop[] {
     const lo = e.lon ?? e.center?.lon
     if (la === undefined || lo === undefined) continue
     const st = matchStore(tags, stores)
-    if (!st) continue
+    if (!st && onlyMine) continue
+    if (!st && !tags.name && !tags.brand) continue
     out.push({
       id: `${e.type}${e.id}`,
       lat: la,
       lon: lo,
-      name: tags.name ?? st.name,
-      logo: st.logo ?? chainOf(tags),
+      name: tags.name ?? tags.brand ?? st?.name ?? 'Negozio',
+      logo: st ? (st.logo ?? chainOf(tags)) : chainOf(tags),
+      mine: st !== null,
       address: addressOf(tags),
       hours: tags.opening_hours ?? null,
     })
@@ -211,6 +221,9 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
   const abort = useRef<AbortController | null>(null)
   const timer = useRef<number | undefined>(undefined)
   const [shops, setShops] = useState<Shop[]>([])
+  const [onlyMine, setOnlyMine] = useState(true)
+  const onlyMineRef = useRef(true)
+  onlyMineRef.current = onlyMine
   const [status, setStatus] = useState<'locating' | 'loading' | 'ready' | 'error'>('locating')
   const [note, setNote] = useState('')
   const [locNote, setLocNote] = useState('')
@@ -226,22 +239,23 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
     if (!m) return
     const list = storesRef.current
     abort.current?.abort()
-    if (list.length === 0) {
+    const mineOnly = onlyMineRef.current
+    if (mineOnly && list.length === 0) {
       setShops([])
       setStatus('ready')
       setNote('Non hai attivato nessun negozio: attivali nella scheda Negozi.')
       return
     }
     const c = m.getCenter()
-    const radius = Math.max(1500, Math.min(30000, Math.round(m.distance(c, m.getBounds().getNorthEast()))))
+    const radius = Math.max(1500, Math.min(mineOnly ? 30000 : 6000, Math.round(m.distance(c, m.getBounds().getNorthEast()))))
     const ac = new AbortController()
     abort.current = ac
     setStatus('loading')
     try {
-      const found = await fetchShops(c.lat, c.lng, radius, list, ac.signal)
+      const found = await fetchShops(c.lat, c.lng, radius, list, mineOnly, ac.signal)
       setShops(found)
       setStatus('ready')
-      setNote(found.length === 0 ? 'Nessuno dei tuoi negozi in questa zona. Sposta o riduci la mappa.' : '')
+      setNote(found.length === 0 ? (mineOnly ? 'Nessuno dei tuoi negozi in questa zona. Sposta o riduci la mappa.' : 'Nessun supermercato in questa zona.') : '')
     } catch (e) {
       if ((e as Error).name === 'AbortError') return
       setStatus('error')
@@ -303,7 +317,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     if (map.current) later()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storesKey])
+  }, [storesKey, onlyMine])
 
   // ridisegna i segnaposto
   useEffect(() => {
@@ -311,7 +325,7 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
     if (!g) return
     g.clearLayers()
     for (const s of shops) {
-      L.marker([s.lat, s.lon], { icon: markerIcon(s, true), title: s.name })
+      L.marker([s.lat, s.lon], { icon: markerIcon(s, s.mine), title: s.name })
         .bindPopup(() => popupHtml(s), { closeButton: true, minWidth: 190 })
         .addTo(g)
     }
@@ -334,13 +348,19 @@ export default function StoresMap({ onClose }: { onClose: () => void }) {
         <button className="icon-btn mapclose" onClick={onClose} aria-label="Chiudi la mappa">
           <IconX />
         </button>
+        <label className="maptoggle">
+          <input type="checkbox" checked={onlyMine} onChange={(e) => setOnlyMine(e.target.checked)} />
+          <span>Solo i miei negozi</span>
+        </label>
       </div>
       <div className="mapbottom">
         {status === 'locating' && <span>Cerco la tua posizione…</span>}
-        {status === 'loading' && <span>Cerco i tuoi negozi…</span>}
+        {status === 'loading' && <span>Cerco i negozi…</span>}
         {status === 'ready' && !note && (
           <span>
-            {shops.length} {shops.length === 1 ? 'tuo negozio' : 'tuoi negozi'} in zona
+            {onlyMine
+              ? `${shops.length} ${shops.length === 1 ? 'tuo negozio' : 'tuoi negozi'} in zona`
+              : `${shops.length} ${shops.length === 1 ? 'supermercato' : 'supermercati'} in zona · i tuoi sono evidenziati`}
             {locNote ? ` · ${locNote}` : ''}
           </span>
         )}

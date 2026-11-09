@@ -14,14 +14,15 @@ window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
   if (url.includes('overpass')) {
     const q = decodeURIComponent(String(init?.body ?? ''))
     const at = q.match(/around:\d+,([\d.]+),([\d.]+)/)
-    const names = (q.match(/"name"~"([^"]+)"/)?.[1] ?? '').split('|').map((n) => n.replace(/^\^|\(\[ ,\]\|\$\)$|\\/g, ''))
+    const generic = /"shop"~/.test(q)
+    const names = generic ? ['Esselunga', 'Lidl', 'Carrefour', 'Conad', 'Supermercato Rossi', 'Alimentari Da Gino', 'Iperal'] : (q.match(/"name"~"([^"]+)"/)?.[1] ?? '').split('|').map((n) => n.replace(/^\^|\(\[ ,\]\|\$\)$|\\/g, ''))
     const lat = at ? parseFloat(at[1]) : 45.4642
     const lon = at ? parseFloat(at[2]) : 9.19
     const elements = names.filter(Boolean).map((n, i) => ({
       type: 'node',
       id: i + 1,
-      lat: lat + Math.sin(i * 2.1) * 0.012,
-      lon: lon + Math.cos(i * 2.1) * 0.018,
+      lat: lat + Math.sin(i * 0.9) * 0.006 * (1 + (i % 3)),
+      lon: lon + Math.cos(i * 0.9) * 0.009 * (1 + (i % 3)),
       tags: { name: n, shop: 'supermarket', opening_hours: 'Mo-Sa 08:00-20:30; Su 09:00-13:00' },
     }))
     return Promise.resolve(new Response(JSON.stringify({ elements }), { headers: { 'Content-Type': 'application/json' } }))
