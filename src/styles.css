@@ -2791,3 +2791,45 @@ textarea {
 .admin .small {
   font-size: 12px;
 }
+
+/* Elencone: area verde chiaro a destra, dove vanno i prodotti che mancano; in cima "Mancano" con il numero */
+.rails.elen {
+  margin-top: 10px;
+  padding-bottom: 8px;
+}
+.rails.elen::before {
+  display: block;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(21% - 14px);
+  right: -8px;
+  width: auto;
+  height: auto;
+  border: 0;
+  transform: none;
+  border-radius: 20px;
+  background: #e3f2e8;
+  z-index: 0;
+  pointer-events: none;
+}
+.rails.elen > .cat {
+  position: relative;
+  z-index: 1;
+}
+.zonehead {
+  position: relative;
+  z-index: 1;
+  margin-left: calc(21% - 14px);
+  padding: 13px 0 4px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--accent);
+}
+.zonehead .count {
+  margin-left: 6px;
+}

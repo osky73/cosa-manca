@@ -305,14 +305,6 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
             </button>
           )}
         </div>
-        {!qn && (
-          <div className="cols" aria-hidden="true">
-            <span>
-              <span className="mlbl">Mancano</span>
-              {missingCount > 0 && <span className="count">{missingCount}</span>}
-            </span>
-          </div>
-        )}
       </div>
 
       {qn ? (
@@ -357,6 +349,10 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
             </p>
           ) : (
             <div className="rails elen">
+              <div className="zonehead" aria-hidden="true">
+                <span className="mlbl">Mancano</span>
+                {missingCount > 0 && <span className="count">{missingCount}</span>}
+              </div>
               {blocks.map(([cat, items]) => (
                 <div key={cat} className="cat" data-cat={cat}>
                   <h2
