@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { TOURS } from '../tours'
 import { readLS, writeLS } from '../lib'
+import { useData } from '../data'
 import type { Tab } from '../types'
 
 const STEPS: { pre: string; link: string; tab: Tab; post: string }[] = [
@@ -11,7 +12,17 @@ const STEPS: { pre: string; link: string; tab: Tab; post: string }[] = [
   { pre: 'Fai la spesa seguendo ', link: 'Cosa manca', tab: 'shop', post: '' },
 ]
 
+// chi non è amministratore non può invitare né modificare l'elenco: può segnare i mancanti e suggerire
+const STEPS_MEMBER: { pre: string; link: string; tab: Tab; post: string }[] = [
+  { pre: 'Inizia a swipare i ', link: 'prodotti mancanti', tab: 'list', post: '' },
+  { pre: 'Se un prodotto non c’è, ', link: 'suggeriscilo', tab: 'list', post: '' },
+  { pre: 'Suggerisci i ', link: 'Negozi', tab: 'stores', post: ' dove fai la spesa' },
+  { pre: 'Fai la spesa seguendo ', link: 'Cosa manca', tab: 'shop', post: '' },
+]
+
 export default function GuideScreen({ onTour, goto }: { onTour: (id: string) => void; goto: (t: Tab) => void }) {
+  const d = useData()
+  const steps = d.isAdmin ? STEPS : STEPS_MEMBER
   const [open, setOpen] = useState<boolean>(() => readLS<boolean>('cm_start_open', true))
   function toggle() {
     setOpen((o) => {
@@ -32,7 +43,7 @@ export default function GuideScreen({ onTour, goto }: { onTour: (id: string) => 
         </button>
         {open && (
           <ol className="start-steps">
-            {STEPS.map((s) => (
+            {steps.map((s) => (
               <li key={s.link + s.tab}>
                 {s.pre}
                 <button className="start-link" onClick={() => goto(s.tab)}>
