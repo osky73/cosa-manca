@@ -199,20 +199,18 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
               ))}
           </div>
         )}
-        {hasList && (
-          <div className="cols" aria-hidden="true">
-            <span>
-              <span className="mlbl">Mancano</span>
-              <span className="count">{rows.length}</span>
-            </span>
-          </div>
-        )}
       </div>
 
       {sections.length === 0 ? (
         <p className="empty">{d.loaded ? 'Tutto a posto, per fortuna non manca niente.' : 'Carico la lista…'}</p>
       ) : (
         <div className="rails shop">
+          {hasList && (
+            <div className="zonehead" aria-hidden="true">
+              <span className="mlbl">Mancano</span>
+              <span className="count">{rows.length}</span>
+            </div>
+          )}
           {sections.map((sec) => (
             <section key={sec.key} className="shopsec">
               <ul className="slist">
