@@ -2822,8 +2822,8 @@ textarea {
   position: relative;
   z-index: 1;
   margin-left: calc(21% - 14px);
-  padding: 13px 0 4px;
-  text-align: center;
+  padding: 13px 10px 4px 0;
+  text-align: right;
   font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
