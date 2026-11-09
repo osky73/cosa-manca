@@ -10,7 +10,19 @@ import { catRank, categoriesOf, norm } from '../lib'
 import type { Item, Tab } from '../types'
 
 /** Nome modificabile: il cursore parte a fine parola; si salva uscendo dal campo o con Invio. */
-function EditName({ name, onSave, onDone }: { name: string; onSave: (n: string) => Promise<boolean>; onDone: () => void }) {
+function EditName({
+  name,
+  onSave,
+  onDone,
+  onActivity,
+  commitRef,
+}: {
+  name: string
+  onSave: (n: string) => Promise<boolean>
+  onDone: () => void
+  onActivity: () => void
+  commitRef: React.MutableRefObject<null | (() => Promise<void>)>
+}) {
   const [v, setV] = useState(name)
   const ref = useRef<HTMLInputElement>(null)
   useEffect(() => {
@@ -25,12 +37,16 @@ function EditName({ name, onSave, onDone }: { name: string; onSave: (n: string) 
       if (!(await onSave(t))) setV(name)
     } else setV(name)
   }
+  commitRef.current = commit
   return (
     <input
       ref={ref}
       className="editname"
       value={v}
-      onChange={(e) => setV(e.target.value)}
+      onChange={(e) => {
+        setV(e.target.value)
+        onActivity()
+      }}
       onBlur={() => void commit()}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
@@ -57,6 +73,17 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
   const dropRef = useRef<{ cat: string; index: number } | null>(null)
   const yRef = useRef(0)
   const dragId = useRef<string | null>(null)
+  const commitRef = useRef<null | (() => Promise<void>)>(null)
+  const [bump, setBump] = useState(0) // ogni attività (digitare, spostare) riparte da zero
+  // dopo 5 secondi di inattività la modifica si salva e si chiude
+  useEffect(() => {
+    if (editId === null || drag) return
+    const t = window.setTimeout(async () => {
+      await commitRef.current?.()
+      setEditId(null)
+    }, 5000)
+    return () => window.clearTimeout(t)
+  }, [editId, bump, drag !== null])
 
   // ---------- Comandi vocali ----------
   const [listening, setListening] = useState(false)
@@ -221,11 +248,6 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
       <header className="top">
         <div className="top-row">
           <h1>Elencone</h1>
-          {d.isAdmin && editId !== null && (
-            <button type="button" className="btn ghost slim on" onClick={() => setEditId(null)}>
-              Fine
-            </button>
-          )}
           {(!d.online || d.pendingOps > 0) && (
             <span className="pill warn">
               {d.online
@@ -362,6 +384,8 @@ export default function ListScreen({ goto }: { goto: (t: Tab) => void }) {
                                 name={item.name}
                                 onSave={(n) => d.renameItem(item.id, n)}
                                 onDone={() => setEditId(null)}
+                                onActivity={() => setBump((x) => x + 1)}
+                                commitRef={commitRef}
                               />
                             ) : (
                               <span className="name">{item.name}</span>

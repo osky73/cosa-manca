@@ -27,7 +27,7 @@ export const TOURS: Tour[] = [
     tab: 'list',
     selector: '[data-tour~="missing-row"]',
     text: () =>
-      'In Elencone, tocca un prodotto che manca: nella scheda scrivi la quantità (es. 3 pacchi, 500 gr) o usa − e +, poi tocca «Salva». Sul prodotto comparirà davanti al nome, ad esempio «500 gr di burro».',
+      'In Elencone, tocca un prodotto che manca: nella scheda scrivi la quantità (es. 3 pacchi, 500 gr) o usa − e +, poi chiudi la scheda: si salva da sola. Sul prodotto comparirà davanti al nome, ad esempio «500 gr di burro».',
     empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {
@@ -36,7 +36,7 @@ export const TOURS: Tour[] = [
     tab: 'list',
     selector: '[data-tour~="missing-row"]',
     text: () =>
-      'Sì. In Elencone, tocca un prodotto che manca e scrivi la nota nella scheda, poi tocca «Salva». Accanto al nome compare una piccola icona: in Cosa manca, toccando il prodotto, la nota si apre sotto il nome per qualche secondo.',
+      'Sì. In Elencone, tocca un prodotto che manca e scrivi la nota nella scheda, poi chiudi la scheda: si salva da sola. Accanto al nome compare una piccola icona: in Cosa manca, toccando il prodotto, la nota si apre sotto il nome per qualche secondo.',
     empty: 'Prima segna un prodotto come mancante (spostalo a destra in Elencone), poi riprova.',
   },
   {

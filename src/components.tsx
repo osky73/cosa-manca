@@ -275,8 +275,11 @@ export function NeedDetailSheet({
     if (Date.now() - born.current < 400) return // ignora i tocchi arrivati insieme all'apertura
     setQ(String(Math.max(1, (num ?? 1) + by)))
   }
+  // niente bottone: chiudendo la finestra si salva (solo se qualcosa è cambiato)
   function save() {
-    onSave(spaceUnits(q.trim()) || null, n.trim() || null)
+    const nq = spaceUnits(q.trim()) || null
+    const nn = n.trim() || null
+    if (nq !== (quantity?.trim() || null) || nn !== (note?.trim() || null)) onSave(nq, nn)
     onClose()
   }
   if (readOnly) {
@@ -287,7 +290,7 @@ export function NeedDetailSheet({
     )
   }
   return (
-    <Sheet title={title} onClose={onClose}>
+    <Sheet title={title} onClose={save}>
       <div className="field">
         <span>Quantità</span>
         <div className="qtyrow">
@@ -317,9 +320,6 @@ export function NeedDetailSheet({
           placeholder="es. quello senza lattosio, marca preferita…"
         />
       </label>
-      <button className="btn primary wide" onClick={save}>
-        Salva
-      </button>
     </Sheet>
   )
 }
