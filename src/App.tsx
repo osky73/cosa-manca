@@ -238,12 +238,12 @@ export function Shell({
     if (entered.current || !d.loaded || sharing) return
     entered.current = true
     const fresh = d.needs.length === 0 && d.boughtNeeds.length === 0 && !d.suggestions.some((x) => x.status === 'pending')
-    // la prima volta in assoluto si apre la Guida; poi, con la lista vuota, l'Elencone
+    // la prima volta in assoluto si apre la Guida; poi l'admin va su Cosa manca e gli utenti su Elencone
     const seenKey = `cm_seen_guide_${d.userId}`
     if (fresh && !localStorage.getItem(seenKey)) {
       localStorage.setItem(seenKey, '1')
       setTab('guide')
-    } else if (fresh) setTab('list')
+    } else setTab(d.isAdmin ? 'shop' : 'list') // all'apertura: l'admin su Cosa manca, gli utenti su Elencone
   }, [d.loaded, d.needs.length, d.boughtNeeds.length])
 
   const go = (t: Tab) => {
