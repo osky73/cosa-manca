@@ -2667,3 +2667,10 @@ textarea {
   background: #fff;
   color: var(--accent);
 }
+/* "cappellino": il settore attivo sporge sopra la fascia con gli angoli alti arrotondati */
+.tabbar button.on {
+  margin-top: -8px;
+  min-height: 68px;
+  padding-top: 16px;
+  border-radius: 16px 16px 0 0;
+}
