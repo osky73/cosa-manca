@@ -7,7 +7,7 @@ const STEPS: { pre: string; link: string; tab: Tab; post: string }[] = [
   { pre: 'Invita le persone al tuo ', link: 'Gruppo', tab: 'group', post: '' },
   { pre: 'Personalizza il tuo ', link: 'Elencone', tab: 'list', post: '' },
   { pre: 'Aggiungi ', link: 'Negozi', tab: 'stores', post: ' se ti servono' },
-  { pre: 'Inizia a segnalare ', link: 'cosa manca', tab: 'list', post: '' },
+  { pre: 'Inizia a swipare i ', link: 'prodotti mancanti', tab: 'list', post: '' },
   { pre: 'Fai la spesa seguendo ', link: 'Cosa manca', tab: 'shop', post: '' },
 ]
 
