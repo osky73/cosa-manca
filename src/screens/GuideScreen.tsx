@@ -15,8 +15,8 @@ const STEPS: { pre: string; link: string; tab: Tab; post: string }[] = [
 // chi non è amministratore non può invitare né modificare l'elenco: può segnare i mancanti e suggerire
 const STEPS_MEMBER: { pre: string; link: string; tab: Tab; post: string }[] = [
   { pre: 'Inizia a swipare i ', link: 'prodotti mancanti', tab: 'list', post: '' },
-  { pre: 'Se un prodotto non c’è, ', link: 'suggeriscilo', tab: 'list', post: '' },
-  { pre: 'Suggerisci i ', link: 'Negozi', tab: 'stores', post: ' dove fai la spesa' },
+  { pre: 'Se un prodotto non c’è, ', link: 'aggiungilo', tab: 'list', post: ' (in approvazione)' },
+  { pre: 'Suggerisci anche i ', link: 'Negozi', tab: 'stores', post: ' dove fare la spesa' },
   { pre: 'Fai la spesa seguendo ', link: 'Cosa manca', tab: 'shop', post: '' },
 ]
 
