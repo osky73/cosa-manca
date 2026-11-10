@@ -221,9 +221,15 @@ export function Shell({
   const [tab, setTab] = useState<Tab>('shop')
   const [sharing, setSharing] = useState(OPENED_BY_SHARE)
   const [superAdmin, setSuperAdmin] = useState(false)
+  const [pendingReq, setPendingReq] = useState(0)
   useEffect(() => {
     supabase.rpc('is_super_admin').then(({ data }) => setSuperAdmin(data === true))
   }, [])
+  // richieste di ammissione in attesa: il pallino sull'ingranaggio
+  useEffect(() => {
+    if (!superAdmin) return
+    supabase.rpc('admin_requests_list').then(({ data }) => setPendingReq(Array.isArray(data) ? data.length : 0))
+  }, [superAdmin, tab])
   const [tour, setTour] = useState<Tour | null>(null)
   const [tourOpen, setTourOpen] = useState(true)
   const needCount = useRef(d.needs.length)
@@ -262,6 +268,7 @@ export function Shell({
       {superAdmin && !sharing && (
         <button className={`gear${tab === 'admin' ? ' on' : ''}`} aria-label="Stato servizi" onClick={() => go(tab === 'admin' ? 'shop' : 'admin')}>
           <IconGear />
+          {pendingReq > 0 && <span className="gear-dot">{pendingReq}</span>}
         </button>
       )}
       {tour && <Spotlight tour={tour} text={tour.text(d.isAdmin)} open={tourOpen} onClose={() => setTour(null)} />}
@@ -279,7 +286,7 @@ export function Shell({
         {!sharing && tab === 'shop' && <ShopScreen goto={go} />}
         {!sharing && tab === 'stores' && <StoresScreen />}
         {!sharing && tab === 'ideas' && <IdeasScreen />}
-        {!sharing && tab === 'admin' && superAdmin && <AdminScreen />}
+        {!sharing && tab === 'admin' && superAdmin && <AdminScreen onCount={setPendingReq} />}
         {!sharing && tab === 'guide' && (
           <GuideScreen
             goto={go}

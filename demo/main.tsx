@@ -4,6 +4,7 @@ import { Shell } from '../src/App'
 import { DataProvider } from '../src/data'
 import { ToastProvider } from '../src/toast'
 import Splash from '../src/Splash'
+import Onboarding from '../src/screens/Onboarding'
 import '../src/styles.css'
 import { demo } from './supabase'
 import './fakeGoogle'
@@ -31,9 +32,16 @@ function Demo() {
   )
 }
 
+// ?attesa mostra la schermata di chi aspetta di essere ammesso
+const waiting = location.search.includes('attesa')
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Demo />
+    {waiting ? (
+      <Onboarding userId="u9" profile={{ id: 'u9', display_name: 'Alice' } as never} hasGroup={false} onDone={() => {}} />
+    ) : (
+      <Demo />
+    )}
     <Splash />
   </StrictMode>,
 )

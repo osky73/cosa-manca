@@ -19,6 +19,13 @@ interface External {
   supabase: { rest: number; auth: number; storage: number } | null
 }
 
+interface Req {
+  user_id: string
+  email: string
+  display_name: string | null
+  created_at: string
+}
+
 const nf = new Intl.NumberFormat('it-IT')
 const mb = (b: number) => (b / 1048576).toLocaleString('it-IT', { maximumFractionDigits: 1 })
 
@@ -71,7 +78,64 @@ function Stat({ n, label }: { n: number | null; label: string }) {
   )
 }
 
-export default function AdminScreen() {
+function Requests({ onCount }: { onCount: (n: number) => void }) {
+  const [reqs, setReqs] = useState<Req[] | null>(null)
+  const [busy, setBusy] = useState('')
+  const [msg, setMsg] = useState('')
+
+  async function load() {
+    const { data } = await supabase.rpc('admin_requests_list')
+    const rows = Array.isArray(data) ? (data as Req[]) : []
+    setReqs(rows)
+    onCount(rows.length)
+  }
+  useEffect(() => {
+    void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function decide(r: Req, approve: boolean) {
+    setBusy(r.user_id)
+    setMsg('')
+    const { error } = await supabase.rpc('decide_admin_request', { p_user: r.user_id, p_approve: approve })
+    if (error) {
+      setMsg('Non sono riuscito a salvare. Riprova.')
+    } else if (approve) {
+      const { data } = await supabase.functions.invoke('admin-request', { body: { action: 'decided', user_id: r.user_id } })
+      const mailed = (data as { mailed?: boolean } | null)?.mailed
+      setMsg(mailed ? `${r.display_name || r.email} è stato ammesso e gli ho scritto.` : `${r.display_name || r.email} è stato ammesso, ma l'email non è partita: avvisalo tu.`)
+    } else setMsg(`Richiesta di ${r.display_name || r.email} rifiutata.`)
+    setBusy('')
+    await load()
+  }
+
+  if (reqs == null || (reqs.length === 0 && !msg)) return null
+  return (
+    <>
+      <h2>Richieste di ammissione</h2>
+      {reqs.map((r) => (
+        <div className="req" key={r.user_id}>
+          <div className="req-who">
+            <b>{r.display_name || 'Senza nome'}</b>
+            <span>{r.email}</span>
+            <small>{new Date(r.created_at).toLocaleDateString('it-IT', { day: 'numeric', month: 'long' })}</small>
+          </div>
+          <div className="req-btns">
+            <button className="btn primary" disabled={busy === r.user_id} onClick={() => void decide(r, true)}>
+              Ammetti
+            </button>
+            <button className="btn" disabled={busy === r.user_id} onClick={() => void decide(r, false)}>
+              Rifiuta
+            </button>
+          </div>
+        </div>
+      ))}
+      {msg && <p className="muted small">{msg}</p>}
+    </>
+  )
+}
+
+export default function AdminScreen({ onCount = () => {} }: { onCount?: (n: number) => void }) {
   const [s, setS] = useState<Stats | null>(null)
   const [ext, setExt] = useState<External | null>(null)
   const [err, setErr] = useState(false)
@@ -101,6 +165,8 @@ export default function AdminScreen() {
       </div>
 
       {err && <p className="muted">Non riesco a leggere i dati. Riprova tra poco.</p>}
+
+      <Requests onCount={onCount} />
 
       <h2>Chi usa l'app</h2>
       <div className="stats">

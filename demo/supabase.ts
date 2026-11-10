@@ -73,6 +73,11 @@ class Q implements PromiseLike<{ data: any; error: any }> { // eslint-disable-li
   }
 }
 
+const demoReqs: Row[] = [
+  { user_id: 'r1', email: 'alice.t@example.com', display_name: 'AliceT', created_at: '2026-11-10T13:34:00Z' },
+  { user_id: 'r2', email: 'daniela@example.com', display_name: null, created_at: '2026-11-09T11:17:00Z' },
+]
+
 const rpc = async (name: string, a: Row = {}) => {
   await wait()
   if (name === 'propose_item') {
@@ -129,6 +134,14 @@ const rpc = async (name: string, a: Row = {}) => {
       error: null,
     }
   if (name === 'is_super_admin') return { data: true, error: null }
+  if (name === 'my_admin_status') return { data: 'pending', error: null }
+  if (name === 'request_admin') return { data: 'pending', error: null }
+  if (name === 'admin_requests_list') return { data: [...demoReqs], error: null }
+  if (name === 'decide_admin_request') {
+    const i = demoReqs.findIndex((r) => r.user_id === a.p_user)
+    if (i >= 0) demoReqs.splice(i, 1)
+    return { data: null, error: null }
+  }
   if (name === 'list_feedback')
     return {
       data: [
@@ -157,6 +170,6 @@ export const supabase = {
     invoke: async (n: string) =>
       n === 'admin-usage'
         ? { data: { resend: { month: 214, today: 3 }, vercel: { deploys_month: 41, deploys_today: 6 }, supabase: null }, error: null }
-        : { data: { ok: true }, error: null },
+        : { data: { ok: true, mailed: true }, error: null },
   },
 }
