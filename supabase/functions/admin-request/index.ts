@@ -112,10 +112,10 @@ Deno.serve(async (req) => {
       'Sei dentro: puoi creare il tuo gruppo su Cosa manca',
       card(
         `${name ? `${esc(name)}, ` : ''}sei stato ammesso`,
-        'L\'amministratore ti ha ammesso a Cosa manca. Tocca il pulsante: entri nell\'app e ti guidiamo a creare il tuo gruppo e a invitare le persone con cui vivi. Se il link non funziona, apri cosa-manca.it e accedi con questa email: ti arriva un codice.',
+        'L\'amministratore ti ha ammesso a Cosa manca. Tocca il pulsante: entri nell\'app e ti guidiamo a creare il tuo gruppo e a invitare le persone con cui vivi.',
         { href, label: 'Entra in Cosa manca' },
       ),
-      `${name ? `${name}, ` : ''}sei stato ammesso a Cosa manca. Entra da qui: ${href}\n\nSe il link non funziona, apri ${SITE_URL} e accedi con questa email.`,
+      `${name ? `${name}, ` : ''}sei stato ammesso a Cosa manca. Entra da qui: ${href}`,
     )
     return json({ ok, mailed: ok })
   }
