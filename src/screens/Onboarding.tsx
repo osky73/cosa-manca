@@ -46,7 +46,7 @@ export default function Onboarding({
   }
 
   useEffect(() => {
-    if (hasGroup || needName) return
+    if (hasGroup) return
     let off = false
     void (async () => {
       try {
@@ -60,7 +60,7 @@ export default function Onboarding({
       off = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasGroup, needName])
+  }, [hasGroup])
 
   async function recheck() {
     setChecking(true)
@@ -107,16 +107,26 @@ export default function Onboarding({
     }
   }
 
-  if (!hasGroup && !needName && access !== 'ok') {
-    const waiting = access === 'pending' || access === 'none' || access === null
+  if (!hasGroup && access === null && !err) {
     return (
       <main className="auth">
         <div className="brand">
-          <h1>{access === 'rejected' ? 'Richiesta non accolta' : 'Richiesta inviata'}</h1>
+          <p>Un attimo…</p>
+        </div>
+      </main>
+    )
+  }
+
+  if (!hasGroup && access !== 'ok') {
+    const waiting = access !== 'rejected'
+    return (
+      <main className="auth">
+        <div className="brand">
+          <h1>{access === 'rejected' ? 'Richiesta non accolta' : 'Sei in attesa'}</h1>
           <p>
             {access === 'rejected'
               ? 'Per ora non puoi creare un gruppo. Se conosci chi usa Cosa manca, chiedigli di invitarti.'
-              : 'Stiamo aprendo Cosa manca a poche persone alla volta. Ti scriviamo per email appena sei ammesso: poi potrai creare il tuo gruppo.'}
+              : 'Il tuo accesso è in attesa di essere approvato dall\'amministratore dell\'app. Appena ti ammette ti arriva un\'email con il link per entrare.'}
           </p>
         </div>
         <div className="card">

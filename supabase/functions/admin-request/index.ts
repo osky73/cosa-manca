@@ -34,7 +34,7 @@ const card = (title: string, body: string, cta?: { href: string; label: string }
 <div style="font-size:14px;font-weight:700;color:#2f7d4f;letter-spacing:.4px;margin:0 0 14px">COSA MANCA</div>
 <h1 style="margin:0 0 14px;font-size:22px;line-height:1.3;font-weight:800">${title}</h1>
 <p style="margin:0 0 ${cta ? 22 : 0}px">${body}</p>
-${cta ? `<p style="margin:0"><a href="${cta.href}" style="display:inline-block;background:#2f7d4f;color:#ffffff;padding:14px 26px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">${cta.label}</a></p>` : ''}
+${cta ? `<p style="margin:0"><a href="${esc(cta.href)}" style="display:inline-block;background:#2f7d4f;color:#ffffff;padding:14px 26px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px">${cta.label}</a></p>` : ''}
 </div>
 </div>`
 
@@ -102,15 +102,20 @@ Deno.serve(async (req) => {
     const { data: r } = await db.from('admin_requests').select('email, display_name, status').eq('user_id', body.user_id).maybeSingle()
     if (!r || r.status !== 'approved') return json({ error: 'not_approved' }, 409)
     const name = r.display_name?.trim()
+    // link che porta dentro l'app già con l'accesso fatto; se non si riesce a crearlo si usa l'indirizzo semplice
+    let href = SITE_URL
+    const { data: gl, error: gerr } = await db.auth.admin.generateLink({ type: 'magiclink', email: r.email, options: { redirectTo: SITE_URL } })
+    if (gerr) console.error('generateLink', gerr.message)
+    else if (gl?.properties?.action_link) href = gl.properties.action_link
     const ok = await sendMail(
       r.email,
       'Sei dentro: puoi creare il tuo gruppo su Cosa manca',
       card(
         `${name ? `${esc(name)}, ` : ''}sei stato ammesso`,
-        'Ora puoi creare il tuo gruppo su Cosa manca. Apri l\'app e accedi con questa email: ti chiederà il nome del gruppo e potrai subito invitare le persone con cui vivi.',
-        { href: SITE_URL, label: 'Apri Cosa manca' },
+        'L\'amministratore ti ha ammesso a Cosa manca. Tocca il pulsante: entri nell\'app e ti guidiamo a creare il tuo gruppo e a invitare le persone con cui vivi. Se il link non funziona, apri cosa-manca.it e accedi con questa email: ti arriva un codice.',
+        { href, label: 'Entra in Cosa manca' },
       ),
-      `${name ? `${name}, ` : ''}sei stato ammesso a Cosa manca. Apri ${SITE_URL}, accedi con questa email e crea il tuo gruppo.`,
+      `${name ? `${name}, ` : ''}sei stato ammesso a Cosa manca. Entra da qui: ${href}\n\nSe il link non funziona, apri ${SITE_URL} e accedi con questa email.`,
     )
     return json({ ok, mailed: ok })
   }
