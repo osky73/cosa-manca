@@ -84,7 +84,7 @@ export function SlideRow({
     const m = measRef.current
     if (!s || !m) return
     const run = () => {
-      const w = s.clientWidth - 32 - (isNeed ? 43 + (crowded ? 33 : 0) : 0) - (hasNote ? 24 : 0)
+      const w = s.clientWidth - 32 - (isNeed ? 38 + (crowded ? 33 : 0) : 0) - (hasNote ? 24 : 0)
       if (w <= 0) return
       m.style.width = `${w}px`
       setExtra((Math.max(1, Math.round(m.offsetHeight / 20)) - 1) * 20)
