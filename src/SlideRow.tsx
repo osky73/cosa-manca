@@ -258,7 +258,7 @@ export function SlideRow({
             : `${item.name}: trascina a destra se manca`
         }
       >
-        <span className="slname">
+        <span className={'slname' + (need ? ' right' : '')}>
           {label}
           {need?.note && (
             <span className="slmeta note" aria-label="Con nota">

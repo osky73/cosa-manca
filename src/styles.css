@@ -940,6 +940,9 @@ input.code {
   text-align: left;
   pointer-events: none;
 }
+.slname.right {
+  text-align: right;
+}
 .slmeasure {
   position: absolute;
   left: 0;
@@ -954,7 +957,7 @@ input.code {
 .slstore {
   position: absolute;
   left: 8px;
-  top: 50%;
+  top: 24.5px;
   transform: translateY(-50%);
   opacity: calc(var(--m) * var(--o));
   width: 35px;
@@ -1748,7 +1751,7 @@ textarea {
 .slider .whodot {
   position: absolute;
   left: 8px;
-  top: 50%;
+  top: 24.5px;
   transform: translateY(-50%);
   opacity: var(--m);
 }
@@ -2392,7 +2395,7 @@ textarea {
 }
 .slider.peek .slstore,
 .slider.peek .whodot {
-  top: calc(var(--h, 49px) / 2);
+  top: 24.5px;
 }
 .slnote {
   left: 56px;
@@ -2478,7 +2481,7 @@ textarea {
 .slstore-tip {
   position: absolute;
   left: 50px;
-  top: 50%;
+  top: 24.5px;
   transform: translateY(-50%) translateX(-4px);
   background: var(--ink, #1f2a24);
   color: #fff;
