@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { IconX } from './icons'
 import { useData, type ProposeInput } from './data'
 import { useToast } from './toast'
-import { categoriesOf, initials, logoUrl, spaceUnits } from './lib'
+import { categoriesOf, initials, logoUrl, spaceUnits, countOnly } from './lib'
 import type { Recurrence, Store } from './types'
 
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -277,7 +277,9 @@ export function NeedDetailSheet({
   }
   // niente bottone: chiudendo la finestra si salva (solo se qualcosa è cambiato)
   function save() {
-    const nq = spaceUnits(q.trim()) || null
+    // la prima volta «2 confezioni» diventa «2»; se la persona rientra e corregge, la correzione resta com'è
+    const typed = spaceUnits(q.trim()) || null
+    const nq = typed && !quantity?.trim() ? countOnly(typed) : typed
     const nn = n.trim() || null
     if (nq !== (quantity?.trim() || null) || nn !== (note?.trim() || null)) onSave(nq, nn)
     onClose()

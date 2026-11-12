@@ -18,6 +18,12 @@ export function spaceUnits(s: string): string {
   return s.replace(/(\d)([a-zA-Zà-ÿ]+)/g, '$1 $2')
 }
 
+// "2 confezioni", "3 scatole", "4 pezzi" → "2", "3", "4": col numero basta. Le misure (gr, kg, litri) restano.
+export function countOnly(s: string): string {
+  const m = s.trim().match(/^(\d+)\s+(?:confezion\w*|conf\.?|scatol\w*|pezz\w*|pz\.?|barattol\w*|bottigli\w*|pacc\w*|vasett\w*|lattin\w*|bust\w*|sacchett\w*|cartoni?)$/i)
+  return m ? m[1] : s
+}
+
 // note: prima lettera minuscola, salvo sigle/marchi con maiuscole interne o nomi dei negozi
 export function tidyNote(s: string | null | undefined, brands: string[] = []): string | null {
   const t = (s ?? '').trim()
