@@ -934,11 +934,26 @@ input.code {
   transform: translate(calc(var(--f) * -100%), -50%);
   font-weight: 600;
   font-size: 16px;
-  white-space: nowrap;
+  line-height: 21px;
+  width: max-content;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: anywhere;
   text-align: left;
   pointer-events: none;
+}
+.slmeasure {
+  position: absolute;
+  left: 0;
+  top: 0;
+  visibility: hidden;
+  pointer-events: none;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 21px;
+  overflow-wrap: anywhere;
 }
 .slstore {
   position: absolute;
@@ -2354,7 +2369,7 @@ textarea {
   transition: top 0.4s cubic-bezier(0.2, 0.8, 0.3, 1);
 }
 .slider.peek .slname {
-  top: 24px;
+  top: calc(var(--h, 49px) / 2);
 }
 .slnote {
   position: absolute;
@@ -2381,7 +2396,7 @@ textarea {
 }
 .slider.peek .slstore,
 .slider.peek .whodot {
-  top: 24.5px;
+  top: calc(var(--h, 49px) / 2);
 }
 .slnote {
   left: 56px;
@@ -2391,7 +2406,7 @@ textarea {
 .slnote {
   left: 0;
   right: 0;
-  top: 49px;
+  top: var(--h, 49px);
   bottom: 0;
   padding: 0 16px 0 56px;
   overflow: hidden;

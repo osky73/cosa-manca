@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useData } from './data'
 import { NeedDetailSheet, StoreLogo, StorePickerSheet } from './components'
 import { IconNote } from './icons'
@@ -71,6 +71,29 @@ export function SlideRow({
   const side: 0 | 1 = need ? 1 : 0
   const hasWho = Boolean(need && item.recurrence === 'one_off' && d.whoOf(item.created_by))
   const hasSlot = Boolean(need && (pickStore || store))
+  const label = need?.quantity ? `${need.quantity} di ${item.name}` : item.name
+  // se il nome non sta in una riga il pulsante si allunga e il nome va su due righe
+  const sliderRef = useRef<HTMLDivElement>(null)
+  const measRef = useRef<HTMLSpanElement>(null)
+  const [extra, setExtra] = useState(0)
+  const hasNote = Boolean(need?.note)
+  const isNeed = Boolean(need)
+  const crowded = hasWho && hasSlot
+  useLayoutEffect(() => {
+    const s = sliderRef.current
+    const m = measRef.current
+    if (!s || !m) return
+    const run = () => {
+      const w = s.clientWidth - 32 - (isNeed ? 43 + (crowded ? 33 : 0) : 0) - (hasNote ? 24 : 0)
+      if (w <= 0) return
+      m.style.width = `${w}px`
+      setExtra(Math.round(m.offsetHeight / 21) >= 2 ? 21 : 0)
+    }
+    run()
+    const ro = new ResizeObserver(run)
+    ro.observe(s)
+    return () => ro.disconnect()
+  }, [label, isNeed, crowded, hasNote])
   const [wig, setWig] = useState<number | null>(null)
   const side0 = need ? 1 : 0
   useEffect(() => {
@@ -192,13 +215,15 @@ export function SlideRow({
       ref={rowRef}
       style={{
         ['--o' as string]: fade.o,
-        height: peek ? 49 + noteH : undefined,
+        ['--h' as string]: `${49 + extra}px`,
+        height: peek ? 49 + extra + noteH : 49 + extra,
         transition: `${fade.ms ? `--o ${fade.ms}ms linear, ` : ''}height 0.4s cubic-bezier(0.2, 0.8, 0.3, 1)`,
       }}
     >
       <div
         role="button"
         tabIndex={0}
+        ref={sliderRef}
         className={
           'slider' + (peek ? ' peek' : '') + (f !== null ? ' dragging' : '') + (snapAnim || f === null ? ' glide' : '')
         }
@@ -234,12 +259,15 @@ export function SlideRow({
         }
       >
         <span className="slname">
-          {need?.quantity ? `${need.quantity} di ${item.name}` : item.name}
+          {label}
           {need?.note && (
             <span className="slmeta note" aria-label="Con nota">
               <IconNote />
             </span>
           )}
+        </span>
+        <span className="slmeasure" ref={measRef} aria-hidden="true">
+          {label}
         </span>
         {need?.note && !pickStore && (
           <div className="slnote" aria-hidden={!peek}>
