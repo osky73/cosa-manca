@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useData } from '../data'
 import { Sheet } from '../components'
-import { IconTrash } from '../icons'
+import { IconReceipt, IconTrash } from '../icons'
 import { useFade } from '../useFade'
 import { useHintWindow } from '../useHint'
 import Pending from '../Pending'
 import { SlideRow } from '../SlideRow'
-import { byCategoryThenName } from '../lib'
+import { byCategoryThenName, readLS, writeLS } from '../lib'
 import type { Item, Need, Tab } from '../types'
 
 type Filter = 'all' | 'none' | string
 
 type Row = { need: Need; item: Item }
+
+// Ultima spesa cancellata, tenuta su questo telefono per un controllo a casa.
+type ArchiveLine = { name: string; qty: string | null; note: string | null; store: string | null; bought: boolean }
+type Archive = { at: string; lines: ArchiveLine[] }
+const ARCHIVE_KEY = 'cm.lastshop'
 
 export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   const d = useData()
@@ -111,7 +116,21 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
   // Negozi che hanno avuto prodotti: restano come pillole spente a 0 finché non si cancella la lista.
   const hasList = rows.length + boughtRows.length > 0
   const [asking, setAsking] = useState(false)
+  const [archive, setArchive] = useState<Archive | null>(() => readLS<Archive | null>(ARCHIVE_KEY, null))
+  const [showArchive, setShowArchive] = useState(false)
   const doClear = () => {
+    const lines: ArchiveLine[] = shown.map((r) => ({
+      name: r.item.name,
+      qty: r.need.quantity?.trim() || null,
+      note: r.need.note?.trim() || null,
+      store: (r.need.store_id && d.storeOf(r.need.store_id)?.name) || null,
+      bought: r.need.status === 'bought',
+    }))
+    if (lines.length > 0) {
+      const a: Archive = { at: new Date().toISOString(), lines }
+      setArchive(a)
+      writeLS(ARCHIVE_KEY, a)
+    }
     d.clearAll()
     setSeen([])
     setAsking(false)
@@ -230,17 +249,61 @@ export default function ShopScreen({ goto }: { goto: (t: Tab) => void }) {
         </div>
       )}
 
-      {rows.length + boughtRows.length > 0 && (
-        <div className="clear-wrap">
-          <button
-            className="clear-all"
-            aria-label="Cancella tutto"
-            title="Cancella tutto"
-            onClick={() => setAsking(true)}
-          >
-            <IconTrash />
-          </button>
+      {(rows.length + boughtRows.length > 0 || archive) && (
+        <div className="clear-wrap col">
+          {rows.length + boughtRows.length > 0 && (
+            <button
+              className="clear-all"
+              aria-label="Cancella tutto"
+              title="Cancella tutto"
+              onClick={() => setAsking(true)}
+            >
+              <IconTrash />
+            </button>
+          )}
+          {archive && (
+            <button
+              className="clear-all archive-btn"
+              aria-label="Ultima spesa fatta"
+              title="Ultima spesa fatta"
+              onClick={() => setShowArchive(true)}
+            >
+              <IconReceipt />
+            </button>
+          )}
         </div>
+      )}
+
+      {showArchive && archive && (
+        <Sheet title="Ultima spesa" onClose={() => setShowArchive(false)}>
+          <p className="hint">
+            Cancellata il{' '}
+            {new Date(archive.at).toLocaleString('it-IT', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+          </p>
+          {[true, false].map((b) => {
+            const ls = archive.lines.filter((l) => l.bought === b)
+            if (ls.length === 0) return null
+            return (
+              <div key={String(b)} className="arch-sec">
+                <h3>{b ? `Presi (${ls.length})` : `Non presi (${ls.length})`}</h3>
+                <ul className="arch-list">
+                  {ls.map((l, i) => (
+                    <li key={i}>
+                      <span className="arch-name">
+                        {l.name}
+                        {l.qty ? ` · ${l.qty}` : ''}
+                      </span>
+                      {(l.store || l.note) && <span className="arch-sub">{[l.store, l.note].filter(Boolean).join(' · ')}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
+          <button className="btn ghost wide" onClick={() => setShowArchive(false)}>
+            Chiudi
+          </button>
+        </Sheet>
       )}
 
       {asking && (

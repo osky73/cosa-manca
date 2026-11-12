@@ -83,6 +83,11 @@ export const IconTrash = () => (
     <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
   </Svg>
 )
+export const IconReceipt = () => (
+  <Svg size={20}>
+    <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3zM9 8h6M9 12h6" />
+  </Svg>
+)
 export const IconEye = () => (
   <Svg size={20}>
     <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />

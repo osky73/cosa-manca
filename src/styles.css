@@ -2994,3 +2994,47 @@ textarea {
 .slstore-tip {
   left: 44px;
 }
+
+/* archivio dell'ultima spesa */
+.clear-wrap.col {
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.clear-all.archive-btn {
+  width: 44px;
+  height: 44px;
+  background: #fff;
+  color: var(--accent);
+  border: 1.5px solid var(--line);
+  box-shadow: none;
+}
+.clear-all.archive-btn svg {
+  width: 22px;
+  height: 22px;
+}
+.arch-sec h3 {
+  margin: 14px 0 6px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted, #6b7a70);
+}
+.arch-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.arch-list li {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+}
+.arch-name {
+  font-size: 15px;
+}
+.arch-sub {
+  font-size: 12px;
+  color: var(--muted, #6b7a70);
+}
