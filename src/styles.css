@@ -933,8 +933,8 @@ input.code {
   max-width: calc(100% - 32px - var(--m) * (43px + var(--x, 0px)));
   transform: translate(calc(var(--f) * -100%), -50%);
   font-weight: 600;
-  font-size: 16px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 20px;
   width: max-content;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -951,8 +951,8 @@ input.code {
   visibility: hidden;
   pointer-events: none;
   font-weight: 600;
-  font-size: 16px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 20px;
   overflow-wrap: anywhere;
 }
 .slstore {

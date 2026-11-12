@@ -87,7 +87,7 @@ export function SlideRow({
       const w = s.clientWidth - 32 - (isNeed ? 43 + (crowded ? 33 : 0) : 0) - (hasNote ? 24 : 0)
       if (w <= 0) return
       m.style.width = `${w}px`
-      setExtra(Math.round(m.offsetHeight / 21) >= 2 ? 21 : 0)
+      setExtra(Math.round(m.offsetHeight / 20) >= 2 ? 20 : 0)
     }
     run()
     const ro = new ResizeObserver(run)
