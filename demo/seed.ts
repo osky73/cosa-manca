@@ -1,7 +1,7 @@
 type Row = Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
 const CATS: Record<string, string[]> = {
-  Frigo: ['Latte', 'Burro', 'Yogurt', 'Mozzarella', 'Prosciutto cotto di Parma affettato sottile e senza polifosfati', 'Uova'],
+  Frigo: ['Latte', 'Burro', 'Yogurt', 'Mozzarella', 'Prosciutto cotto di Parma affettato sottile e senza polifosfati, confezione grande da famiglia', 'Uova'],
   Dispensa: ['Pasta', 'Riso', 'Pane', 'Caffè', 'Biscotti', 'Passata di pomodoro', 'Olio'],
   'Frutta e verdura': ['Mele', 'Banane', 'Insalata', 'Zucchine', 'Patate'],
   Bevande: ['Acqua frizzante', 'Succo di frutta', 'Birra'],
@@ -37,7 +37,7 @@ export function seed(): Record<string, Row[]> {
     group_items: items,
     stores,
     needs: [
-      need('Latte', 's1'), need('Prosciutto cotto di Parma affettato sottile e senza polifosfati', 's2', 'u2'), need('Uova', 's2', 'u2', 'missing', 20), need('Carta igienica', null, 'u3', 'missing', 45),
+      need('Latte', 's1'), need('Prosciutto cotto di Parma affettato sottile e senza polifosfati, confezione grande da famiglia', 's2', 'u2'), need('Uova', 's2', 'u2', 'missing', 20), need('Carta igienica', null, 'u3', 'missing', 45),
       need('Torta compleanno', 's3', 'u2', 'missing', 10), need('Pasta', 's1', 'u1', 'bought'),
     ],
     suggestions: [

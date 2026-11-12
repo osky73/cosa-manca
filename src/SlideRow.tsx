@@ -72,7 +72,7 @@ export function SlideRow({
   const hasWho = Boolean(need && item.recurrence === 'one_off' && d.whoOf(item.created_by))
   const hasSlot = Boolean(need && (pickStore || store))
   const label = need?.quantity ? `${need.quantity} di ${item.name}` : item.name
-  // se il nome non sta in una riga il pulsante si allunga e il nome va su due righe
+  // se il nome non sta in una riga il pulsante si allunga quanto serve e il nome va a capo
   const sliderRef = useRef<HTMLDivElement>(null)
   const measRef = useRef<HTMLSpanElement>(null)
   const [extra, setExtra] = useState(0)
@@ -87,7 +87,7 @@ export function SlideRow({
       const w = s.clientWidth - 32 - (isNeed ? 43 + (crowded ? 33 : 0) : 0) - (hasNote ? 24 : 0)
       if (w <= 0) return
       m.style.width = `${w}px`
-      setExtra(Math.round(m.offsetHeight / 20) >= 2 ? 20 : 0)
+      setExtra((Math.max(1, Math.round(m.offsetHeight / 20)) - 1) * 20)
     }
     run()
     const ro = new ResizeObserver(run)
