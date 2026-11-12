@@ -1,5 +1,6 @@
 // Edge Function: richieste di ammissione come amministratore.
 //   { action: 'new' }                  chiamata dalla persona appena messa "in attesa": avvisa il super admin (notifica push, e email se non ha notifiche attive)
+//   { action: 'test' } prova di notifica per il super admin
 //   { action: 'decided', user_id }     chiamata dal super admin dopo aver ammesso: scrive alla persona che può creare il suo gruppo
 // verify_jwt spento: identità con auth.getUser, ruolo con is_super_admin(), come le altre funzioni.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
@@ -38,6 +39,31 @@ ${cta ? `<p style="margin:0"><a href="${esc(cta.href)}" style="display:inline-bl
 </div>
 </div>`
 
+// Notifica push a tutti i dispositivi del super admin. Restituisce quante sono partite e i codici d'errore.
+async function pushToSuper(db: ReturnType<typeof createClient>, payload: { title: string; body: string; tag: string }) {
+  const out = { sent: 0, subs: 0, errors: [] as (number | string)[], reason: '' }
+  const { data: sa } = await db.from('profiles').select('id').eq('email', SUPER_ADMIN).maybeSingle()
+  if (!sa) return { ...out, reason: 'super_admin_non_trovato' }
+  const { data: cfg } = await db.from('push_config').select('public_key, private_key').eq('id', 1).maybeSingle()
+  if (!cfg) return { ...out, reason: 'chiavi_push_mancanti' }
+  webpush.setVapidDetails(`mailto:${SUPER_ADMIN}`, cfg.public_key, cfg.private_key)
+  const { data: subs } = await db.from('push_subscriptions').select('endpoint, p256dh, auth').eq('user_id', sa.id)
+  out.subs = (subs ?? []).length
+  if (out.subs === 0) out.reason = 'nessun_dispositivo_registrato'
+  for (const s of subs ?? []) {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload), { TTL: 86400 })
+      out.sent++
+    } catch (e) {
+      const code = (e as { statusCode?: number }).statusCode
+      out.errors.push(code ?? 'errore')
+      if (code === 404 || code === 410) await db.from('push_subscriptions').delete().eq('endpoint', s.endpoint)
+      else console.error('push error', code, (e as Error).message)
+    }
+  }
+  return out
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
@@ -63,26 +89,9 @@ Deno.serve(async (req) => {
     await db.from('admin_requests').update({ notified: true }).eq('user_id', u.user.id)
 
     const who = r.display_name?.trim() ? `${r.display_name.trim()} (${r.email})` : r.email
-    const { data: sa } = await db.from('profiles').select('id').eq('email', SUPER_ADMIN).maybeSingle()
-    let sent = 0
-    if (sa) {
-      const { data: cfg } = await db.from('push_config').select('public_key, private_key').eq('id', 1).maybeSingle()
-      if (cfg) {
-        webpush.setVapidDetails(`mailto:${SUPER_ADMIN}`, cfg.public_key, cfg.private_key)
-        const payload = JSON.stringify({ title: 'Nuova richiesta di ammissione', body: `${who} chiede di creare un gruppo.`, tag: 'cm-admin-request' })
-        const { data: subs } = await db.from('push_subscriptions').select('endpoint, p256dh, auth').eq('user_id', sa.id)
-        for (const s of subs ?? []) {
-          try {
-            await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400 })
-            sent++
-          } catch (e) {
-            const code = (e as { statusCode?: number }).statusCode
-            if (code === 404 || code === 410) await db.from('push_subscriptions').delete().eq('endpoint', s.endpoint)
-            else console.error('push error', code)
-          }
-        }
-      }
-    }
+    const push = await pushToSuper(db, { title: 'Nuova richiesta di ammissione', body: `${who} chiede di creare un gruppo.`, tag: 'cm-admin-request' })
+    const sent = push.sent
+    console.log('new request push', JSON.stringify(push))
     let mailed = false
     if (sent === 0) {
       mailed = await sendMail(
@@ -93,6 +102,13 @@ Deno.serve(async (req) => {
       )
     }
     return json({ ok: true, sent, mailed })
+  }
+
+  if (body.action === 'test') {
+    const { data: isSuper } = await userClient.rpc('is_super_admin')
+    if (isSuper !== true) return json({ error: 'forbidden' }, 403)
+    const push = await pushToSuper(db, { title: 'Prova notifica', body: 'Se leggi questo, le notifiche funzionano.', tag: 'cm-test' })
+    return json({ ok: true, ...push })
   }
 
   if (body.action === 'decided') {

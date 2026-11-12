@@ -135,6 +135,37 @@ function Requests({ onCount }: { onCount: (n: number) => void }) {
   )
 }
 
+function PushTest() {
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+  async function test() {
+    setBusy(true)
+    setMsg('')
+    const { data, error } = await supabase.functions.invoke('admin-request', { body: { action: 'test' } })
+    setBusy(false)
+    const r = data as { sent?: number; subs?: number; errors?: (number | string)[]; reason?: string } | null
+    if (error || !r) setMsg('Non sono riuscito a fare la prova. Riprova.')
+    else if (r.reason === 'nessun_dispositivo_registrato')
+      setMsg('Nessun telefono è registrato per le notifiche su questo account. Attivale dall\'app e riprova.')
+    else if (r.reason) setMsg(`Le notifiche non sono configurate (${r.reason}).`)
+    else if ((r.sent ?? 0) > 0)
+      setMsg(
+        `Notifica inviata a ${r.sent} dispositivo/i. Se non ti arriva, controlla che le notifiche dell'app siano consentite nelle impostazioni del telefono.` +
+          ((r.errors?.length ?? 0) > 0 ? ` (${r.errors!.length} dispositivo/i non raggiungibile/i)` : ''),
+      )
+    else setMsg(`Il servizio notifiche ha rifiutato l'invio (codice ${r.errors?.join(', ') || 'sconosciuto'}). Probabilmente il telefono va registrato di nuovo.`)
+  }
+  return (
+    <>
+      <h2>Notifiche</h2>
+      <button className="btn" disabled={busy} onClick={() => void test()}>
+        {busy ? 'Invio…' : 'Prova notifica'}
+      </button>
+      {msg && <p className="muted small">{msg}</p>}
+    </>
+  )
+}
+
 export default function AdminScreen({ onCount = () => {} }: { onCount?: (n: number) => void }) {
   const [s, setS] = useState<Stats | null>(null)
   const [ext, setExt] = useState<External | null>(null)
@@ -167,6 +198,7 @@ export default function AdminScreen({ onCount = () => {} }: { onCount?: (n: numb
       {err && <p className="muted">Non riesco a leggere i dati. Riprova tra poco.</p>}
 
       <Requests onCount={onCount} />
+      <PushTest />
 
       <h2>Chi usa l'app</h2>
       <div className="stats">
