@@ -188,7 +188,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
     }
     await supabase.functions.invoke('admin-request', { body: { action: 'recipe', recipe_id: recipe.id } }).catch(() => null)
     setBusy(false)
-    toast.show('Proposta inviata al superadmin')
+    toast.show("Proposta inviata al gestore dell'app")
     onSaved()
   }
 
@@ -343,17 +343,17 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           )}
         </div>
         {mine && recipe?.public_status === 'proposed' && !confirm && (
-          <p className="muted small">Proposta inviata: aspetta l'ok del superadmin. Se la modifichi, resta in attesa.</p>
+          <p className="muted small">Proposta inviata: aspetta l'ok del gestore dell'app. Se la modifichi, resta in attesa.</p>
         )}
         {mine && recipe?.public_status === 'public' && !confirm && (
           <p className="muted small">Questa ricetta è visibile a tutti. Se la modifichi, torna in attesa di approvazione.</p>
         )}
         {mine && recipe?.public_status === 'rejected' && !confirm && (
-          <p className="muted small">Il superadmin non l'ha pubblicata per tutti. Puoi proporla di nuovo.</p>
+          <p className="muted small">Il gestore dell'app non l'ha pubblicata per tutti. Puoi proporla di nuovo.</p>
         )}
         {confirm === 'propose' && (
           <div className="stack">
-            <p className="small">Vuoi proporre questa ricetta a tutti gli utenti di Cosa manca? La vedrà il superadmin, che decide se pubblicarla.</p>
+            <p className="small">Vuoi proporre questa ricetta a tutti gli utenti di Cosa manca? La vedrà il gestore dell'app, che decide se pubblicarla.</p>
             <button className="btn primary wide" disabled={busy} onClick={() => void propose()}>
               Sì, proponila a tutti
             </button>
