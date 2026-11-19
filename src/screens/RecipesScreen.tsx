@@ -378,20 +378,16 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
             <button className="btn ghost wide" onClick={() => void sharePhone()}>
               Invia con le app del telefono
             </button>
-            {mine && (
+            {mine && recipe?.public_status !== 'proposed' && (
               <button
                 className="btn ghost wide"
                 disabled={changed}
                 onClick={() => setConfirm(recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? 'withdraw' : 'propose')}
               >
-                {recipe?.public_status === 'public'
-                  ? 'Togli dalle ricette di tutti'
-                  : recipe?.public_status === 'proposed'
-                    ? 'Ritira la proposta al gestore'
-                    : 'Proponi a tutti su Cosa manca'}
+                {recipe?.public_status === 'public' ? 'Togli dalle ricette di tutti' : 'Proponi a tutti su Cosa manca'}
               </button>
             )}
-            {mine && changed && <p className="muted small">Salva prima le modifiche per proporla a tutti.</p>}
+            {mine && changed && recipe?.public_status !== 'proposed' && <p className="muted small">Salva prima le modifiche per proporla a tutti.</p>}
           </div>
         )}
         {confirm === 'propose' && (
