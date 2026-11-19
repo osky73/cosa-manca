@@ -212,16 +212,21 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
                 disabled={!canEdit}
                 onChange={(e) => setIngs(ings.map((x, j) => (j === i ? e.target.value : x)))}
               />
-              {canEdit && ings.length > 1 && (
-                <button type="button" className="icon-btn" aria-label="Togli ingrediente" onClick={() => setIngs(ings.filter((_, j) => j !== i))}>
-                  ×
+              {canEdit && (
+                <button
+                  type="button"
+                  className="btn ghost rcp-minus"
+                  aria-label="Togli ingrediente"
+                  onClick={() => setIngs(ings.length > 1 ? ings.filter((_, j) => j !== i) : [''])}
+                >
+                  −
                 </button>
               )}
             </div>
           ))}
           {canEdit && (
-            <button type="button" className="btn ghost wide rcp-plus" onClick={() => setIngs([...ings, ''])}>
-              + Aggiungi un ingrediente
+            <button type="button" className="btn ghost wide rcp-plus" onClick={() => setIngs([...ings, ''])} aria-label="Aggiungi un ingrediente">
+              +
             </button>
           )}
         </div>
