@@ -188,7 +188,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
     onClose()
   }
 
-  const label = { missing: 'già tra i mancanti', inlist: 'nell\'Elencone', new: d.isAdmin ? 'non c\'è: lo aggiungo all\'Elencone' : 'non c\'è: lo propongo all\'admin' }
+  const label = { missing: 'già mancante', inlist: '', new: 'da aggiungere' }
 
   return (
     <Sheet title={recipe ? 'Ricetta' : 'Nuova ricetta'} onClose={onClose}>
@@ -234,22 +234,6 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           )}
         </div>
 
-        {checked && (
-          <ul className="rcp-check">
-            {checked.map((f, i) => (
-              <li key={i} className={f.state}>
-                <span>{f.item?.name ?? f.text}</span>
-                <span className="muted small">{label[f.state]}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {checked && counts.missing < checked.length && (
-          <button className="btn primary wide" disabled={busy} onClick={() => void mark()}>
-            Segna cosa serve
-          </button>
-        )}
         <div className="rcp-actions">
           <button
             className="btn ghost rcp-icon rcp-check-btn"
@@ -284,6 +268,22 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
         {asking && (
           <button className="btn danger wide" onClick={() => void remove()}>
             Sì, cancella la ricetta
+          </button>
+        )}
+        {checked && (
+          <ul className="rcp-check">
+            {checked.map((f, i) => (
+              <li key={i} className={f.state}>
+                <span>{f.item?.name ?? f.text}</span>
+                <span className="muted small">{label[f.state]}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {checked && counts.missing < checked.length && (
+          <button className="btn primary wide" disabled={busy} onClick={() => void mark()}>
+            Segna cosa manca
           </button>
         )}
       </div>
