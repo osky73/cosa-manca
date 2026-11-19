@@ -97,7 +97,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
   const canEdit = !recipe || recipe.created_by === d.userId || d.isAdmin
   const [title, setTitle] = useState(recipe?.title ?? '')
   const [steps, setSteps] = useState(recipe?.steps ?? '')
-  const [ings, setIngs] = useState<string[]>(recipe?.ingredients.length ? recipe.ingredients : [''])
+  const [ings, setIngs] = useState<string[]>(recipe?.ingredients ?? [])
   const [checked, setChecked] = useState<Found[] | null>(null)
   const [busy, setBusy] = useState(false)
   const [asking, setAsking] = useState(false)
@@ -217,7 +217,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
                   type="button"
                   className="btn ghost rcp-minus"
                   aria-label="Togli ingrediente"
-                  onClick={() => setIngs(ings.length > 1 ? ings.filter((_, j) => j !== i) : [''])}
+                  onClick={() => setIngs(ings.filter((_, j) => j !== i))}
                 >
                   −
                 </button>
