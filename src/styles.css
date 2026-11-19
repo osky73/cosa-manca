@@ -3197,3 +3197,19 @@ textarea {
 .rcp-actions {
   margin-top: 10px;
 }
+
+.rcp-addrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 14px;
+}
+.rcp-plusbtn {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  font-size: 22px;
+  line-height: 1;
+  border-radius: 12px;
+}
