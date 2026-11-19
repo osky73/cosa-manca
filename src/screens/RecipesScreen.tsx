@@ -4,7 +4,7 @@ import { useData } from '../data'
 import { useToast } from '../toast'
 import { Sheet } from '../components'
 import { friendly, norm } from '../lib'
-import { IconSearch, IconTrash } from '../icons'
+import { IconPlus, IconSearch, IconTrash } from '../icons'
 import type { Item } from '../types'
 
 interface Recipe {
@@ -227,7 +227,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           {canEdit && (
 <div className="rcp-addrow">
               <button type="button" className="btn ghost rcp-plusbtn" onClick={() => setIngs([...ings, ''])} aria-label="Aggiungi un ingrediente">
-                +
+                <IconPlus />
               </button>
               <span className="muted small">Aggiungi</span>
             </div>

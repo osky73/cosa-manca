@@ -3264,3 +3264,13 @@ textarea {
   border-color: var(--ink);
   color: #fff;
 }
+
+.rcp-plusbtn {
+  display: grid;
+  place-items: center;
+}
+.rcp-plusbtn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
