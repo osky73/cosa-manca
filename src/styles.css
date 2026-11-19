@@ -3170,3 +3170,17 @@ textarea {
   font-size: 26px;
   font-weight: 700;
 }
+
+.rcp-check-btn {
+  width: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.rcp-check-btn svg {
+  width: 20px;
+  height: 20px;
+}

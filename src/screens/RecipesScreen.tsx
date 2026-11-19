@@ -249,17 +249,18 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
         )}
         <div className="rcp-actions">
           <button
-            className="btn ghost rcp-icon"
+            className="btn ghost rcp-icon rcp-check-btn"
             disabled={clean.length === 0}
             onClick={check}
             aria-label="Controlla cosa manca"
             title="Controlla cosa manca"
           >
             <IconSearch />
+            <span>Controlla</span>
           </button>
           {canEdit ? (
             <button className="btn primary rcp-save" disabled={!title.trim() || busy} onClick={() => void save()}>
-              Salva ricetta
+              Salva
             </button>
           ) : (
             <span className="rcp-save" />
