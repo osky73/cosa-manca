@@ -3191,3 +3191,9 @@ textarea {
   font-size: 20px;
   padding: 0 16px;
 }
+.rcp-plus {
+  margin-bottom: 14px;
+}
+.rcp-actions {
+  margin-top: 10px;
+}
