@@ -4,7 +4,7 @@ import { configured, supabase } from './supabase'
 import { ToastProvider } from './toast'
 import { DataProvider, useData } from './data'
 import { readLS, writeLS } from './lib'
-import { IconBook, IconCart, IconGear, IconInbox, IconList, IconPot, IconStore, IconUsers } from './icons'
+import { IconCart, IconGear, IconList, IconPot, IconStore, IconUsers } from './icons'
 import { InstallPopup } from './install'
 import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
@@ -266,11 +266,21 @@ export function Shell({
   return (
     <div className={`app${superAdmin ? ' su' : ''}`}>
       <InstallPopup />
-      {superAdmin && !sharing && (
-        <button className={`gear${tab === 'admin' ? ' on' : ''}`} aria-label="Stato servizi" onClick={() => go(tab === 'admin' ? 'shop' : 'admin')}>
-          <IconGear />
-          {pendingReq > 0 && <span className="gear-dot">{pendingReq}</span>}
-        </button>
+      {!sharing && (
+        <div className="topbtns">
+          <button className={`mini${tab === 'ideas' ? ' on' : ''}`} aria-label="Idee" title="Idee" onClick={() => go(tab === 'ideas' ? 'shop' : 'ideas')}>
+            ?
+          </button>
+          <button className={`mini${tab === 'guide' ? ' on' : ''}`} aria-label="Guida" title="Guida" onClick={() => go(tab === 'guide' ? 'shop' : 'guide')}>
+            i
+          </button>
+          {superAdmin && (
+            <button className={`gear${tab === 'admin' ? ' on' : ''}`} aria-label="Stato servizi" onClick={() => go(tab === 'admin' ? 'shop' : 'admin')}>
+              <IconGear />
+              {pendingReq > 0 && <span className="gear-dot">{pendingReq}</span>}
+            </button>
+          )}
+        </div>
       )}
       {tour && <Spotlight tour={tour} text={tour.text(d.isAdmin)} open={tourOpen} onClose={() => setTour(null)} />}
       <main>
@@ -330,12 +340,6 @@ export function Shell({
         </TabBtn>
         <TabBtn active={tab === 'group'} onClick={() => go('group')} label="Gruppo">
           <IconUsers />
-        </TabBtn>
-        <TabBtn active={tab === 'guide'} onClick={() => go('guide')} label="Guida">
-          <IconBook />
-        </TabBtn>
-        <TabBtn active={tab === 'ideas'} onClick={() => go('ideas')} label="Idee">
-          <IconInbox />
         </TabBtn>
       </nav>
     </div>

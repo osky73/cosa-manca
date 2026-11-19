@@ -704,7 +704,7 @@ input.code {
   bottom: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   max-width: 600px;
   margin: 0 auto;
   background: color-mix(in srgb, var(--card) 94%, transparent);
@@ -2696,7 +2696,7 @@ textarea {
 }
 /* "Cosa manca" ha più spazio, così la scritta ha un margine minimo intorno */
 .tabbar {
-  grid-template-columns: 1.3fr repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
 }
 .tabbar button {
   padding-left: 4px;
@@ -3212,4 +3212,45 @@ textarea {
   font-size: 22px;
   line-height: 1;
   border-radius: 12px;
+}
+
+/* in alto a destra: Idee (?), Guida (i) e, per il super admin, la ruota dentata */
+.topbtns {
+  position: fixed;
+  top: calc(10px + var(--safe-t));
+  right: 12px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.topbtns .gear {
+  position: relative;
+  top: auto;
+  right: auto;
+}
+.mini {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line, #ddd);
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.mini.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.app .top-row {
+  padding-right: 76px;
+}
+.app.su .top-row {
+  padding-right: 124px;
 }
