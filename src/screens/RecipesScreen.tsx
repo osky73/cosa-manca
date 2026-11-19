@@ -219,8 +219,8 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
             </div>
           ))}
           {canEdit && (
-            <button type="button" className="btn ghost rcp-plus" onClick={() => setIngs([...ings, ''])} aria-label="Aggiungi un altro ingrediente">
-              +
+            <button type="button" className="btn ghost wide rcp-plus" onClick={() => setIngs([...ings, ''])}>
+              + Aggiungi un ingrediente
             </button>
           )}
         </div>
