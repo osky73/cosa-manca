@@ -71,6 +71,12 @@ export const IconGlobe = ({ size = 20 }: { size?: number }) => (
     <path d="M3 12h18M12 3c2.6 2.7 4 5.7 4 9s-1.4 6.3-4 9c-2.6-2.7-4-5.7-4-9s1.4-6.3 4-9z" />
   </Svg>
 )
+export const IconShare = ({ size = 20 }: { size?: number }) => (
+  <Svg size={size}>
+    <path d="M12 15V3M8 7l4-4 4 4" />
+    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+  </Svg>
+)
 export const IconCheck = () => (
   <Svg size={20}>
     <path d="M5 12.5l4.5 4.5L19 7.5" />
@@ -82,12 +88,6 @@ export const IconChevron = ({ open }: { open: boolean }) => (
       <path d="M9 6l6 6-6 6" />
     </Svg>
   </span>
-)
-export const IconShare = () => (
-  <Svg size={20}>
-    <path d="M12 3v12M8 7l4-4 4 4" />
-    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-  </Svg>
 )
 export const IconTrash = () => (
   <Svg size={20}>

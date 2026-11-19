@@ -4,7 +4,7 @@ import { useData } from '../data'
 import { useToast } from '../toast'
 import { Sheet } from '../components'
 import { friendly, norm } from '../lib'
-import { IconGlobe, IconPlus, IconSearch, IconTrash } from '../icons'
+import { IconGlobe, IconPlus, IconSearch, IconShare, IconTrash } from '../icons'
 import type { Item } from '../types'
 
 interface Recipe {
@@ -110,7 +110,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
   const mine = !!recipe && recipe.created_by === d.userId
   const foreign = !!recipe && recipe.group_id !== d.groupId // ricetta pubblica di un altro gruppo: sola lettura
   const canEdit = !recipe || mine || (d.isAdmin && !foreign)
-  const [confirm, setConfirm] = useState<'propose' | 'withdraw' | null>(null)
+  const [confirm, setConfirm] = useState<'menu' | 'propose' | 'withdraw' | null>(null)
   const [title, setTitle] = useState(recipe?.title ?? '')
   const [steps, setSteps] = useState(recipe?.steps ?? '')
   const [ings, setIngs] = useState<string[]>(recipe?.ingredients ?? [])
@@ -175,6 +175,28 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
     }
     toast.show('Ricetta cancellata')
     onSaved()
+  }
+
+  async function sharePhone() {
+    const text = [
+      `Ricetta: ${title.trim()}`,
+      clean.length ? `\nIngredienti:\n${clean.map((x) => `- ${x}`).join('\n')}` : '',
+      steps.trim() ? `\nPreparazione:\n${steps.trim()}` : '',
+      '\nDa Cosa manca - https://cosa-manca.it',
+    ]
+      .filter(Boolean)
+      .join('\n')
+    setConfirm(null)
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: title.trim(), text })
+        return
+      }
+      await navigator.clipboard.writeText(text)
+      toast.show('Ricetta copiata negli appunti')
+    } catch {
+      /* condivisione annullata */
+    }
   }
 
   async function propose() {
@@ -318,15 +340,15 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           ) : (
             <span className="rcp-save" />
           )}
-          {mine ? (
+          {title.trim() !== '' ? (
             <button
               className={`btn ghost rcp-icon rcp-globe-btn${recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? ' on' : ''}`}
-              disabled={changed || busy}
-              onClick={() => setConfirm(recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? 'withdraw' : 'propose')}
-              aria-label="Proponi a tutti gli utenti"
-              title={changed ? 'Salva prima le modifiche' : 'Proponi a tutti gli utenti'}
+              disabled={busy}
+              onClick={() => setConfirm(confirm ? null : 'menu')}
+              aria-label="Condividi la ricetta"
+              title="Condividi la ricetta"
             >
-              <IconGlobe size={24} />
+              <IconShare size={24} />
             </button>
           ) : null}
           {recipe && canEdit ? (
@@ -350,6 +372,27 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
         )}
         {mine && recipe?.public_status === 'rejected' && !confirm && (
           <p className="muted small">Il gestore dell'app non l'ha pubblicata per tutti. Puoi proporla di nuovo.</p>
+        )}
+        {confirm === 'menu' && (
+          <div className="stack">
+            <button className="btn ghost wide" onClick={() => void sharePhone()}>
+              Invia con le app del telefono
+            </button>
+            {mine && (
+              <button
+                className="btn ghost wide"
+                disabled={changed}
+                onClick={() => setConfirm(recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? 'withdraw' : 'propose')}
+              >
+                {recipe?.public_status === 'public'
+                  ? 'Togli dalle ricette di tutti'
+                  : recipe?.public_status === 'proposed'
+                    ? 'Ritira la proposta al gestore'
+                    : 'Proponi a tutti su Cosa manca'}
+              </button>
+            )}
+            {mine && changed && <p className="muted small">Salva prima le modifiche per proporla a tutti.</p>}
+          </div>
         )}
         {confirm === 'propose' && (
           <div className="stack">
