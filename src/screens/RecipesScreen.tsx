@@ -197,8 +197,8 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} placeholder="Es. Lasagne della nonna" disabled={!canEdit} />
         </label>
         <label className="field">
-          <span>Come si prepara</span>
-          <textarea rows={4} value={steps} onChange={(e) => setSteps(e.target.value)} maxLength={5000} placeholder="Facoltativo" disabled={!canEdit} />
+          <span>Come si realizza</span>
+          <textarea rows={6} value={steps} onChange={(e) => setSteps(e.target.value)} maxLength={5000} placeholder="Scrivi qui i passaggi della ricetta" disabled={!canEdit} />
         </label>
         <div className="field">
           <span>Ingredienti</span>
