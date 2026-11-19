@@ -170,7 +170,6 @@ function PushTest() {
 function Broadcast() {
   const [title, setTitle] = useState('')
   const [text, setText] = useState('')
-  const [force, setForce] = useState(true)
   const [email, setEmail] = useState(false)
   const [asking, setAsking] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -180,7 +179,7 @@ function Broadcast() {
     setBusy(true)
     setMsg('')
     const { data, error } = await supabase.functions.invoke('admin-request', {
-      body: { action: 'broadcast', title, message: text, force, email },
+      body: { action: 'broadcast', title, message: text, email },
     })
     setBusy(false)
     setAsking(false)
@@ -206,17 +205,12 @@ function Broadcast() {
         <input value={title} onChange={(e) => setTitle(e.target.value)} maxLength={60} placeholder="Titolo (facoltativo)" aria-label="Titolo" />
         <textarea rows={3} value={text} onChange={(e) => setText(e.target.value)} maxLength={300} placeholder="Scrivi il messaggio" aria-label="Messaggio" />
         <label className="check">
-          <input type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} />
-          <span>Anche a chi ha spento gli avvisi dentro l'app</span>
-        </label>
-        <label className="check">
           <input type="checkbox" checked={email} onChange={(e) => setEmail(e.target.checked)} />
           <span>Manda una email a chi non riceve la notifica</span>
         </label>
         <button className="btn primary" disabled={!text.trim() || busy} onClick={() => setAsking(true)}>
           Invia a tutti
         </button>
-        <p className="muted small">Se un utente ha bloccato le notifiche dal telefono, l'app non può forzarle: per lui resta l'email.</p>
         {msg && <p className="muted small">{msg}</p>}
       </div>
       {asking && (

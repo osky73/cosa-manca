@@ -1,7 +1,7 @@
 // Edge Function: richieste di ammissione come amministratore.
 //   { action: 'new' }                  chiamata dalla persona appena messa "in attesa": avvisa il super admin (notifica push, e email se non ha notifiche attive)
 //   { action: 'test' } prova di notifica per il super admin
-//   { action: 'broadcast', title, message, force, email }  messaggio a tutti gli utenti (solo super admin)
+//   { action: 'broadcast', title, message, email }  messaggio a tutti gli utenti (solo super admin)
 //   { action: 'recipe', recipe_id }    chiamata dall'autore dopo aver proposto una ricetta a tutti: avvisa il super admin (push, o email)
 //   { action: 'recipe_decided', recipe_id, approve }  super admin: se approva avvisa tutti gli utenti, se rifiuta solo l'autore
 //   { action: 'decided', user_id }     chiamata dal super admin dopo aver ammesso: scrive alla persona che può creare il suo gruppo
@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
 
-  let body: { action?: string; user_id?: string; recipe_id?: string; approve?: boolean; title?: string; message?: string; force?: boolean; email?: boolean }
+  let body: { action?: string; user_id?: string; recipe_id?: string; approve?: boolean; title?: string; message?: string; email?: boolean }
   try {
     body = await req.json()
   } catch {
@@ -154,13 +154,13 @@ Deno.serve(async (req) => {
 
     const { data: profs } = await db.from('profiles').select('id, email, notify_new')
     const all = profs ?? []
-    // chi ha spento gli avvisi dentro l'app viene escluso solo se non si forza
+    // chi ha spento gli avvisi dentro l'app non li riceve
     const off = new Set(all.filter((p) => p.notify_new === false).map((p) => p.id))
     const { data: subs } = await db.from('push_subscriptions').select('endpoint, p256dh, auth, user_id')
     const payload = JSON.stringify({ title, body: text, tag: 'cm-broadcast' })
     const reached = new Set<string>()
     let devices = 0
-    const list = (subs ?? []).filter((s) => body.force || !off.has(s.user_id))
+    const list = (subs ?? []).filter((s) => !off.has(s.user_id))
     for (let i = 0; i < list.length; i += 20) {
       await Promise.all(
         list.slice(i, i + 20).map(async (s) => {
@@ -181,7 +181,7 @@ Deno.serve(async (req) => {
     let mailed = 0
     let toMail = 0
     if (body.email) {
-      const targets = all.filter((p) => p.email && !reached.has(p.id) && p.email !== SUPER_ADMIN && (body.force || !off.has(p.id)))
+      const targets = all.filter((p) => p.email && !reached.has(p.id) && p.email !== SUPER_ADMIN && !off.has(p.id))
       toMail = targets.length
       const html = card(esc(title), esc(text).replace(/\n/g, '<br>'), { href: SITE_URL, label: 'Apri Cosa manca' })
       for (const p of targets.slice(0, 80)) {
