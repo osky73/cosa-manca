@@ -3038,3 +3038,14 @@ textarea {
   font-size: 12px;
   color: var(--muted, #6b7a70);
 }
+
+/* la nota sotto al prodotto è su fondo verde scuro: testo chiaro */
+.slnote-in {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+/* "+" per scegliere il supermercato: chiaro sul verde scuro */
+.slider .slstore:not(.set) {
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.55);
+}
