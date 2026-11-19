@@ -4,6 +4,7 @@ import { useData } from '../data'
 import { useToast } from '../toast'
 import { Sheet } from '../components'
 import { friendly, norm } from '../lib'
+import { IconSearch, IconTrash } from '../icons'
 import type { Item } from '../types'
 
 interface Recipe {
@@ -236,24 +237,41 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           </ul>
         )}
 
-        <button className="btn ghost wide" disabled={clean.length === 0} onClick={check}>
-          Controlla cosa manca
-        </button>
         {checked && counts.missing < checked.length && (
           <button className="btn primary wide" disabled={busy} onClick={() => void mark()}>
             Segna cosa serve
           </button>
         )}
-        {canEdit && (
-          <button className="btn primary wide" disabled={!title.trim() || busy} onClick={() => void save()}>
-            Salva ricetta
+        <div className="rcp-actions">
+          <button
+            className="btn ghost rcp-icon"
+            disabled={clean.length === 0}
+            onClick={check}
+            aria-label="Controlla cosa manca"
+            title="Controlla cosa manca"
+          >
+            <IconSearch />
           </button>
-        )}
-        {recipe && canEdit && !asking && (
-          <button className="btn ghost wide" onClick={() => setAsking(true)}>
-            Cancella ricetta
-          </button>
-        )}
+          {canEdit ? (
+            <button className="btn primary rcp-save" disabled={!title.trim() || busy} onClick={() => void save()}>
+              Salva ricetta
+            </button>
+          ) : (
+            <span className="rcp-save" />
+          )}
+          {recipe && canEdit ? (
+            <button
+              className="btn ghost rcp-icon rcp-del"
+              onClick={() => setAsking(true)}
+              aria-label="Cancella ricetta"
+              title="Cancella ricetta"
+            >
+              <IconTrash />
+            </button>
+          ) : (
+            <span className="rcp-icon" />
+          )}
+        </div>
         {asking && (
           <button className="btn danger wide" onClick={() => void remove()}>
             Sì, cancella la ricetta

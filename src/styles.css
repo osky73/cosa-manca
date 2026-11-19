@@ -3130,3 +3130,29 @@ textarea {
   margin-top: 8px;
   padding: 0 14px;
 }
+
+.rcp-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.rcp-icon {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+}
+.rcp-icon svg {
+  width: 24px;
+  height: 24px;
+}
+.rcp-del {
+  color: #d92d20;
+}
+.rcp-save {
+  flex: 1;
+  min-height: 52px;
+}
