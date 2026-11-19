@@ -73,8 +73,10 @@ export const IconGlobe = ({ size = 20 }: { size?: number }) => (
 )
 export const IconShare = ({ size = 20 }: { size?: number }) => (
   <Svg size={size}>
-    <path d="M12 15V3M8 7l4-4 4 4" />
-    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
+    <path d="M8.5 10.7l7-4.1M8.5 13.3l7 4.1" />
+    <circle cx="6" cy="12" r="3" fill="currentColor" />
+    <circle cx="18" cy="5.5" r="3" fill="currentColor" />
+    <circle cx="18" cy="18.5" r="3" fill="currentColor" />
   </Svg>
 )
 export const IconCheck = () => (
