@@ -3274,3 +3274,10 @@ textarea {
   height: 20px;
   display: block;
 }
+.rcp-check {
+  margin: 16px 0 18px;
+}
+.rcp-actions + .rcp-check,
+.rcp-actions ~ .rcp-check {
+  margin-top: 16px;
+}
