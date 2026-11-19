@@ -102,10 +102,11 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
   const toast = useToast()
   const snapKey = `cm.snap.${groupId}`
 
-  // Admin: notifiche attive senza chiedere nulla in app. Il telefono mostra comunque il suo permesso:
-  // se è già concesso ci si iscrive subito, altrimenti lo si chiede al primo tocco (su iPhone serve un tocco).
+  // Tutti: notifiche attive senza chiedere nulla in app (gli avvisi sui prodotti arrivano solo agli admin, i messaggi
+  // dell'app a tutti). Il telefono mostra comunque il suo permesso: se è già concesso ci si iscrive subito,
+  // altrimenti lo si chiede al primo tocco (su iPhone serve un tocco).
   useEffect(() => {
-    if (role !== 'admin' || !pushSupported() || Notification.permission === 'denied') return
+    if (!pushSupported() || Notification.permission === 'denied') return
     if (Notification.permission === 'granted') {
       void subscribePush(userId)
       return
@@ -113,7 +114,7 @@ export function DataProvider({ groupId, userId, role, onLeft, children }: Props)
     const go = () => void subscribePush(userId)
     window.addEventListener('pointerup', go, { once: true })
     return () => window.removeEventListener('pointerup', go)
-  }, [role, userId])
+  }, [userId])
   const outKey = `cm.outbox.${groupId}`
 
   const [snap, setSnap] = useState<Snapshot>(() => readLS(snapKey, EMPTY))

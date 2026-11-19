@@ -1,6 +1,7 @@
 // Edge Function: richieste di ammissione come amministratore.
 //   { action: 'new' }                  chiamata dalla persona appena messa "in attesa": avvisa il super admin (notifica push, e email se non ha notifiche attive)
 //   { action: 'test' } prova di notifica per il super admin
+//   { action: 'broadcast', title, message, force, email }  messaggio a tutti gli utenti (solo super admin)
 //   { action: 'decided', user_id }     chiamata dal super admin dopo aver ammesso: scrive alla persona che può creare il suo gruppo
 // verify_jwt spento: identità con auth.getUser, ruolo con is_super_admin(), come le altre funzioni.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
@@ -68,7 +69,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
 
-  let body: { action?: string; user_id?: string }
+  let body: { action?: string; user_id?: string; title?: string; message?: string; force?: boolean; email?: boolean }
   try {
     body = await req.json()
   } catch {
@@ -109,6 +110,56 @@ Deno.serve(async (req) => {
     if (isSuper !== true) return json({ error: 'forbidden' }, 403)
     const push = await pushToSuper(db, { title: 'Prova notifica', body: 'Se leggi questo, le notifiche funzionano.', tag: 'cm-test' })
     return json({ ok: true, ...push })
+  }
+
+  if (body.action === 'broadcast') {
+    const { data: isSuper } = await userClient.rpc('is_super_admin')
+    if (isSuper !== true) return json({ error: 'forbidden' }, 403)
+    const title = (body.title ?? '').trim().slice(0, 60) || 'Cosa manca'
+    const text = (body.message ?? '').trim().slice(0, 300)
+    if (!text) return json({ error: 'bad_request' }, 400)
+    const { data: cfg } = await db.from('push_config').select('public_key, private_key').eq('id', 1).maybeSingle()
+    if (!cfg) return json({ error: 'push_not_configured' }, 500)
+    webpush.setVapidDetails(`mailto:${SUPER_ADMIN}`, cfg.public_key, cfg.private_key)
+
+    const { data: profs } = await db.from('profiles').select('id, email, notify_new')
+    const all = profs ?? []
+    // chi ha spento gli avvisi dentro l'app viene escluso solo se non si forza
+    const off = new Set(all.filter((p) => p.notify_new === false).map((p) => p.id))
+    const { data: subs } = await db.from('push_subscriptions').select('endpoint, p256dh, auth, user_id')
+    const payload = JSON.stringify({ title, body: text, tag: 'cm-broadcast' })
+    const reached = new Set<string>()
+    let devices = 0
+    const list = (subs ?? []).filter((s) => body.force || !off.has(s.user_id))
+    for (let i = 0; i < list.length; i += 20) {
+      await Promise.all(
+        list.slice(i, i + 20).map(async (s) => {
+          try {
+            await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 86400 })
+            devices++
+            reached.add(s.user_id)
+          } catch (e) {
+            const code = (e as { statusCode?: number }).statusCode
+            if (code === 404 || code === 410) await db.from('push_subscriptions').delete().eq('endpoint', s.endpoint)
+            else console.error('broadcast push error', code, (e as Error).message)
+          }
+        }),
+      )
+    }
+
+    // chi non è stato raggiunto da una notifica può ricevere una email (al massimo 80 per invio, per i limiti di Resend)
+    let mailed = 0
+    let toMail = 0
+    if (body.email) {
+      const targets = all.filter((p) => p.email && !reached.has(p.id) && p.email !== SUPER_ADMIN && (body.force || !off.has(p.id)))
+      toMail = targets.length
+      const html = card(esc(title), esc(text).replace(/\n/g, '<br>'), { href: SITE_URL, label: 'Apri Cosa manca' })
+      for (const p of targets.slice(0, 80)) {
+        if (await sendMail(p.email, title, html, `${text}\n\n${SITE_URL}`)) mailed++
+      }
+    }
+    console.log('broadcast', JSON.stringify({ users_total: all.length, reached: reached.size, devices, mailed, toMail }))
+    return json({ ok: true, users_total: all.length, users_reached: reached.size, devices, mailed, mail_targets: toMail })
   }
 
   if (body.action === 'decided') {

@@ -268,11 +268,11 @@ export function Shell({
       <InstallPopup />
       {!sharing && (
         <div className="topbtns">
-          <button className={`mini${tab === 'ideas' ? ' on' : ''}`} aria-label="Idee" title="Idee" onClick={() => go(tab === 'ideas' ? 'shop' : 'ideas')}>
-            ?
-          </button>
           <button className={`mini${tab === 'guide' ? ' on' : ''}`} aria-label="Guida" title="Guida" onClick={() => go(tab === 'guide' ? 'shop' : 'guide')}>
             i
+          </button>
+          <button className={`mini${tab === 'ideas' ? ' on' : ''}`} aria-label="Idee" title="Idee" onClick={() => go(tab === 'ideas' ? 'shop' : 'ideas')}>
+            ?
           </button>
           {superAdmin && (
             <button className={`gear${tab === 'admin' ? ' on' : ''}`} aria-label="Stato servizi" onClick={() => go(tab === 'admin' ? 'shop' : 'admin')}>

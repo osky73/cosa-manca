@@ -167,8 +167,10 @@ export const supabase = {
     onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
   },
   functions: {
-    invoke: async (n: string, o?: { body?: { action?: string } }) =>
-      n === 'admin-request' && o?.body?.action === 'test'
+    invoke: async (n: string, o?: { body?: { action?: string; email?: boolean } }) =>
+      n === 'admin-request' && o?.body?.action === 'broadcast'
+        ? { data: { ok: true, users_total: 12, users_reached: 9, devices: 11, mailed: o.body.email ? 3 : 0, mail_targets: o.body.email ? 3 : 0 }, error: null }
+        : n === 'admin-request' && o?.body?.action === 'test'
         ? { data: { ok: true, sent: 1, subs: 1, errors: [], reason: '' }, error: null }
         : n === 'admin-usage'
         ? { data: { resend: { month: 214, today: 3 }, vercel: { deploys_month: 41, deploys_today: 6 }, supabase: null }, error: null }
