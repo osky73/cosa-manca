@@ -110,7 +110,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
   const mine = !!recipe && recipe.created_by === d.userId
   const foreign = !!recipe && recipe.group_id !== d.groupId // ricetta pubblica di un altro gruppo: sola lettura
   const canEdit = !recipe || mine || (d.isAdmin && !foreign)
-  const [confirm, setConfirm] = useState<'menu' | 'propose' | 'withdraw' | null>(null)
+  const [confirm, setConfirm] = useState<'propose' | 'withdraw' | null>(null)
   const [title, setTitle] = useState(recipe?.title ?? '')
   const [steps, setSteps] = useState(recipe?.steps ?? '')
   const [ings, setIngs] = useState<string[]>(recipe?.ingredients ?? [])
@@ -344,7 +344,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
             <button
               className={`btn ghost rcp-icon rcp-globe-btn${recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? ' on' : ''}`}
               disabled={busy}
-              onClick={() => setConfirm(confirm ? null : 'menu')}
+              onClick={() => void sharePhone()}
               aria-label="Condividi la ricetta"
               title="Condividi la ricetta"
             >
@@ -373,22 +373,13 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
         {mine && recipe?.public_status === 'rejected' && !confirm && (
           <p className="muted small">Il gestore dell'app non l'ha pubblicata per tutti. Puoi proporla di nuovo.</p>
         )}
-        {confirm === 'menu' && (
-          <div className="stack">
-            <button className="btn ghost wide" onClick={() => void sharePhone()}>
-              Invia con le app del telefono
-            </button>
-            {mine && recipe?.public_status !== 'proposed' && (
-              <button
-                className="btn ghost wide"
-                disabled={changed}
-                onClick={() => setConfirm(recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? 'withdraw' : 'propose')}
-              >
-                {recipe?.public_status === 'public' ? 'Togli dalle ricette di tutti' : 'Proponi a tutti su Cosa manca'}
-              </button>
-            )}
-            {mine && changed && recipe?.public_status !== 'proposed' && <p className="muted small">Salva prima le modifiche per proporla a tutti.</p>}
-          </div>
+        {mine && !changed && !confirm && recipe?.public_status !== 'proposed' && (
+          <button
+            className="btn ghost wide"
+            onClick={() => setConfirm(recipe?.public_status === 'public' ? 'withdraw' : 'propose')}
+          >
+            {recipe?.public_status === 'public' ? 'Togli dalle ricette di tutti' : 'Proponi a tutti su Cosa manca'}
+          </button>
         )}
         {confirm === 'propose' && (
           <div className="stack">
