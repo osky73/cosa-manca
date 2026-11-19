@@ -4,7 +4,7 @@ import { configured, supabase } from './supabase'
 import { ToastProvider } from './toast'
 import { DataProvider, useData } from './data'
 import { readLS, writeLS } from './lib'
-import { IconBook, IconCart, IconGear, IconInbox, IconList, IconStore, IconUsers } from './icons'
+import { IconBook, IconCart, IconGear, IconInbox, IconList, IconPot, IconStore, IconUsers } from './icons'
 import { InstallPopup } from './install'
 import Login from './screens/Login'
 import Onboarding from './screens/Onboarding'
@@ -12,6 +12,7 @@ import ListScreen from './screens/ListScreen'
 import ShopScreen from './screens/ShopScreen'
 import StoresScreen from './screens/StoresScreen'
 import IdeasScreen from './screens/IdeasScreen'
+import RecipesScreen from './screens/RecipesScreen'
 import AdminScreen from './screens/AdminScreen'
 import GroupScreen from './screens/GroupScreen'
 import ShareScreen from './screens/ShareScreen'
@@ -286,6 +287,7 @@ export function Shell({
         {!sharing && tab === 'shop' && <ShopScreen goto={go} />}
         {!sharing && tab === 'stores' && <StoresScreen />}
         {!sharing && tab === 'ideas' && <IdeasScreen />}
+        {!sharing && tab === 'recipes' && <RecipesScreen />}
         {!sharing && tab === 'admin' && superAdmin && <AdminScreen onCount={setPendingReq} />}
         {!sharing && tab === 'guide' && (
           <GuideScreen
@@ -322,6 +324,9 @@ export function Shell({
         </TabBtn>
         <TabBtn active={tab === 'stores'} onClick={() => go('stores')} label="Negozi">
           <IconStore />
+        </TabBtn>
+        <TabBtn active={tab === 'recipes'} onClick={() => go('recipes')} label="Ricette">
+          <IconPot />
         </TabBtn>
         <TabBtn active={tab === 'group'} onClick={() => go('group')} label="Gruppo">
           <IconUsers />

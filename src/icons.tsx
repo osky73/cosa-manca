@@ -37,6 +37,11 @@ export const IconInbox = () => (
     <path d="M9.5 19h5M10.5 22h3" />
   </Svg>
 )
+export const IconPot = () => (
+  <Svg>
+    <path d="M4 11h16v5a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-5zM2 11h2M20 11h2M9 7c0-1.5 1.5-1.5 1.5-3M14 7c0-1.5 1.5-1.5 1.5-3" />
+  </Svg>
+)
 export const IconUsers = () => (
   <Svg>
     <circle cx="9" cy="8" r="3.5" />

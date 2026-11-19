@@ -34,6 +34,8 @@ export function seed(): Record<string, Row[]> {
     ...(status === 'bought' ? { bought_at: new Date(now - 60000).toISOString(), bought_by: 'u1' } : {}),
   })
   return {
+    recipes: [{ id: 'r1', group_id: 'g1', title: 'Lasagne della nonna', steps: 'Strati di pasta, ragù e besciamella. Forno 40 minuti.',
+      ingredients: ['pasta', '500 g di latte', 'burro', 'ragù di carne', 'noce moscata'], created_by: 'u2', created_at: new Date(now - 86400000).toISOString() }],
     group_items: items,
     stores,
     needs: [
