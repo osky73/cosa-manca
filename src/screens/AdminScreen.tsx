@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabase'
 import { Sheet } from '../components'
 
@@ -240,10 +240,88 @@ function Broadcast() {
   )
 }
 
+interface RcpProp {
+  id: string
+  title: string
+  steps: string | null
+  ingredients: string[]
+  author_name: string | null
+  proposed_at: string
+}
+
+function RecipeProposals({ onCount }: { onCount: (n: number) => void }) {
+  const [rows, setRows] = useState<RcpProp[] | null>(null)
+  const [busy, setBusy] = useState('')
+  const [msg, setMsg] = useState('')
+  const [openId, setOpenId] = useState('')
+
+  async function load() {
+    const { data } = await supabase.rpc('recipes_proposed')
+    const r = Array.isArray(data) ? (data as RcpProp[]) : []
+    setRows(r)
+    onCount(r.length)
+  }
+  useEffect(() => {
+    void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function decide(r: RcpProp, approve: boolean) {
+    setBusy(r.id)
+    setMsg('')
+    const { error } = await supabase.rpc('decide_recipe', { p_id: r.id, p_approve: approve })
+    if (error) setMsg('Non sono riuscito a salvare. Riprova.')
+    else {
+      await supabase.functions.invoke('admin-request', { body: { action: 'recipe_decided', recipe_id: r.id, approve } }).catch(() => null)
+      setMsg(approve ? `«${r.title}» è ora per tutti: ho avvisato gli utenti.` : `«${r.title}» non pubblicata.`)
+    }
+    setBusy('')
+    await load()
+  }
+
+  if (rows == null || (rows.length === 0 && !msg)) return null
+  return (
+    <>
+      <h2>Ricette proposte</h2>
+      {rows.map((r) => (
+        <div className="req" key={r.id}>
+          <div className="req-who">
+            <b>{r.title}</b>
+            <span>di {r.author_name || 'un utente'}</span>
+            <small>
+              {r.ingredients.length} ingredienti ·{' '}
+              <button type="button" className="linkbtn" onClick={() => setOpenId(openId === r.id ? '' : r.id)}>
+                {openId === r.id ? 'nascondi' : 'leggi'}
+              </button>
+            </small>
+            {openId === r.id && (
+              <small style={{ whiteSpace: 'pre-wrap' }}>
+                {r.ingredients.join(', ')}
+                {r.steps ? `\n\n${r.steps}` : ''}
+              </small>
+            )}
+          </div>
+          <div className="req-btns">
+            <button className="btn primary" disabled={busy === r.id} onClick={() => void decide(r, true)}>
+              Pubblica
+            </button>
+            <button className="btn" disabled={busy === r.id} onClick={() => void decide(r, false)}>
+              Rifiuta
+            </button>
+          </div>
+        </div>
+      ))}
+      {msg && <p className="muted small">{msg}</p>}
+    </>
+  )
+}
+
 export default function AdminScreen({ onCount = () => {} }: { onCount?: (n: number) => void }) {
   const [s, setS] = useState<Stats | null>(null)
   const [ext, setExt] = useState<External | null>(null)
   const [err, setErr] = useState(false)
+  const reqN = useRef(0)
+  const rcpN = useRef(0)
 
   useEffect(() => {
     let off = false
@@ -271,7 +349,8 @@ export default function AdminScreen({ onCount = () => {} }: { onCount?: (n: numb
 
       {err && <p className="muted">Non riesco a leggere i dati. Riprova tra poco.</p>}
 
-      <Requests onCount={onCount} />
+      <Requests onCount={(n) => { reqN.current = n; onCount(reqN.current + rcpN.current) }} />
+      <RecipeProposals onCount={(n) => { rcpN.current = n; onCount(reqN.current + rcpN.current) }} />
       <PushTest />
       <Broadcast />
 

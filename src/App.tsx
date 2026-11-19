@@ -229,7 +229,10 @@ export function Shell({
   // richieste di ammissione in attesa: il pallino sull'ingranaggio
   useEffect(() => {
     if (!superAdmin) return
-    supabase.rpc('admin_requests_list').then(({ data }) => setPendingReq(Array.isArray(data) ? data.length : 0))
+    Promise.all([supabase.rpc('admin_requests_list'), supabase.rpc('recipes_proposed')]).then(([a, b]) => {
+      const n = (x: { data: unknown }) => (Array.isArray(x.data) ? x.data.length : 0)
+      setPendingReq(n(a) + n(b))
+    })
   }, [superAdmin, tab])
   const [tour, setTour] = useState<Tour | null>(null)
   const [tourOpen, setTourOpen] = useState(true)

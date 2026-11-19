@@ -65,6 +65,12 @@ export const IconPlus = () => (
     <path d="M12 5v14M5 12h14" />
   </Svg>
 )
+export const IconGlobe = ({ size = 20 }: { size?: number }) => (
+  <Svg size={size}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3c2.6 2.7 4 5.7 4 9s-1.4 6.3-4 9c-2.6-2.7-4-5.7-4-9s1.4-6.3 4-9z" />
+  </Svg>
+)
 export const IconCheck = () => (
   <Svg size={20}>
     <path d="M5 12.5l4.5 4.5L19 7.5" />

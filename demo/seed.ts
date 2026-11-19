@@ -35,7 +35,11 @@ export function seed(): Record<string, Row[]> {
   })
   return {
     recipes: [{ id: 'r1', group_id: 'g1', title: 'Lasagne della nonna', steps: 'Strati di pasta, ragù e besciamella. Forno 40 minuti.',
-      ingredients: ['pasta', '500 g di latte', 'burro', 'ragù di carne', 'noce moscata'], created_by: 'u2', created_at: new Date(now - 86400000).toISOString() }],
+      ingredients: ['pasta', '500 g di latte', 'burro', 'ragù di carne', 'noce moscata'], created_by: 'u2', created_at: new Date(now - 86400000).toISOString(), public_status: null, author_name: null },
+      { id: 'r2', group_id: 'g9', title: 'Cacio e pepe', steps: 'Tonnarelli, pecorino grattugiato e pepe nero tostato. Mantecare con acqua di cottura.',
+        ingredients: ['tonnarelli', 'pecorino romano', 'pepe nero'], created_by: 'x9', created_at: new Date(now - 3600000).toISOString(), public_status: 'public', author_name: 'Marta' },
+      { id: 'r3', group_id: 'g1', title: 'Torta di mele', steps: 'Mele a fette, impasto morbido, forno a 180° per 45 minuti.',
+        ingredients: ['mele', 'farina 00', 'uova', 'zucchero'], created_by: 'u1', created_at: new Date(now - 7200000).toISOString(), public_status: 'proposed', author_name: 'Andrea', proposed_at: new Date(now - 7000000).toISOString() }],
     group_items: items,
     stores,
     needs: [

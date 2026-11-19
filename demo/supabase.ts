@@ -133,6 +133,16 @@ const rpc = async (name: string, a: Row = {}) => {
       data: { users_total: 38, users_30d: 24, users_7d_new: 5, groups_total: 17, groups_active_30d: 12, needs_total: 842, db_bytes: 31457280, map_load: 312, map_search: 1240, map_details: 860 },
       error: null,
     }
+  if (name === 'propose_recipe' || name === 'withdraw_recipe' || name === 'decide_recipe') {
+    const r = db.recipes.find((x) => x.id === a.p_id)
+    if (r) {
+      if (name === 'propose_recipe') { r.public_status = 'proposed'; r.author_name = 'Tu'; r.proposed_at = new Date().toISOString() }
+      else if (name === 'withdraw_recipe') r.public_status = null
+      else r.public_status = a.p_approve ? 'public' : 'rejected'
+    }
+    return { data: null, error: null }
+  }
+  if (name === 'recipes_proposed') return { data: db.recipes.filter((r) => r.public_status === 'proposed'), error: null }
   if (name === 'is_super_admin') return { data: true, error: null }
   if (name === 'my_admin_status') return { data: 'pending', error: null }
   if (name === 'request_admin') return { data: 'pending', error: null }

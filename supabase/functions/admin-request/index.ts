@@ -2,6 +2,8 @@
 //   { action: 'new' }                  chiamata dalla persona appena messa "in attesa": avvisa il super admin (notifica push, e email se non ha notifiche attive)
 //   { action: 'test' } prova di notifica per il super admin
 //   { action: 'broadcast', title, message, force, email }  messaggio a tutti gli utenti (solo super admin)
+//   { action: 'recipe', recipe_id }    chiamata dall'autore dopo aver proposto una ricetta a tutti: avvisa il super admin (push, o email)
+//   { action: 'recipe_decided', recipe_id, approve }  super admin: se approva avvisa tutti gli utenti, se rifiuta solo l'autore
 //   { action: 'decided', user_id }     chiamata dal super admin dopo aver ammesso: scrive alla persona che può creare il suo gruppo
 // verify_jwt spento: identità con auth.getUser, ruolo con is_super_admin(), come le altre funzioni.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
@@ -65,11 +67,39 @@ async function pushToSuper(db: ReturnType<typeof createClient>, payload: { title
   return out
 }
 
+// Push a una lista di utenti (o a tutti se ids è null); chi ha spento gli avvisi dentro l'app non li riceve.
+async function pushToUsers(db: ReturnType<typeof createClient>, ids: string[] | null, payload: { title: string; body: string; tag: string }, skip?: string) {
+  const { data: cfg } = await db.from('push_config').select('public_key, private_key').eq('id', 1).maybeSingle()
+  if (!cfg) return 0
+  webpush.setVapidDetails(`mailto:${SUPER_ADMIN}`, cfg.public_key, cfg.private_key)
+  const { data: profs } = await db.from('profiles').select('id, notify_new')
+  const off = new Set((profs ?? []).filter((p) => p.notify_new === false).map((p) => p.id))
+  const { data: subs } = await db.from('push_subscriptions').select('endpoint, p256dh, auth, user_id')
+  const list = (subs ?? []).filter((s) => (!ids || ids.includes(s.user_id)) && s.user_id !== skip && !off.has(s.user_id))
+  const msg = JSON.stringify(payload)
+  let sent = 0
+  for (let i = 0; i < list.length; i += 20) {
+    await Promise.all(
+      list.slice(i, i + 20).map(async (s) => {
+        try {
+          await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, msg, { TTL: 86400 })
+          sent++
+        } catch (e) {
+          const code = (e as { statusCode?: number }).statusCode
+          if (code === 404 || code === 410) await db.from('push_subscriptions').delete().eq('endpoint', s.endpoint)
+          else console.error('recipe push error', code, (e as Error).message)
+        }
+      }),
+    )
+  }
+  return sent
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'method_not_allowed' }, 405)
 
-  let body: { action?: string; user_id?: string; title?: string; message?: string; force?: boolean; email?: boolean }
+  let body: { action?: string; user_id?: string; recipe_id?: string; approve?: boolean; title?: string; message?: string; force?: boolean; email?: boolean }
   try {
     body = await req.json()
   } catch {
@@ -160,6 +190,41 @@ Deno.serve(async (req) => {
     }
     console.log('broadcast', JSON.stringify({ users_total: all.length, reached: reached.size, devices, mailed, toMail }))
     return json({ ok: true, users_total: all.length, users_reached: reached.size, devices, mailed, mail_targets: toMail })
+  }
+
+  if (body.action === 'recipe') {
+    if (!body.recipe_id) return json({ error: 'bad_request' }, 400)
+    const { data: r } = await db.from('recipes').select('title, author_name, created_by, public_status').eq('id', body.recipe_id).maybeSingle()
+    if (!r || r.created_by !== u.user.id || r.public_status !== 'proposed') return json({ error: 'no_recipe' }, 404)
+    const who = r.author_name?.trim() || 'Un utente'
+    const push = await pushToSuper(db, { title: 'Ricetta proposta a tutti', body: `${who} propone «${r.title}».`, tag: 'cm-recipe' })
+    let mailed = false
+    if (push.sent === 0) {
+      mailed = await sendMail(
+        SUPER_ADMIN,
+        'Ricetta proposta a tutti su Cosa manca',
+        card('Ricetta proposta a tutti', `${esc(who)} propone la ricetta «${esc(r.title)}». Approvala o rifiutala dalla schermata Stato servizi (l'ingranaggio in alto a destra).`, { href: SITE_URL, label: 'Apri Cosa manca' }),
+        `${who} propone la ricetta «${r.title}». Approvala dalla schermata Stato servizi: ${SITE_URL}`,
+      )
+    }
+    return json({ ok: true, sent: push.sent, mailed })
+  }
+
+  if (body.action === 'recipe_decided') {
+    const { data: isSuper } = await userClient.rpc('is_super_admin')
+    if (isSuper !== true) return json({ error: 'forbidden' }, 403)
+    if (!body.recipe_id) return json({ error: 'bad_request' }, 400)
+    const { data: r } = await db.from('recipes').select('title, author_name, created_by, public_status').eq('id', body.recipe_id).maybeSingle()
+    if (!r) return json({ error: 'no_recipe' }, 404)
+    if (body.approve) {
+      if (r.public_status !== 'public') return json({ error: 'not_public' }, 409)
+      const who = r.author_name?.trim() || 'Un utente'
+      const sent = await pushToUsers(db, null, { title: 'Nuova ricetta per tutti', body: `${who} ha condiviso «${r.title}». La trovi in Ricette.`, tag: 'cm-recipe-public' }, r.created_by)
+      await pushToUsers(db, [r.created_by], { title: 'Ricetta pubblicata', body: `«${r.title}» è ora visibile a tutti.`, tag: 'cm-recipe-ok' })
+      return json({ ok: true, sent })
+    }
+    await pushToUsers(db, [r.created_by], { title: 'Ricetta non pubblicata', body: `«${r.title}» non è stata condivisa con tutti.`, tag: 'cm-recipe-no' })
+    return json({ ok: true })
   }
 
   if (body.action === 'decided') {

@@ -4,7 +4,7 @@ import { useData } from '../data'
 import { useToast } from '../toast'
 import { Sheet } from '../components'
 import { friendly, norm } from '../lib'
-import { IconPlus, IconSearch, IconTrash } from '../icons'
+import { IconGlobe, IconPlus, IconSearch, IconTrash } from '../icons'
 import type { Item } from '../types'
 
 interface Recipe {
@@ -14,6 +14,9 @@ interface Recipe {
   ingredients: string[]
   created_by: string
   created_at: string
+  group_id: string
+  public_status: 'proposed' | 'public' | 'rejected' | null
+  author_name: string | null
 }
 
 type Found = { text: string; item: Item | null; state: 'missing' | 'inlist' | 'new' }
@@ -32,17 +35,18 @@ export default function RecipesScreen() {
   const [open, setOpen] = useState<Recipe | 'new' | null>(null)
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('recipes')
-      .select('*')
-      .eq('group_id', d.groupId)
-      .order('created_at', { ascending: false })
-    if (error) {
-      toast.show(friendly(error.message))
+    // le ricette del gruppo + quelle che il superadmin ha reso pubbliche per tutti
+    const [mine, pub] = await Promise.all([
+      supabase.from('recipes').select('*').eq('group_id', d.groupId).order('created_at', { ascending: false }),
+      supabase.from('recipes').select('*').eq('public_status', 'public').neq('group_id', d.groupId).order('created_at', { ascending: false }),
+    ])
+    if (mine.error) {
+      toast.show(friendly(mine.error.message))
       setList([])
       return
     }
-    setList((data ?? []) as Recipe[])
+    const all = [...((mine.data ?? []) as Recipe[]), ...((pub.data ?? []) as Recipe[])]
+    setList(all.sort((a, b) => b.created_at.localeCompare(a.created_at)))
   }, [d.groupId, toast])
   useEffect(() => {
     void load()
@@ -68,9 +72,18 @@ export default function RecipesScreen() {
           {list.map((r) => (
             <li key={r.id}>
               <button className="card rcp-card" onClick={() => setOpen(r)}>
-                <strong>{r.title}</strong>
+                <strong>
+                  {r.public_status === 'public' && (
+                    <span className="rcp-globe" title="Ricetta per tutti" aria-label="Ricetta per tutti">
+                      <IconGlobe size={16} />
+                    </span>
+                  )}
+                  {r.title}
+                </strong>
                 <span className="muted small">
-                  {r.ingredients.length} ingredienti · di {d.nameOf(r.created_by)}
+                  {r.ingredients.length} ingredienti · di{' '}
+                  {r.group_id === d.groupId ? d.nameOf(r.created_by) : r.author_name || 'un utente'}
+                  {r.created_by === d.userId && r.public_status === 'proposed' ? ' · in attesa di approvazione' : ''}
                 </span>
               </button>
             </li>
@@ -94,7 +107,10 @@ export default function RecipesScreen() {
 function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onClose: () => void; onSaved: () => void }) {
   const d = useData()
   const toast = useToast()
-  const canEdit = !recipe || recipe.created_by === d.userId || d.isAdmin
+  const mine = !!recipe && recipe.created_by === d.userId
+  const foreign = !!recipe && recipe.group_id !== d.groupId // ricetta pubblica di un altro gruppo: sola lettura
+  const canEdit = !recipe || mine || (d.isAdmin && !foreign)
+  const [confirm, setConfirm] = useState<'propose' | 'withdraw' | null>(null)
   const [title, setTitle] = useState(recipe?.title ?? '')
   const [steps, setSteps] = useState(recipe?.steps ?? '')
   const [ings, setIngs] = useState<string[]>(recipe?.ingredients ?? [])
@@ -161,6 +177,49 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
     onSaved()
   }
 
+  async function propose() {
+    if (!recipe || busy) return
+    setBusy(true)
+    const { error } = await supabase.rpc('propose_recipe', { p_id: recipe.id })
+    if (error) {
+      setBusy(false)
+      toast.show(friendly(error.message))
+      return
+    }
+    await supabase.functions.invoke('admin-request', { body: { action: 'recipe', recipe_id: recipe.id } }).catch(() => null)
+    setBusy(false)
+    toast.show('Proposta inviata al superadmin')
+    onSaved()
+  }
+
+  async function withdraw() {
+    if (!recipe || busy) return
+    setBusy(true)
+    const { error } = await supabase.rpc('withdraw_recipe', { p_id: recipe.id })
+    setBusy(false)
+    if (error) {
+      toast.show(friendly(error.message))
+      return
+    }
+    toast.show('Ricetta tolta da quelle per tutti')
+    onSaved()
+  }
+
+  async function copy() {
+    if (!recipe || busy) return
+    setBusy(true)
+    const { error } = await supabase
+      .from('recipes')
+      .insert({ title: recipe.title, steps: recipe.steps, ingredients: recipe.ingredients, group_id: d.groupId, created_by: d.userId })
+    setBusy(false)
+    if (error) {
+      toast.show(friendly(error.message))
+      return
+    }
+    toast.show('Copiata nelle tue ricette')
+    onSaved()
+  }
+
   async function mark() {
     if (!checked || busy) return
     setBusy(true)
@@ -199,7 +258,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
   const label = { missing: 'già mancante', inlist: '', new: 'da aggiungere' }
 
   return (
-    <Sheet title={recipe ? 'Ricetta' : 'Nuova ricetta'} onClose={onClose}>
+    <Sheet title={foreign ? 'Ricetta di ' + (recipe?.author_name || 'un utente') : recipe ? 'Ricetta' : 'Nuova ricetta'} onClose={onClose}>
       <div className="stack">
         <label className="field">
           <span>Nome</span>
@@ -259,6 +318,17 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           ) : (
             <span className="rcp-save" />
           )}
+          {mine ? (
+            <button
+              className={`btn ghost rcp-icon rcp-globe-btn${recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? ' on' : ''}`}
+              disabled={changed || busy}
+              onClick={() => setConfirm(recipe?.public_status === 'public' || recipe?.public_status === 'proposed' ? 'withdraw' : 'propose')}
+              aria-label="Proponi a tutti gli utenti"
+              title={changed ? 'Salva prima le modifiche' : 'Proponi a tutti gli utenti'}
+            >
+              <IconGlobe size={24} />
+            </button>
+          ) : null}
           {recipe && canEdit ? (
             <button
               className="btn ghost rcp-icon rcp-del"
@@ -272,6 +342,33 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
             <span className="rcp-icon" />
           )}
         </div>
+        {mine && recipe?.public_status === 'proposed' && !confirm && (
+          <p className="muted small">Proposta inviata: aspetta l'ok del superadmin. Se la modifichi, resta in attesa.</p>
+        )}
+        {mine && recipe?.public_status === 'public' && !confirm && (
+          <p className="muted small">Questa ricetta è visibile a tutti. Se la modifichi, torna in attesa di approvazione.</p>
+        )}
+        {mine && recipe?.public_status === 'rejected' && !confirm && (
+          <p className="muted small">Il superadmin non l'ha pubblicata per tutti. Puoi proporla di nuovo.</p>
+        )}
+        {confirm === 'propose' && (
+          <div className="stack">
+            <p className="small">Vuoi proporre questa ricetta a tutti gli utenti di Cosa manca? La vedrà il superadmin, che decide se pubblicarla.</p>
+            <button className="btn primary wide" disabled={busy} onClick={() => void propose()}>
+              Sì, proponila a tutti
+            </button>
+          </div>
+        )}
+        {confirm === 'withdraw' && (
+          <button className="btn danger wide" disabled={busy} onClick={() => void withdraw()}>
+            {recipe?.public_status === 'public' ? 'Togli dalle ricette di tutti' : 'Ritira la proposta'}
+          </button>
+        )}
+        {foreign && (
+          <button className="btn primary wide" disabled={busy} onClick={() => void copy()}>
+            Copia nelle mie ricette
+          </button>
+        )}
         {asking && (
           <button className="btn danger wide" onClick={() => void remove()}>
             Sì, cancella la ricetta
