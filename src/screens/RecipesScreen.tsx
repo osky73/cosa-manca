@@ -229,7 +229,6 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
               <button type="button" className="btn ghost rcp-plusbtn" onClick={() => setIngs([...ings, ''])} aria-label="Aggiungi un ingrediente">
                 <IconPlus />
               </button>
-              <span className="muted small">Aggiungi</span>
             </div>
           )}
         </div>
