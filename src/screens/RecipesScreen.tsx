@@ -103,6 +103,14 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
   const [asking, setAsking] = useState(false)
 
   const clean = ings.map((s) => s.trim()).filter(Boolean)
+  // Salva è attivo solo se c'è qualcosa di scritto (e, per una ricetta già salvata, se è cambiato qualcosa)
+  const filled = title.trim() !== '' && (steps.trim() !== '' || clean.length > 0)
+  const changed =
+    !recipe ||
+    title.trim() !== recipe.title ||
+    steps.trim() !== (recipe.steps ?? '') ||
+    clean.join('\n') !== recipe.ingredients.join('\n')
+  const canSave = filled && changed
 
   const find = (text: string): Found => {
     const c = core(text)
@@ -127,7 +135,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
   )
 
   async function save() {
-    if (!title.trim() || busy) return
+    if (!canSave || busy) return
     setBusy(true)
     const row = { title: title.trim(), steps: steps.trim() || null, ingredients: clean }
     const { error } = recipe
@@ -245,7 +253,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
             <span>Controlla</span>
           </button>
           {canEdit ? (
-            <button className="btn primary rcp-save" disabled={!title.trim() || busy} onClick={() => void save()}>
+            <button className="btn primary rcp-save" disabled={!canSave || busy} onClick={() => void save()}>
               Salva
             </button>
           ) : (
