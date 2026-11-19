@@ -343,7 +343,7 @@ function RecipeSheet({ recipe, onClose, onSaved }: { recipe: Recipe | null; onCl
           )}
         </div>
         {mine && recipe?.public_status === 'proposed' && !confirm && (
-          <p className="muted small">Proposta inviata: aspetta l'ok del gestore dell'app. Se la modifichi, resta in attesa.</p>
+          <p className="muted small">Proposta inviata: aspetta l'ok del gestore dell'app.</p>
         )}
         {mine && recipe?.public_status === 'public' && !confirm && (
           <p className="muted small">Questa ricetta è visibile a tutti. Se la modifichi, torna in attesa di approvazione.</p>
